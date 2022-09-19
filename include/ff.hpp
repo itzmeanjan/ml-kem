@@ -10,11 +10,36 @@ namespace ff {
 // Kyber Prime Field Modulus
 constexpr uint16_t Q = (1 << 8) * 13 + 1;
 
+// Primitive Element of Prime field
+//
+// $ python3
+// >>> import galois as gl
+// >>> gf = gl.GF(3329)
+// >>> gf.primitive_element
+// GF(3, order=3329)
+constexpr uint16_t GENERATOR = 3;
+
+// Two Adicity of Prime Field
+//
+// $ python3
+// >>> assert is_odd((Q - 1) >> k) | k = 8
+constexpr uint16_t TWO_ADICITY = 8;
+
+// Two adic root of unity
+//
+// $ python3
+// >>> import galois as gl
+// >>> gf = gl.GF(3329)
+// >>> k = (gf.order - 1) >> 8
+// >>> gf.primitive_element ** k
+// GF(3061, order=3329)
+constexpr uint16_t TWO_ADIC_ROOT_OF_UNITY = 3061;
+
 // Extended GCD algorithm for computing inverse of prime ( = Q ) field element
 //
 // Taken from
 // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L40-L67
-static std::array<int16_t, 3>
+static constexpr std::array<int16_t, 3>
 xgcd(const uint16_t x, const uint16_t y)
 {
   int16_t old_r = static_cast<int16_t>(x), r = static_cast<int16_t>(y);
@@ -51,31 +76,31 @@ struct ff_t
   // Value of field element | v ∈ [0, Q)
   uint16_t v = 0;
 
-  ff_t(const uint16_t a) { v = a % Q; }
+  constexpr ff_t(const uint16_t a) { v = a % Q; }
 
   // Computes canonical form of prime field addition
-  ff_t operator+(const ff_t& rhs) const
+  constexpr ff_t operator+(const ff_t& rhs) const
   {
     const uint16_t tmp = (this->v + rhs.v) % Q;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field subtraction
-  ff_t operator-(const ff_t& rhs) const
+  constexpr ff_t operator-(const ff_t& rhs) const
   {
     const uint16_t tmp = (Q + this->v - rhs.v) % Q;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field negation
-  ff_t operator-() const
+  constexpr ff_t operator-() const
   {
     const uint16_t tmp = Q - this->v;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field multiplication
-  ff_t operator*(const ff_t& rhs) const
+  constexpr ff_t operator*(const ff_t& rhs) const
   {
     const uint16_t tmp = (this->v * rhs.v) % Q;
     return ff_t{ tmp };
@@ -90,7 +115,7 @@ struct ff_t
   //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
-  ff_t inv() const
+  constexpr ff_t inv() const
   {
     // Can't compute multiplicative inverse of 0 in prime field
     if (this->v == 0) {
@@ -107,14 +132,17 @@ struct ff_t
   }
 
   // Computes canonical form of prime field division
-  ff_t operator/(const ff_t& rhs) const { return (*this) * rhs.inv(); }
+  constexpr ff_t operator/(const ff_t& rhs) const
+  {
+    return (*this) * rhs.inv();
+  }
 
   // Raises field element to N -th power ( result kept in canonical form ),
   // using exponentiation by repeated squaring rule
   //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L153-L181
-  ff_t operator^(const size_t n) const
+  constexpr ff_t operator^(const size_t n) const
   {
     if (n == 0) {
       return ff_t{ 1 };
@@ -149,6 +177,19 @@ std::ostream&
 operator<<(std::ostream& os, const ff_t& elm)
 {
   return os << "ff_q(" << elm.v << ", " << Q << ")";
+}
+
+// Computes root of unity of order `2 ^ n`, such that n > 0 && n <= TWO_ADICITY
+//
+// Taken from
+// https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L183-L191
+static inline const ff_t
+nth_root_of_unity(const uint8_t n)
+{
+  constexpr ff_t v{ TWO_ADIC_ROOT_OF_UNITY };
+  const size_t exp = 1ul << (TWO_ADICITY - n);
+
+  return v ^ exp;
 }
 
 }

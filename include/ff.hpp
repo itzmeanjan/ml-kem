@@ -15,6 +15,34 @@ struct ff_t
 
   ff_t(const uint16_t a) { v = a % Q; }
 
+  // Computes canonical form of prime field addition
+  ff_t operator+(const ff_t& rhs)
+  {
+    const uint16_t tmp = (this->v + rhs.v) % Q;
+    return ff_t{ tmp };
+  }
+
+  // Computes canonical form of prime field subtraction
+  ff_t operator-(const ff_t& rhs)
+  {
+    const uint16_t tmp = (Q + this->v - rhs.v) % Q;
+    return ff_t{ tmp };
+  }
+
+  // Computes canonical form of prime field negation
+  ff_t operator-()
+  {
+    const uint16_t tmp = Q - this->v;
+    return ff_t{ tmp };
+  }
+
+  // Computes canonical form of prime field multiplication
+  ff_t operator*(const ff_t& rhs)
+  {
+    const uint16_t tmp = (this->v * rhs.v) % Q;
+    return ff_t{ tmp };
+  }
+
   // Writes field element into output stream, used for debugging purposes
   friend std::ostream& operator<<(std::ostream& os, const ff_t& elm);
 };

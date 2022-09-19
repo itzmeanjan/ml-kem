@@ -1,11 +1,48 @@
 #pragma once
+#include <array>
 #include <cstdint>
 #include <ostream>
 
 // Prime field arithmetic over F_q, for Kyber PQC Algorithm s.t. q = 3329
 namespace ff {
 
+// Kyber Prime Field Modulus
 constexpr uint16_t Q = (1 << 8) * 13 + 1;
+
+// Extended GCD algorithm for computing inverse of prime ( = Q ) field element
+//
+// Taken from
+// https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L40-L67
+static std::array<int16_t, 3>
+xgcd(const uint16_t x, const uint16_t y)
+{
+  int16_t old_r = static_cast<int16_t>(x), r = static_cast<int16_t>(y);
+  int16_t old_s = 1, s = 0;
+  int16_t old_t = 0, t = 1;
+
+  while (r != 0) {
+    int16_t quotient = old_r / r;
+    int16_t tmp = 0;
+
+    tmp = old_r;
+    old_r = r;
+    r = tmp - quotient * r;
+
+    tmp = old_s;
+    old_s = s;
+    s = tmp - quotient * s;
+
+    tmp = old_t;
+    old_t = t;
+    t = tmp - quotient * t;
+  }
+
+  return {
+    old_s, // a
+    old_t, // b
+    old_r  // g
+  };       // s.t. `ax + by = g`
+}
 
 // Element of prime field F_q | q = 3329, with arithmetic operations
 struct ff_t
@@ -41,6 +78,31 @@ struct ff_t
   {
     const uint16_t tmp = (this->v * rhs.v) % Q;
     return ff_t{ tmp };
+  }
+
+  // Computes canonical form of multiplicative inverse of prime field element,
+  // where a ∈ F_q | q = 3329; ensure a ∈ [1, q)
+  //
+  // Say return value of this function is b, then
+  //
+  // assert (a * b) % q == 1
+  //
+  // Taken from
+  // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
+  ff_t inv()
+  {
+    // Can't compute multiplicative inverse of 0 in prime field
+    if (this->v == 0) {
+      return ff_t{ 0 };
+    }
+
+    auto res = xgcd(this->v, Q);
+
+    if (res[0] < 0) {
+      return ff_t{ static_cast<uint16_t>(Q + res[0]) };
+    }
+
+    return ff_t{ static_cast<uint16_t>(res[0] % Q) };
   }
 
   // Writes field element into output stream, used for debugging purposes

@@ -53,28 +53,28 @@ struct ff_t
   ff_t(const uint16_t a) { v = a % Q; }
 
   // Computes canonical form of prime field addition
-  ff_t operator+(const ff_t& rhs)
+  ff_t operator+(const ff_t& rhs) const
   {
     const uint16_t tmp = (this->v + rhs.v) % Q;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field subtraction
-  ff_t operator-(const ff_t& rhs)
+  ff_t operator-(const ff_t& rhs) const
   {
     const uint16_t tmp = (Q + this->v - rhs.v) % Q;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field negation
-  ff_t operator-()
+  ff_t operator-() const
   {
     const uint16_t tmp = Q - this->v;
     return ff_t{ tmp };
   }
 
   // Computes canonical form of prime field multiplication
-  ff_t operator*(const ff_t& rhs)
+  ff_t operator*(const ff_t& rhs) const
   {
     const uint16_t tmp = (this->v * rhs.v) % Q;
     return ff_t{ tmp };
@@ -89,7 +89,7 @@ struct ff_t
   //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
-  ff_t inv()
+  ff_t inv() const
   {
     // Can't compute multiplicative inverse of 0 in prime field
     if (this->v == 0) {
@@ -104,6 +104,9 @@ struct ff_t
 
     return ff_t{ static_cast<uint16_t>(res[0] % Q) };
   }
+
+  // Computes canonical form of prime field division
+  ff_t operator/(const ff_t& rhs) const { return (*this) * rhs.inv(); }
 
   // Writes field element into output stream, used for debugging purposes
   friend std::ostream& operator<<(std::ostream& os, const ff_t& elm);

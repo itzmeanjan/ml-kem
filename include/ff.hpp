@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <bit>
 #include <cstdint>
 #include <ostream>
 
@@ -107,6 +108,38 @@ struct ff_t
 
   // Computes canonical form of prime field division
   ff_t operator/(const ff_t& rhs) const { return (*this) * rhs.inv(); }
+
+  // Raises field element to N -th power ( result kept in canonical form ),
+  // using exponentiation by repeated squaring rule
+  //
+  // Taken from
+  // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L153-L181
+  ff_t operator^(const size_t n) const
+  {
+    if (n == 0) {
+      return ff_t{ 1 };
+    }
+    if (n == 1) {
+      return *this;
+    }
+    if (this->v == 0) {
+      return ff_t{ 0 };
+    }
+
+    auto base = *this;
+    auto r = n & 0b1 ? base : ff_t{ 1 };
+
+    const size_t zeros = std::countl_zero(n);
+
+    for (size_t i = 1; i < 64 - zeros; i++) {
+      base = base * base;
+      if ((n >> i) & 0b1) {
+        r = r * base;
+      }
+    }
+
+    return r;
+  }
 
   // Writes field element into output stream, used for debugging purposes
   friend std::ostream& operator<<(std::ostream& os, const ff_t& elm);

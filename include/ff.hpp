@@ -3,6 +3,7 @@
 #include <bit>
 #include <cstdint>
 #include <ostream>
+#include <random>
 
 // Prime field arithmetic over F_q, for Kyber PQC Algorithm s.t. q = 3329
 namespace ff {
@@ -167,6 +168,16 @@ struct ff_t
     }
 
     return r;
+  }
+
+  // Generate a random prime field element a | a ∈ [0, Q)
+  static ff_t random()
+  {
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint16_t> dis{ 0, Q - 1 };
+
+    return ff_t{ dis(gen) };
   }
 
   // Writes field element into output stream, used for debugging purposes

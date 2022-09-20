@@ -170,6 +170,13 @@ struct ff_t
     return r;
   }
 
+  // Checks whether two prime field elements are holding same canonical value,
+  // returning boolean result
+  constexpr bool operator==(const ff_t& rhs) const
+  {
+    return !static_cast<bool>(this->v ^ rhs.v);
+  }
+
   // Generate a random prime field element a | a ∈ [0, Q)
   static ff_t random()
   {

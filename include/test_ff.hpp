@@ -2,8 +2,8 @@
 #include "ff.hpp"
 #include <cassert>
 
-// Test functional correctness of Kyber prime field operations
-namespace test_ff {
+// Test functional correctness of Kyber PQC suite implementation
+namespace test_kyber {
 
 // Rounds of testing iterations to be performed, using random field elements
 constexpr size_t ITR = 4096;

@@ -2,8 +2,8 @@
 #include "ntt.hpp"
 #include <cassert>
 
-// Test functional correctness of (inverse) NTT implementation
-namespace test_ntt {
+// Test functional correctness of Kyber PQC suite implementation
+namespace test_kyber {
 
 // Ensure functional correctness of (inverse) NTT implementation for degree-255
 // polynomial over F_q | q = 3329, using following rule

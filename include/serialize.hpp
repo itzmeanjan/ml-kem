@@ -5,8 +5,8 @@
 // IND-CPA-secure Public Key Encryption Scheme
 namespace indcpa {
 
-// Compile-time check to ensure that at max 12 -bits ( from LSB side ) of
-// polynomial coefficients are considered to be significant during
+// Compile-time check to ensure that at min 1 -bit and at max 12 -bits ( from
+// LSB side ) of polynomial coefficients are considered to be significant during
 //
 // - serialization to byte array
 // - deserialization to degree-255 polynomial
@@ -18,7 +18,7 @@ namespace indcpa {
 static constexpr bool
 check_l(const size_t l)
 {
-  return l <= 12;
+  return (l > 0) && (l <= 12);
 }
 
 // Given a degree-255 polynomial, where significant portion of each ( total 256
@@ -47,7 +47,7 @@ encode(const ff::ff_t* const __restrict poly, // degree 255 polynomial
     const size_t aoff = i & 7ul;
 
     const uint8_t bit = static_cast<uint8_t>((poly[pidx].v >> poff) & 0b1);
-    arr[aidx] = a[aidx] ^ (bit << aoff);
+    arr[aidx] = arr[aidx] ^ (bit << aoff);
   }
 }
 

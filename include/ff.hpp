@@ -79,6 +79,12 @@ struct ff_t
 
   constexpr ff_t(const uint16_t a) { v = a % Q; }
 
+  // Generate field element having canonical value 0
+  static ff_t zero() { return ff_t{ 0 }; }
+
+  // Generate field element having canonical value 1
+  static ff_t one() { return ff_t{ 1 }; }
+
   // Computes canonical form of prime field addition
   constexpr ff_t operator+(const ff_t& rhs) const
   {
@@ -120,7 +126,7 @@ struct ff_t
   {
     // Can't compute multiplicative inverse of 0 in prime field
     if (this->v == 0) {
-      return ff_t{ 0 };
+      return ff_t::zero();
     }
 
     auto res = xgcd(this->v, Q);
@@ -146,17 +152,17 @@ struct ff_t
   constexpr ff_t operator^(const size_t n) const
   {
     if (n == 0) {
-      return ff_t{ 1 };
+      return ff_t::one();
     }
     if (n == 1) {
       return *this;
     }
     if (this->v == 0) {
-      return ff_t{ 0 };
+      return ff_t::zero();
     }
 
     auto base = *this;
-    auto r = n & 0b1 ? base : ff_t{ 1 };
+    auto r = n & 0b1 ? base : ff_t::one();
 
     const size_t zeros = std::countl_zero(n);
 
@@ -168,6 +174,13 @@ struct ff_t
     }
 
     return r;
+  }
+
+  // Checks whether two prime field elements are holding same canonical value,
+  // returning boolean result
+  constexpr bool operator==(const ff_t& rhs) const
+  {
+    return !static_cast<bool>(this->v ^ rhs.v);
   }
 
   // Generate a random prime field element a | a ∈ [0, Q)

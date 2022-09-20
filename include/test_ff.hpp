@@ -6,7 +6,7 @@
 namespace test_ff {
 
 // Rounds of testing iterations to be performed, using random field elements
-constexpr size_t ITR = 1024;
+constexpr size_t ITR = 4096;
 
 // Test functional correctness of Kyber prime field operations, by running
 // through multiple rounds ( = ITR ) of execution of field operations on
@@ -16,7 +16,7 @@ test_field_ops()
 {
   std::random_device rd;
   std::mt19937_64 gen(rd());
-  std::uniform_int_distribution<size_t> dis;
+  std::uniform_int_distribution<size_t> dis{ 0, 1ul << 16 };
 
   for (size_t i = 0; i < ITR; i++) {
     const auto a = ff::ff_t::random();
@@ -33,14 +33,18 @@ test_field_ops()
     const auto f = a * b;
     const auto g = f / b;
 
-    assert(g == a);
+    if (b == ff::ff_t::zero()) {
+      assert(g == ff::ff_t::zero());
+    } else {
+      assert(g == a);
+    }
 
     // exponentiation, multiplication
     const size_t exp = dis(gen);
     const auto h = a ^ exp;
 
-    ff::ff_t res{ 1 };
-    for (size_t i = 0; i < exp; i++) {
+    auto res = ff::ff_t::one();
+    for (size_t j = 0; j < exp; j++) {
       res = res * a;
     }
 

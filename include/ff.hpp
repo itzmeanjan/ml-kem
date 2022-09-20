@@ -71,7 +71,8 @@ xgcd(const uint16_t x, const uint16_t y)
   };       // s.t. `ax + by = g`
 }
 
-// Element of prime field F_q | q = 3329, with arithmetic operations
+// Element of prime field F_q | q = 3329, with arithmetic operations defined
+// over it
 struct ff_t
 {
   // Value of field element | v ∈ [0, Q)

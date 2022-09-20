@@ -19,7 +19,7 @@ const auto INV_N = ff::ff_t{ N >> 1 }.inv();
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38
 // for source of inspiration
 template<const size_t mbw>
-const size_t
+size_t
 bit_rev(const size_t v)
 {
   size_t v_rev = 0ul;

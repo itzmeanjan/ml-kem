@@ -118,14 +118,41 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 // this routine computes resulting degree-1 polynomial h s.t.
 //
 // h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
+//
+// See page 6 of Kyber specification as submitted to NIST PQC final round call
+// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
 static void
-basemul(const ff::ff_t* const __restrict f,
-        const ff::ff_t* const __restrict g,
-        ff::ff_t* const __restrict h,
-        const ff::ff_t ζ)
+basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
+        const ff::ff_t* const __restrict g, // degree-1 polynomial
+        ff::ff_t* const __restrict h,       // degree-1 polynomial
+        const ff::ff_t ζ                    // zeta
+)
 {
   h[0] = f[1] * g[1] * ζ + f[0] * g[0];
   h[1] = f[0] * g[1] + f[1] * g[0];
+}
+
+// Given two degree-255 polynomials in NTT form, this routine performs 128
+// basecase multiplications for a pair of degree-1 polynomials s.t.
+//
+// f = (f0ˆ + f1ˆX, f2ˆ + f3ˆX, ..., f254ˆ + f255ˆX)
+// g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)
+//
+// h = f ◦ g
+static void
+polymul(const ff::ff_t* const __restrict f, // degree-255 polynomial
+        const ff::ff_t* const __restrict g, // degree-255 polynomial
+        ff::ff_t* const __restrict h        // degree-255 polynomial
+)
+{
+  constexpr size_t cnt = N >> 1;
+
+  for (size_t i = 0; i < cnt; i++) {
+    const size_t off = i << 1;
+    const ff::ff_t ζ_exp = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
+
+    basemul(f + off, g + off, h + off, ζ_exp);
+  }
 }
 
 }

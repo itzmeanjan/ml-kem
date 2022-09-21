@@ -110,4 +110,22 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
   }
 }
 
+// Given two degree-1 polynomials s.t.
+//
+// f = f_2i + f_(2i + 1) * X
+// g = g_2i + g_(2i + 1) * X
+//
+// this routine computes resulting degree-1 polynomial h s.t.
+//
+// h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
+static void
+basemul(const ff::ff_t* const __restrict f,
+        const ff::ff_t* const __restrict g,
+        ff::ff_t* const __restrict h,
+        const ff::ff_t ζ)
+{
+  h[0] = f[1] * g[1] * ζ + f[0] * g[0];
+  h[1] = f[0] * g[1] + f[1] * g[0];
+}
+
 }

@@ -78,7 +78,7 @@ struct ff_t
   // Value of field element | v ∈ [0, Q)
   uint16_t v = 0;
 
-  constexpr ff_t(const uint16_t a) { v = a % Q; }
+  constexpr ff_t(const uint16_t a = 0) { v = a % Q; }
 
   // Generate field element having canonical value 0
   static ff_t zero() { return ff_t{ 0 }; }
@@ -91,6 +91,12 @@ struct ff_t
   {
     const uint16_t tmp = (this->v + rhs.v) % Q;
     return ff_t{ tmp };
+  }
+
+  // Computes canonical form of prime field compound addition
+  constexpr void operator+=(const ff_t& rhs)
+  {
+    this->v = (this->v + rhs.v) % Q;
   }
 
   // Computes canonical form of prime field subtraction

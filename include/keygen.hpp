@@ -120,6 +120,8 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};
+  ff::ff_t tmp[ntt::N]{};
+
   std::memset(t_prime, 0, sizeof(t_prime));
 
   for (size_t i = 0; i < k; i++) {
@@ -130,8 +132,10 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
       const size_t aoff = (i * k + j) * ntt::N;
       const size_t soff = j * ntt::N;
 
+      ntt::polymul(A_prime + aoff, s_prime + soff, tmp);
+
       for (size_t l = 0; l < ntt::N; l++) {
-        t_prime[toff + l] += A_prime[aoff + l] * s_prime[soff + l];
+        t_prime[toff + l] += tmp[l];
       }
     }
 

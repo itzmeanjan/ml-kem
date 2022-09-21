@@ -133,7 +133,7 @@ basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
 }
 
 // Given two degree-255 polynomials in NTT form, this routine performs 128
-// basecase multiplications for a pair of degree-1 polynomials s.t.
+// basecase multiplications for 128 pairs of degree-1 polynomials s.t.
 //
 // f = (f0ˆ + f1ˆX, f2ˆ + f3ˆX, ..., f254ˆ + f255ˆX)
 // g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)

@@ -9,7 +9,13 @@ namespace ntt {
 constexpr size_t LOG2N = 8;
 constexpr size_t N = 1 << LOG2N;
 
-const auto INV_N = ff::ff_t{ N >> 1 }.inv();
+// First primitive 256 -th root of unity modulo q | q = 3329
+//
+// Meaning, 17 ** 256 == 1 mod q
+constexpr ff::ff_t ζ{ 17 };
+
+// Multiplicative inverse of N/ 2 over F_q | q = 3329 and N = 256
+constexpr auto INV_N = ff::ff_t{ N >> 1 }.inv();
 
 // Given a 64 -bit unsigned integer, this routine extracts specified many
 // contiguous bits from ( least significant bits ) LSB side & reverses their bit
@@ -25,8 +31,8 @@ bit_rev(const size_t v)
   size_t v_rev = 0ul;
 
   for (size_t i = 0; i < mbw; i++) {
-    const size_t extracted = (v >> i) & 0b1;
-    v_rev ^= extracted << (mbw - 1ul - i);
+    const size_t bit = (v >> i) & 0b1;
+    v_rev ^= bit << (mbw - 1ul - i);
   }
 
   return v_rev;
@@ -45,25 +51,24 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  const auto ω = ff::nth_root_of_unity(LOG2N - 1);
+  size_t k = 1;
 
-  for (size_t i = LOG2N - 1; i >= 1; i--) {
-    const size_t p = 1ul << i;
-    const size_t q = N >> i;
+  for (size_t len = (N >> 1); len >= 2; len >>= 1) {
 
-    for (size_t k = 0; k < N; k++) {
-      const size_t k_rev = bit_rev<LOG2N>(k) % q;
-      const auto ω_exp = ω ^ (p * k_rev);
+    for (size_t start = 0; start < N; start += (len << 1)) {
+      const auto ζ_exp = ζ ^ ntt::bit_rev<LOG2N - 1>(k);
 
-      if (k < (k ^ p)) {
-        const auto a = dst[k];
-        const auto b = dst[k ^ p];
+      for (size_t i = start; i < start + len; i++) {
+        const auto a = dst[i];
+        const auto b = dst[i + len];
 
-        const auto bxω = b * ω_exp;
+        const auto tmp = ζ_exp * b;
 
-        dst[k] = a + bxω;
-        dst[k ^ p] = a - bxω;
+        dst[i] = a + tmp;
+        dst[i + len] = a - tmp;
       }
+
+      k += 1;
     }
   }
 }
@@ -82,23 +87,21 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  const auto ω = ff::nth_root_of_unity(LOG2N - 1).inv();
+  size_t k = 127;
 
-  for (size_t i = 1; i < LOG2N; i++) {
-    const size_t p = 1ul << i;
-    const size_t q = N >> i;
+  for (size_t len = 2; len <= (N >> 1); len <<= 1) {
 
-    for (size_t k = 0; k < N; k++) {
-      const size_t k_rev = bit_rev<LOG2N>(k) % q;
-      const auto ω_exp = ω ^ (p * k_rev);
+    for (size_t start = 0; start < N; start += (len << 1)) {
+      const ff::ff_t neg_ζ_exp = -(ζ ^ ntt::bit_rev<LOG2N - 1>(k));
 
-      if (k < (k ^ p)) {
-        const auto a = dst[k];
-        const auto b = dst[k ^ p];
+      for (size_t i = start; i < start + len; i++) {
+        const auto tmp = dst[i];
 
-        dst[k] = a + b;
-        dst[k ^ p] = (a - b) * ω_exp;
+        dst[i] = tmp + dst[i + len];
+        dst[i + len] = (tmp - dst[i + len]) * neg_ζ_exp;
       }
+
+      k -= 1;
     }
   }
 

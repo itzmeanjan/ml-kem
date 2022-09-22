@@ -34,3 +34,5 @@
 # Project Development
 .vscode
 __pycache__
+
+deps

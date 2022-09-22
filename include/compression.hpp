@@ -64,4 +64,23 @@ decompress(const ff::ff_t x) requires(check_d(d))
   return ff::ff_t{ t3 };
 }
 
+// Decompression error that can happen for some given `d` s.t.
+//
+// x' = decompress(compress(x, d), d)
+//
+// |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
+//
+// See eq. 2 of Kyber specification, as submitted to NIST PQC final round call
+// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+template<const size_t d>
+inline static size_t
+compute_error()
+{
+  constexpr double t0 = static_cast<double>(ff::Q);
+  constexpr double t1 = static_cast<double>(1ul << (d + 1));
+
+  const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
+  return t2;
+}
+
 }

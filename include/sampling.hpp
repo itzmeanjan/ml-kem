@@ -1,4 +1,5 @@
 #pragma once
+#include "ff.hpp"
 #include "shake128.hpp"
 #include <cstdint>
 
@@ -17,7 +18,7 @@ namespace indcpa {
 // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
 static void
 parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
-      uint16_t* const __restrict poly              // Degree 255 polynomial
+      ff::ff_t* const __restrict poly              // Degree 255 polynomial
 )
 {
   constexpr size_t n = 256;
@@ -35,12 +36,12 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
                         (static_cast<uint16_t>(buf[2]) << 4);
 
     if (d1 < q) {
-      poly[i] = d1;
+      poly[i] = ff::ff_t{ d1 };
       i++;
     }
 
     if ((d2 < q) && (i < n)) {
-      poly[i] = d2;
+      poly[i] = ff::ff_t{ d2 };
       i++;
     }
   }
@@ -66,7 +67,7 @@ check_eta(const size_t eta)
 template<const size_t eta>
 static void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
-    uint16_t* const __restrict poly      // Degree 255 polynomial
+    ff::ff_t* const __restrict poly      // Degree 255 polynomial
     ) requires(check_eta(eta))
 {
   constexpr size_t n = 256;
@@ -93,7 +94,8 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
       b += (prf[byte_off] >> bit_off) & 0b1;
     }
 
-    poly[i] = a > b ? a - b : q - (b - a);
+    const uint16_t coeff = a > b ? a - b : q - (b - a);
+    poly[i] = ff::ff_t{ coeff };
   }
 }
 

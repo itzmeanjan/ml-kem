@@ -1,7 +1,6 @@
 #pragma once
 #include "compression.hpp"
 #include <cassert>
-#include <iostream>
 
 // Test functional correctness of Kyber PQC suite implementation
 namespace test_kyber {

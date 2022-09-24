@@ -2,6 +2,7 @@
 #include "encryption.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
+#include "utils.hpp"
 
 // IND-CCA2-secure Key Encapsulation Mechanism
 namespace ccakem {
@@ -26,7 +27,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static shake256::shake256&
+shake256::shake256
 encapsulate(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
             uint8_t* const __restrict cipher // (k * du * 32 + dv * 32) -bytes
 )

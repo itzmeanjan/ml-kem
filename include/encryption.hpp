@@ -6,7 +6,7 @@
 #include "shake256.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+namespace cpapke {
 
 // Given (k * 12 * 32 + 32) -bytes public key, 32 -bytes message ( to be
 // encrypted ) and 32 -bytes random coin ( from where all randomness is
@@ -36,7 +36,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     const size_t toff = i * ntt::N;
     const size_t pkoff = i * 12 * 32;
 
-    decode<12>(pubkey + pkoff, t_prime + toff);
+    kyber_utils::decode<12>(pubkey + pkoff, t_prime + toff);
   }
 
   // step 3
@@ -59,7 +59,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
       shake128::shake128 hasher{};
       hasher.hash(xof_in, sizeof(xof_in));
 
-      indcpa::parse(&hasher, A_prime + off);
+      kyber_utils::parse(&hasher, A_prime + off);
     }
   }
 
@@ -84,7 +84,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     hasher.hash(prf_in, sizeof(prf_in));
     hasher.read(prf_out_eta1, sizeof(prf_out_eta1));
 
-    cbd<eta1>(prf_out_eta1, r + off);
+    kyber_utils::cbd<eta1>(prf_out_eta1, r + off);
 
     N += 1;
   }
@@ -101,7 +101,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     hasher.hash(prf_in, sizeof(prf_in));
     hasher.read(prf_out_eta2, sizeof(prf_out_eta2));
 
-    cbd<eta2>(prf_out_eta2, e1 + off);
+    kyber_utils::cbd<eta2>(prf_out_eta2, e1 + off);
 
     N += 1;
   }
@@ -115,7 +115,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   hasher.hash(prf_in, sizeof(prf_in));
   hasher.read(prf_out_eta2, sizeof(prf_out_eta2));
 
-  cbd<eta2>(prf_out_eta2, e2);
+  kyber_utils::cbd<eta2>(prf_out_eta2, e2);
 
   // step 18
   ff::ff_t r_prime[k * ntt::N]{};
@@ -178,10 +178,10 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   }
 
   ff::ff_t m[ntt::N]{};
-  indcpa::decode<1>(msg, m);
+  kyber_utils::decode<1>(msg, m);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    m[i] = indcpa::decompress<1>(m[i]);
+    m[i] = kyber_utils::decompress<1>(m[i]);
   }
 
   for (size_t i = 0; i < ntt::N; i++) {
@@ -194,19 +194,19 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     const size_t encoff = i * du * 32;
 
     for (size_t l = 0; l < ntt ::N; l++) {
-      u[uoff + l] = indcpa::compress<du>(u[uoff + l]);
+      u[uoff + l] = kyber_utils::compress<du>(u[uoff + l]);
     }
 
-    encode<du>(u + uoff, enc + encoff);
+    kyber_utils::encode<du>(u + uoff, enc + encoff);
   }
 
   // step 22
   for (size_t i = 0; i < ntt ::N; i++) {
-    v[i] = indcpa::compress<dv>(v[i]);
+    v[i] = kyber_utils::compress<dv>(v[i]);
   }
 
   constexpr size_t encoff = k * du * 32;
-  encode<dv>(v, enc + encoff);
+  kyber_utils::encode<dv>(v, enc + encoff);
 }
 
 }

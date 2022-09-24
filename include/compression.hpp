@@ -2,8 +2,8 @@
 #include "ff.hpp"
 #include <cmath>
 
-// IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+// IND-CPA-secure Public Key Encryption Scheme Utilities
+namespace kyber_utils {
 
 // Compile-time check to ensure that number of bits ( read `d` ) to consider
 // during polynomial coefficient compression/ decompression is within tolerable

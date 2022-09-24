@@ -43,9 +43,9 @@ test_kyber_cpa_pke()
   random_data<uint8_t>(txt, mlen);
   random_data<uint8_t>(rcoin, mlen);
 
-  indcpa::keygen<k, eta1>(pkey, skey);
-  indcpa::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
-  indcpa::decrypt<k, du, dv>(skey, enc, dec);
+  cpapke::keygen<k, eta1>(pkey, skey);
+  cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+  cpapke::decrypt<k, du, dv>(skey, enc, dec);
 
   for (size_t i = 0; i < mlen; i++) {
     assert((txt[i] ^ dec[i]) == 0);

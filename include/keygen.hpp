@@ -7,7 +7,7 @@
 #include "utils.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+namespace cpapke {
 
 // Kyber CPAPKE key generation algorithm, which takes two parameters `k` & `η1`
 // ( read eta1 ) and generates byte serialized public key and secret key of
@@ -56,7 +56,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
       shake128::shake128 hasher{};
       hasher.hash(xof_in, sizeof(xof_in));
 
-      indcpa::parse(&hasher, A_prime + off);
+      kyber_utils::parse(&hasher, A_prime + off);
     }
   }
 
@@ -80,7 +80,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
     hasher.hash(prf_in, sizeof(prf_in));
     hasher.read(prf_out, sizeof(prf_out));
 
-    cbd<eta1>(prf_out, s + off);
+    kyber_utils::cbd<eta1>(prf_out, s + off);
 
     N += 1;
   }
@@ -97,7 +97,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
     hasher.hash(prf_in, sizeof(prf_in));
     hasher.read(prf_out, sizeof(prf_out));
 
-    cbd<eta1>(prf_out, e + off);
+    kyber_utils::cbd<eta1>(prf_out, e + off);
 
     N += 1;
   }
@@ -151,8 +151,8 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
     const size_t pkoff = i * 12 * 32;
     const size_t skoff = i * 12 * 32;
 
-    encode<12>(t_prime + toff, pubkey + pkoff);
-    encode<12>(s_prime + soff, seckey + skoff);
+    kyber_utils::encode<12>(t_prime + toff, pubkey + pkoff);
+    kyber_utils::encode<12>(s_prime + soff, seckey + skoff);
   }
 
   constexpr size_t pkoff = k * 12 * 32;

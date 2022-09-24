@@ -27,8 +27,8 @@ test_serialization()
     src[i] = ff::ff_t::random();
   }
 
-  indcpa::encode<l>(src, arr);
-  indcpa::decode<l>(arr, dst);
+  kyber_utils::encode<l>(src, arr);
+  kyber_utils::decode<l>(arr, dst);
 
   for (size_t i = 0; i < ntt::N; i++) {
     assert((src[i].v & mask) == (dst[i].v & mask));

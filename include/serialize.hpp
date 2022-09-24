@@ -2,8 +2,8 @@
 #include "ff.hpp"
 #include <cstring>
 
-// IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+// IND-CPA-secure Public Key Encryption Scheme Utilities
+namespace kyber_utils {
 
 // Compile-time check to ensure that at min 1 -bit and at max 12 -bits ( from
 // LSB side ) of polynomial coefficients are considered to be significant during

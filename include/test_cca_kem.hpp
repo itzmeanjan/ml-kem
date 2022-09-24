@@ -24,14 +24,14 @@ template<const size_t k,
          const size_t eta1,
          const size_t eta2,
          const size_t du,
-         const size_t dv>
+         const size_t dv,
+         const size_t klen>
 static void
 test_kyber_cca_kem()
 {
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
   constexpr size_t ctlen = k * du * 32 + dv * 32;
-  constexpr size_t klen = 32;
 
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));

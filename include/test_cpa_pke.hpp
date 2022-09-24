@@ -11,8 +11,8 @@ namespace test_kyber {
 //
 // - A random key pair can be generated
 // - Public key can be used for encrypting 32 -bytes random message
-// - Secret key can decrypt (k * du * 32 + dv * 32) -bytes cipher text to 32
-// -bytes plain text
+// - Secret key can decrypt (k * du * 32 + dv * 32) -bytes cipher text to
+//   32 -bytes plain text
 //
 // works as expected.
 template<const size_t k,
@@ -48,7 +48,7 @@ test_kyber_cpa_pke()
   cpapke::decrypt<k, du, dv>(skey, enc, dec);
 
   for (size_t i = 0; i < mlen; i++) {
-    assert((txt[i] ^ dec[i]) == 0);
+    assert(!static_cast<bool>(txt[i] ^ dec[i]));
   }
 
   std::free(pkey);

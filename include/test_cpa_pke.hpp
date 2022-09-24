@@ -1,7 +1,7 @@
 #pragma once
 #include "decryption.hpp"
 #include "encryption.hpp"
-#include "keygen.hpp"
+#include "pke_keygen.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation

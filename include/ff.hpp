@@ -89,14 +89,21 @@ struct ff_t
   // Computes canonical form of prime field addition
   constexpr ff_t operator+(const ff_t& rhs) const
   {
-    const uint16_t tmp = (this->v + rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint16_t t0 = this->v + rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    return ff_t{ t1 };
   }
 
   // Computes canonical form of prime field compound addition
   constexpr void operator+=(const ff_t& rhs)
   {
-    this->v = (this->v + rhs.v) % Q;
+    const uint16_t t0 = this->v + rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    this->v = t1;
   }
 
   // Computes canonical form of prime field subtraction

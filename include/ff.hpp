@@ -165,22 +165,25 @@ struct ff_t
   //
   // assert (a * b) % q == 1
   //
+  // Note, when operand is zero value, multiplicative inverse can't be computed
+  // -- so zero value is returned.
+  //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
   constexpr ff_t inv() const
   {
-    // Can't compute multiplicative inverse of 0 in prime field
-    if (this->v == 0) {
-      return ff_t::zero();
-    }
+    const bool flg0 = this->v == 0;
+    const uint16_t t0 = this->v + flg0 * 1;
 
-    auto res = xgcd(this->v, Q);
+    auto res = xgcd(t0, Q);
 
-    if (res[0] < 0) {
-      return ff_t{ static_cast<uint16_t>(Q + res[0]) };
-    }
+    const bool flg1 = res[0] < 0;
+    const uint16_t t1 = static_cast<uint16_t>(flg1 * Q + res[0]);
+    const bool flg2 = t1 >= Q;
+    const uint16_t t2 = t1 - flg2 * Q;
+    const uint16_t t3 = t2 - flg0 * 1;
 
-    return ff_t{ static_cast<uint16_t>(res[0] % Q) };
+    return ff_t{ t3 };
   }
 
   // Computes canonical form of prime field division

@@ -199,26 +199,18 @@ struct ff_t
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L153-L181
   constexpr ff_t operator^(const size_t n) const
   {
-    if (n == 0) {
-      return ff_t::one();
-    }
-    if (n == 1) {
-      return *this;
-    }
-    if (this->v == 0) {
-      return ff_t::zero();
-    }
+    ff_t base = *this;
 
-    auto base = *this;
-    auto r = n & 0b1 ? base : ff_t::one();
+    const ff_t br[]{ ff_t{ 1 }, base };
+    ff_t r = br[n & 0b1];
 
     const size_t zeros = std::countl_zero(n);
 
     for (size_t i = 1; i < 64 - zeros; i++) {
       base = base * base;
-      if ((n >> i) & 0b1) {
-        r = r * base;
-      }
+
+      const ff_t br[]{ ff_t{ 1 }, base };
+      r = r * br[(n >> i) & 0b1];
     }
 
     return r;

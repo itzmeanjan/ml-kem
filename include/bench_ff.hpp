@@ -124,4 +124,24 @@ ff_mul(benchmark::State& state)
   assert(c == b);
 }
 
+// Benchmark computation of multiplicative inverse over prime field
+// Z_q | q = 3329
+void
+ff_inv(benchmark::State& state)
+{
+  ff::ff_t a = ff::ff_t::random();
+  ff::ff_t b{};
+
+  for (auto _ : state) {
+    b = a.inv();
+
+    benchmark::DoNotOptimize(b);
+    benchmark::DoNotOptimize(a);
+    benchmark::ClobberMemory();
+  }
+
+  ff::ff_t c = a.inv();
+  assert(c == b);
+}
+
 }

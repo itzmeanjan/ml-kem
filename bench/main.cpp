@@ -36,5 +36,9 @@ BENCHMARK(bench_kyber::decompress<10>);
 BENCHMARK(bench_kyber::compress<11>);
 BENCHMARK(bench_kyber::decompress<11>);
 
+// register for benchmarking (i)NTT of degree-255 polynomial over Z_q | q = 3329
+BENCHMARK(bench_kyber::ntt);
+BENCHMARK(bench_kyber::intt);
+
 // benchmark runner main routine
 BENCHMARK_MAIN();

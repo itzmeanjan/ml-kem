@@ -11,13 +11,12 @@ template<const size_t l>
 void
 encode(benchmark::State& state)
 {
-  constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;
   constexpr size_t blen = 32 * l;
   constexpr uint16_t mask = (1u << l) - 1u;
 
-  ff::ff_t src[plen]{};
+  ff::ff_t src[ntt::N]{};
   uint8_t arr[blen]{};
-  ff::ff_t dst[plen]{};
+  ff::ff_t dst[ntt::N]{};
 
   for (size_t i = 0; i < ntt::N; i++) {
     src[i] = ff::ff_t::random();
@@ -46,13 +45,12 @@ template<const size_t l>
 void
 decode(benchmark::State& state)
 {
-  constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;
   constexpr size_t blen = 32 * l;
   constexpr uint16_t mask = (1u << l) - 1u;
 
-  ff::ff_t src[plen]{};
+  ff::ff_t src[ntt::N]{};
   uint8_t arr[blen]{};
-  ff::ff_t dst[plen]{};
+  ff::ff_t dst[ntt::N]{};
 
   for (size_t i = 0; i < ntt::N; i++) {
     src[i] = ff::ff_t::random();

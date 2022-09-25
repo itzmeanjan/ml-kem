@@ -61,4 +61,27 @@ intt(benchmark::State& state)
   }
 }
 
+// Benchmark multiplication of two degree-255 polynomials in NTT domain
+void
+polymul(benchmark::State& state)
+{
+  ff::ff_t poly_a[ntt::N]{};
+  ff::ff_t poly_b[ntt::N]{};
+  ff::ff_t poly_c[ntt::N]{};
+
+  for (size_t i = 0; i < ntt::N; i++) {
+    poly_a[i] = ff::ff_t::random();
+    poly_b[i] = ff::ff_t::random();
+  }
+
+  for (auto _ : state) {
+    ntt::polymul(poly_a, poly_b, poly_c);
+
+    benchmark::DoNotOptimize(poly_a);
+    benchmark::DoNotOptimize(poly_b);
+    benchmark::DoNotOptimize(poly_c);
+    benchmark::ClobberMemory();
+  }
+}
+
 }

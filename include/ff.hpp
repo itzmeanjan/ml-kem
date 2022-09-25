@@ -11,6 +11,16 @@ namespace ff {
 // Kyber Prime Field Modulus
 constexpr uint16_t Q = (1 << 8) * 13 + 1;
 
+// Precomputed Barrett Reduction Constant
+//
+// Note,
+//
+// k = ceil(log2(Q)) = 12
+// r = floor((1 << 2k) / Q) = 5039
+//
+// See https://www.nayuki.io/page/barrett-reduction-algorithm for more.
+constexpr uint16_t R = 5039;
+
 // Primitive Element of Prime field
 //
 // $ python3
@@ -124,10 +134,28 @@ struct ff_t
   }
 
   // Computes canonical form of prime field multiplication
+  //
+  // Note, after multiplying two 12 -bit numbers resulting 24 -bit number is
+  // reduced to Z_q using Barrett reduction algorithm, which avoid division by
+  // any value which is not power of 2 | q = 3329.
+  //
+  // See https://www.nayuki.io/page/barrett-reduction-algorithm for Barrett
+  // reduction algorithm
   constexpr ff_t operator*(const ff_t& rhs) const
   {
-    const uint16_t tmp = (this->v * rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint32_t t0 = static_cast<uint32_t>(this->v);
+    const uint32_t t1 = static_cast<uint32_t>(rhs.v);
+    const uint32_t t2 = t0 * t1;
+
+    const uint64_t t3 = static_cast<uint64_t>(t2) * static_cast<uint64_t>(R);
+    const uint32_t t4 = static_cast<uint32_t>(t3 >> 24);
+    const uint32_t t5 = t4 * static_cast<uint32_t>(Q);
+    const uint16_t t6 = static_cast<uint16_t>(t2 - t5);
+
+    const bool flg = t6 >= Q;
+    const uint16_t t7 = t6 - flg * Q;
+
+    return ff_t{ t7 };
   }
 
   // Computes canonical form of multiplicative inverse of prime field element,

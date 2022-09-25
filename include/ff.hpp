@@ -109,8 +109,11 @@ struct ff_t
   // Computes canonical form of prime field subtraction
   constexpr ff_t operator-(const ff_t& rhs) const
   {
-    const uint16_t tmp = (Q + this->v - rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint16_t t0 = Q + this->v - rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    return ff_t{ t1 };
   }
 
   // Computes canonical form of prime field negation

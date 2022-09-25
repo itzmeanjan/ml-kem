@@ -34,12 +34,18 @@ compress(const ff::ff_t x) requires(check_d(d))
 {
   constexpr size_t t0 = 1ul << d;
 
-  const size_t t1 = static_cast<size_t>(x.v) << d;
-  const double t2 = static_cast<double>(t1) / static_cast<double>(ff::Q);
-  const size_t t3 = static_cast<size_t>(std::round(t2));
-  const uint16_t t4 = static_cast<uint16_t>(t3 & (t0 - 1));
+  const uint32_t t1 = static_cast<uint32_t>(x.v) << d;
 
-  return ff::ff_t{ t4 };
+  const uint32_t t2 = t1 / static_cast<uint32_t>(ff::Q);
+  const uint32_t t3 = t2 * static_cast<uint32_t>(ff::Q);
+  const uint32_t t4 = t1 - t3;
+
+  const bool flg = t4 >= static_cast<uint32_t>(ff::Q >> 1);
+
+  const uint16_t t5 = static_cast<uint16_t>(t2 + 1ul * flg);
+  const uint16_t t6 = t5 & (t0 - 1);
+
+  return ff::ff_t{ t6 };
 }
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses

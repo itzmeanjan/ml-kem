@@ -169,4 +169,38 @@ ff_div(benchmark::State& state)
   assert(c == b);
 }
 
+// Benchmark exponentiation over prime field Z_q | q = 3329
+void
+ff_exp(benchmark::State& state)
+{
+  const ff::ff_t a = ff::ff_t::random();
+  ff::ff_t b = a;
+
+  size_t c = 0;
+  {
+    std::random_device rd;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<size_t> dis;
+
+    c = dis(gen);
+  }
+
+  for (auto _ : state) {
+    b = b ^ c;
+
+    benchmark::DoNotOptimize(b);
+    benchmark::DoNotOptimize(c);
+    benchmark::ClobberMemory();
+  }
+
+  const size_t itr = state.iterations();
+
+  ff::ff_t d = a;
+  for (size_t i = 0; i < itr; i++) {
+    d = d ^ c;
+  }
+
+  assert(d == b);
+}
+
 }

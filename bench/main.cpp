@@ -8,6 +8,7 @@ BENCHMARK(bench_kyber::ff_neg);
 BENCHMARK(bench_kyber::ff_mul);
 BENCHMARK(bench_kyber::ff_inv);
 BENCHMARK(bench_kyber::ff_div);
+BENCHMARK(bench_kyber::ff_exp);
 
 // benchmark runner main routine
 BENCHMARK_MAIN();

@@ -51,7 +51,7 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  for (size_t l = 7; l >= 1; l--) {
+  for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
     const size_t k_beg = N >> (l + 1);
@@ -87,7 +87,7 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  for (size_t l = 1; l < 8; l++) {
+  for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
     const size_t k_beg = (N >> l) - 1;

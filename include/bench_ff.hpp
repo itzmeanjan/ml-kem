@@ -129,18 +129,23 @@ ff_mul(benchmark::State& state)
 void
 ff_inv(benchmark::State& state)
 {
-  ff::ff_t a = ff::ff_t::random();
-  ff::ff_t b{};
+  const ff::ff_t a = ff::ff_t::random();
+  ff::ff_t b = a;
 
   for (auto _ : state) {
-    b = a.inv();
+    b = b.inv();
 
     benchmark::DoNotOptimize(b);
-    benchmark::DoNotOptimize(a);
     benchmark::ClobberMemory();
   }
 
-  ff::ff_t c = a.inv();
+  const size_t itr = state.iterations();
+
+  ff::ff_t c = a;
+  for (size_t i = 0; i < itr; i++) {
+    c = c.inv();
+  }
+
   assert(c == b);
 }
 

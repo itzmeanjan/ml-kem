@@ -30,4 +30,29 @@ compress(benchmark::State& state)
   assert(c == b);
 }
 
+// Benchmark Z_q element decompression routine
+template<const size_t d>
+void
+decompress(benchmark::State& state)
+{
+  const ff::ff_t a = ff::ff_t::random();
+  ff::ff_t b = a;
+
+  for (auto _ : state) {
+    b = kyber_utils::decompress<d>(b);
+
+    benchmark::DoNotOptimize(b);
+    benchmark::ClobberMemory();
+  }
+
+  const size_t itr = state.iterations();
+
+  ff::ff_t c = a;
+  for (size_t i = 0; i < itr; i++) {
+    c = kyber_utils::decompress<d>(c);
+  }
+
+  assert(c == b);
+}
+
 }

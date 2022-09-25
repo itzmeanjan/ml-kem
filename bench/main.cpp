@@ -24,12 +24,17 @@ BENCHMARK(bench_kyber::decode<11>);
 BENCHMARK(bench_kyber::encode<12>);
 BENCHMARK(bench_kyber::decode<12>);
 
-// register benchmarking of compression/ decompression of polynomial coefficient
+// register for benchmarking of polynomial coefficient (de)compression
 BENCHMARK(bench_kyber::compress<1>);
+BENCHMARK(bench_kyber::decompress<1>);
 BENCHMARK(bench_kyber::compress<4>);
+BENCHMARK(bench_kyber::decompress<4>);
 BENCHMARK(bench_kyber::compress<5>);
+BENCHMARK(bench_kyber::decompress<5>);
 BENCHMARK(bench_kyber::compress<10>);
+BENCHMARK(bench_kyber::decompress<10>);
 BENCHMARK(bench_kyber::compress<11>);
+BENCHMARK(bench_kyber::decompress<11>);
 
 // benchmark runner main routine
 BENCHMARK_MAIN();

@@ -14,8 +14,42 @@ constexpr size_t N = 1 << LOG2N;
 // Meaning, 17 ** 256 == 1 mod q
 constexpr ff::ff_t ζ{ 17 };
 
-// Multiplicative inverse of N/ 2 over F_q | q = 3329 and N = 256
+// Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 constexpr auto INV_N = ff::ff_t{ N >> 1 }.inv();
+
+// Precomputed constants ( powers of ζ ), used for computing NTT form of
+// degree-255 polynomial
+constexpr ff::ff_t NTT_ζ_EXP[]{
+  1,    1729, 2580, 3289, 2642, 630,  1897, 848,  1062, 1919, 193,  797,  2786,
+  3260, 569,  1746, 296,  2447, 1339, 1476, 3046, 56,   2240, 1333, 1426, 2094,
+  535,  2882, 2393, 2879, 1974, 821,  289,  331,  3253, 1756, 1197, 2304, 2277,
+  2055, 650,  1977, 2513, 632,  2865, 33,   1320, 1915, 2319, 1435, 807,  452,
+  1438, 2868, 1534, 2402, 2647, 2617, 1481, 648,  2474, 3110, 1227, 910,  17,
+  2761, 583,  2649, 1637, 723,  2288, 1100, 1409, 2662, 3281, 233,  756,  2156,
+  3015, 3050, 1703, 1651, 2789, 1789, 1847, 952,  1461, 2687, 939,  2308, 2437,
+  2388, 733,  2337, 268,  641,  1584, 2298, 2037, 3220, 375,  2549, 2090, 1645,
+  1063, 319,  2773, 757,  2099, 561,  2466, 2594, 2804, 1092, 403,  1026, 1143,
+  2150, 2775, 886,  1722, 1212, 1874, 1029, 2110, 2935, 885,  2154
+};
+
+// Precomputed constants ( negated powers of ζ ), used for computing coefficient
+// form of degree-255 polynomial using inverse NTT
+//
+// [-NTT_ζ_EXP[i] for i in range(128)]
+//
+// That's how these constants were computed !
+constexpr ff::ff_t INTT_ζ_EXP[]{
+  3328, 1600, 749,  40,   687,  2699, 1432, 2481, 2267, 1410, 3136, 2532, 543,
+  69,   2760, 1583, 3033, 882,  1990, 1853, 283,  3273, 1089, 1996, 1903, 1235,
+  2794, 447,  936,  450,  1355, 2508, 3040, 2998, 76,   1573, 2132, 1025, 1052,
+  1274, 2679, 1352, 816,  2697, 464,  3296, 2009, 1414, 1010, 1894, 2522, 2877,
+  1891, 461,  1795, 927,  682,  712,  1848, 2681, 855,  219,  2102, 2419, 3312,
+  568,  2746, 680,  1692, 2606, 1041, 2229, 1920, 667,  48,   3096, 2573, 1173,
+  314,  279,  1626, 1678, 540,  1540, 1482, 2377, 1868, 642,  2390, 1021, 892,
+  941,  2596, 992,  3061, 2688, 1745, 1031, 1292, 109,  2954, 780,  1239, 1684,
+  2266, 3010, 556,  2572, 1230, 2768, 863,  735,  525,  2237, 2926, 2303, 2186,
+  1179, 554,  2443, 1607, 2117, 1455, 2300, 1219, 394,  2444, 1175
+};
 
 // Precomputed constants ( powers of ζ ), used when multiplying two degree-255
 // polynomials in NTT domain
@@ -78,7 +112,12 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 
     for (size_t start = 0; start < N; start += lenx2) {
       const size_t k_now = k_beg ^ (start >> (l + 1));
-      const auto ζ_exp = ζ ^ ntt::bit_rev<LOG2N - 1>(k_now);
+      // Looking up precomputed constant, though it can be computed using
+      //
+      // ζ ^ bit_rev<LOG2N - 1>(k_now)
+      //
+      // This is how these constants are generated !
+      const ff::ff_t ζ_exp = NTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
         const auto a = dst[i];
@@ -114,7 +153,14 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 
     for (size_t start = 0; start < N; start += lenx2) {
       const size_t k_now = k_beg - (start >> (l + 1));
-      const ff::ff_t neg_ζ_exp = -(ζ ^ ntt::bit_rev<LOG2N - 1>(k_now));
+      // Looking up precomputed constant, though it can be computed using
+      //
+      // -(ζ ^ bit_rev<LOG2N - 1>(k_now))
+      //
+      // Or simpler
+      //
+      // -NTT_ζ_EXP[k_now]
+      const ff::ff_t neg_ζ_exp = INTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
         const auto tmp = dst[i];

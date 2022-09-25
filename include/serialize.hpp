@@ -78,7 +78,7 @@ decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
     const size_t poff = i % l;
 
     const uint8_t bit = (arr[aidx] >> aoff) & 0b1;
-    poly[pidx].v = poly[pidx].v ^ static_cast<uint16_t>(bit << poff);
+    poly[pidx].v = poly[pidx].v ^ static_cast<uint16_t>(bit) << poff;
   }
 }
 

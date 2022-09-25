@@ -12,11 +12,17 @@ BENCHMARK(bench_kyber::ff_exp);
 
 // register for benchmarking polynomial encoding and byte array decoding
 BENCHMARK(bench_kyber::encode<1>);
+BENCHMARK(bench_kyber::decode<1>);
 BENCHMARK(bench_kyber::encode<4>);
+BENCHMARK(bench_kyber::decode<4>);
 BENCHMARK(bench_kyber::encode<5>);
+BENCHMARK(bench_kyber::decode<5>);
 BENCHMARK(bench_kyber::encode<10>);
+BENCHMARK(bench_kyber::decode<10>);
 BENCHMARK(bench_kyber::encode<11>);
+BENCHMARK(bench_kyber::decode<11>);
 BENCHMARK(bench_kyber::encode<12>);
+BENCHMARK(bench_kyber::decode<12>);
 
 // benchmark runner main routine
 BENCHMARK_MAIN();

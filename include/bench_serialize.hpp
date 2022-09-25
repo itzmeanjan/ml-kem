@@ -36,6 +36,44 @@ encode(benchmark::State& state)
   for (size_t i = 0; i < ntt::N; i++) {
     assert((src[i].v & mask) == (dst[i].v & mask));
   }
+
+  const size_t tot_bytes = state.iterations() * sizeof(arr);
+  state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
+}
+
+// Benchmark routine which decodes a byte array to degree-255 polynomial
+template<const size_t l>
+void
+decode(benchmark::State& state)
+{
+  constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;
+  constexpr size_t blen = 32 * l;
+  constexpr uint16_t mask = (1u << l) - 1u;
+
+  ff::ff_t src[plen]{};
+  uint8_t arr[blen]{};
+  ff::ff_t dst[plen]{};
+
+  for (size_t i = 0; i < ntt::N; i++) {
+    src[i] = ff::ff_t::random();
+  }
+
+  kyber_utils::encode<l>(src, arr);
+
+  for (auto _ : state) {
+    kyber_utils::decode<l>(arr, dst);
+
+    benchmark::DoNotOptimize(arr);
+    benchmark::DoNotOptimize(dst);
+    benchmark::ClobberMemory();
+  }
+
+  for (size_t i = 0; i < ntt::N; i++) {
+    assert((src[i].v & mask) == (dst[i].v & mask));
+  }
+
+  const size_t tot_bytes = state.iterations() * sizeof(arr);
+  state.SetBytesProcessed(static_cast<int64_t>(tot_bytes));
 }
 
 }

@@ -5,6 +5,7 @@ BENCHMARK(bench_kyber::ff_add);
 BENCHMARK(bench_kyber::ff_compound_add);
 BENCHMARK(bench_kyber::ff_sub);
 BENCHMARK(bench_kyber::ff_neg);
+BENCHMARK(bench_kyber::ff_mul);
 
 // benchmark runner main routine
 BENCHMARK_MAIN();

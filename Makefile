@@ -9,6 +9,7 @@ all: testing
 deps/sha3:
 	mkdir -p deps
 	git clone https://github.com/itzmeanjan/sha3.git $@
+	cd deps/sha3; git checkout 5886375; cd -
 
 dep: deps/sha3
 

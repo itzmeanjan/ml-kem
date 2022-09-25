@@ -17,6 +17,26 @@ constexpr ff::ff_t ζ{ 17 };
 // Multiplicative inverse of N/ 2 over F_q | q = 3329 and N = 256
 constexpr auto INV_N = ff::ff_t{ N >> 1 }.inv();
 
+// Precomputed constants ( powers of ζ ), used when multiplying two degree-255
+// polynomials in NTT domain
+//
+// [ ζ ^ ((br<7>(i) << 1) ^ 1) for i in range(128) ]
+//
+// s.t. ζ = 17 and br<7>(i) is bit reversal of `i`, while only considering lower
+// 7 -bits of `i`.
+constexpr ff::ff_t POLY_MUL_ζ_EXP[]{
+  17,   3312, 2761, 568,  583,  2746, 2649, 680,  1637, 1692, 723,  2606, 2288,
+  1041, 1100, 2229, 1409, 1920, 2662, 667,  3281, 48,   233,  3096, 756,  2573,
+  2156, 1173, 3015, 314,  3050, 279,  1703, 1626, 1651, 1678, 2789, 540,  1789,
+  1540, 1847, 1482, 952,  2377, 1461, 1868, 2687, 642,  939,  2390, 2308, 1021,
+  2437, 892,  2388, 941,  733,  2596, 2337, 992,  268,  3061, 641,  2688, 1584,
+  1745, 2298, 1031, 2037, 1292, 3220, 109,  375,  2954, 2549, 780,  2090, 1239,
+  1645, 1684, 1063, 2266, 319,  3010, 2773, 556,  757,  2572, 2099, 1230, 561,
+  2768, 2466, 863,  2594, 735,  2804, 525,  1092, 2237, 403,  2926, 1026, 2303,
+  1143, 2186, 2150, 1179, 2775, 554,  886,  2443, 1722, 1607, 1212, 2117, 1874,
+  1455, 1029, 2300, 2110, 1219, 2935, 394,  885,  2444, 2154, 1175
+};
+
 // Given a 64 -bit unsigned integer, this routine extracts specified many
 // contiguous bits from ( least significant bits ) LSB side & reverses their bit
 // order, returning bit reversed `mbw` -bit wide number
@@ -149,9 +169,7 @@ polymul(const ff::ff_t* const __restrict f, // degree-255 polynomial
 
   for (size_t i = 0; i < cnt; i++) {
     const size_t off = i << 1;
-    const ff::ff_t ζ_exp = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
-
-    basemul(f + off, g + off, h + off, ζ_exp);
+    basemul(f + off, g + off, h + off, POLY_MUL_ζ_EXP[i]);
   }
 }
 

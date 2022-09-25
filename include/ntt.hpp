@@ -51,12 +51,14 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  size_t k = 1;
+  for (size_t l = 7; l >= 1; l--) {
+    const size_t len = 1ul << l;
+    const size_t lenx2 = len << 1;
+    const size_t k_beg = N >> (l + 1);
 
-  for (size_t len = (N >> 1); len >= 2; len >>= 1) {
-
-    for (size_t start = 0; start < N; start += (len << 1)) {
-      const auto ζ_exp = ζ ^ ntt::bit_rev<LOG2N - 1>(k);
+    for (size_t start = 0; start < N; start += lenx2) {
+      const size_t k_now = k_beg ^ (start >> (l + 1));
+      const auto ζ_exp = ζ ^ ntt::bit_rev<LOG2N - 1>(k_now);
 
       for (size_t i = start; i < start + len; i++) {
         const auto a = dst[i];
@@ -67,8 +69,6 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
         dst[i] = a + tmp;
         dst[i + len] = a - tmp;
       }
-
-      k += 1;
     }
   }
 }
@@ -87,12 +87,14 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 {
   std::memcpy(dst, src, N * sizeof(ff::ff_t));
 
-  size_t k = 127;
+  for (size_t l = 1; l < 8; l++) {
+    const size_t len = 1ul << l;
+    const size_t lenx2 = len << 1;
+    const size_t k_beg = (N >> l) - 1;
 
-  for (size_t len = 2; len <= (N >> 1); len <<= 1) {
-
-    for (size_t start = 0; start < N; start += (len << 1)) {
-      const ff::ff_t neg_ζ_exp = -(ζ ^ ntt::bit_rev<LOG2N - 1>(k));
+    for (size_t start = 0; start < N; start += lenx2) {
+      const size_t k_now = k_beg - (start >> (l + 1));
+      const ff::ff_t neg_ζ_exp = -(ζ ^ ntt::bit_rev<LOG2N - 1>(k_now));
 
       for (size_t i = start; i < start + len; i++) {
         const auto tmp = dst[i];
@@ -100,8 +102,6 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
         dst[i] = tmp + dst[i + len];
         dst[i + len] = (tmp - dst[i + len]) * neg_ζ_exp;
       }
-
-      k -= 1;
     }
   }
 

@@ -41,5 +41,10 @@ BENCHMARK(bench_kyber::ntt);
 BENCHMARK(bench_kyber::intt);
 BENCHMARK(bench_kyber::polymul);
 
+// register for benchmarking IND-CPA-secure Kyber Public Key Encryption
+BENCHMARK(bench_kyber::keygen<2, 3>);
+BENCHMARK(bench_kyber::keygen<3, 2>);
+BENCHMARK(bench_kyber::keygen<4, 2>);
+
 // benchmark runner main routine
 BENCHMARK_MAIN();

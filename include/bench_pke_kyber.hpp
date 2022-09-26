@@ -10,7 +10,7 @@ namespace bench_kyber {
 // Benchmarking IND-CPA-secure Kyber PKE key generation algorithm
 template<const size_t k, const size_t eta1>
 void
-keygen(benchmark::State& state)
+pke_keygen(benchmark::State& state)
 {
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32;

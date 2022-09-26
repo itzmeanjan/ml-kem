@@ -11,6 +11,16 @@ namespace ff {
 // Kyber Prime Field Modulus
 constexpr uint16_t Q = (1 << 8) * 13 + 1;
 
+// Precomputed Barrett Reduction Constant
+//
+// Note,
+//
+// k = ceil(log2(Q)) = 12
+// r = floor((1 << 2k) / Q) = 5039
+//
+// See https://www.nayuki.io/page/barrett-reduction-algorithm for more.
+constexpr uint16_t R = 5039;
+
 // Primitive Element of Prime field
 //
 // $ python3
@@ -89,21 +99,31 @@ struct ff_t
   // Computes canonical form of prime field addition
   constexpr ff_t operator+(const ff_t& rhs) const
   {
-    const uint16_t tmp = (this->v + rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint16_t t0 = this->v + rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    return ff_t{ t1 };
   }
 
   // Computes canonical form of prime field compound addition
   constexpr void operator+=(const ff_t& rhs)
   {
-    this->v = (this->v + rhs.v) % Q;
+    const uint16_t t0 = this->v + rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    this->v = t1;
   }
 
   // Computes canonical form of prime field subtraction
   constexpr ff_t operator-(const ff_t& rhs) const
   {
-    const uint16_t tmp = (Q + this->v - rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint16_t t0 = Q + this->v - rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    return ff_t{ t1 };
   }
 
   // Computes canonical form of prime field negation
@@ -114,10 +134,28 @@ struct ff_t
   }
 
   // Computes canonical form of prime field multiplication
+  //
+  // Note, after multiplying two 12 -bit numbers resulting 24 -bit number is
+  // reduced to Z_q using Barrett reduction algorithm, which avoid division by
+  // any value which is not power of 2 | q = 3329.
+  //
+  // See https://www.nayuki.io/page/barrett-reduction-algorithm for Barrett
+  // reduction algorithm
   constexpr ff_t operator*(const ff_t& rhs) const
   {
-    const uint16_t tmp = (this->v * rhs.v) % Q;
-    return ff_t{ tmp };
+    const uint32_t t0 = static_cast<uint32_t>(this->v);
+    const uint32_t t1 = static_cast<uint32_t>(rhs.v);
+    const uint32_t t2 = t0 * t1;
+
+    const uint64_t t3 = static_cast<uint64_t>(t2) * static_cast<uint64_t>(R);
+    const uint32_t t4 = static_cast<uint32_t>(t3 >> 24);
+    const uint32_t t5 = t4 * static_cast<uint32_t>(Q);
+    const uint16_t t6 = static_cast<uint16_t>(t2 - t5);
+
+    const bool flg = t6 >= Q;
+    const uint16_t t7 = t6 - flg * Q;
+
+    return ff_t{ t7 };
   }
 
   // Computes canonical form of multiplicative inverse of prime field element,
@@ -127,22 +165,25 @@ struct ff_t
   //
   // assert (a * b) % q == 1
   //
+  // Note, when operand is zero value, multiplicative inverse can't be computed
+  // -- so zero value is returned.
+  //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
   constexpr ff_t inv() const
   {
-    // Can't compute multiplicative inverse of 0 in prime field
-    if (this->v == 0) {
-      return ff_t::zero();
-    }
+    const bool flg0 = this->v == 0;
+    const uint16_t t0 = this->v + flg0 * 1;
 
-    auto res = xgcd(this->v, Q);
+    auto res = xgcd(t0, Q);
 
-    if (res[0] < 0) {
-      return ff_t{ static_cast<uint16_t>(Q + res[0]) };
-    }
+    const bool flg1 = res[0] < 0;
+    const uint16_t t1 = static_cast<uint16_t>(flg1 * Q + res[0]);
+    const bool flg2 = t1 >= Q;
+    const uint16_t t2 = t1 - flg2 * Q;
+    const uint16_t t3 = t2 - flg0 * 1;
 
-    return ff_t{ static_cast<uint16_t>(res[0] % Q) };
+    return ff_t{ t3 };
   }
 
   // Computes canonical form of prime field division
@@ -158,26 +199,18 @@ struct ff_t
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L153-L181
   constexpr ff_t operator^(const size_t n) const
   {
-    if (n == 0) {
-      return ff_t::one();
-    }
-    if (n == 1) {
-      return *this;
-    }
-    if (this->v == 0) {
-      return ff_t::zero();
-    }
+    ff_t base = *this;
 
-    auto base = *this;
-    auto r = n & 0b1 ? base : ff_t::one();
+    const ff_t br[]{ ff_t{ 1 }, base };
+    ff_t r = br[n & 0b1];
 
     const size_t zeros = std::countl_zero(n);
 
     for (size_t i = 1; i < 64 - zeros; i++) {
       base = base * base;
-      if ((n >> i) & 0b1) {
-        r = r * base;
-      }
+
+      const ff_t br[]{ ff_t{ 1 }, base };
+      r = r * br[(n >> i) & 0b1];
     }
 
     return r;

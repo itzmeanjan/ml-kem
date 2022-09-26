@@ -1,7 +1,7 @@
 #pragma once
 #include "decryption.hpp"
 #include "encryption.hpp"
-#include "keygen.hpp"
+#include "pke_keygen.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation
@@ -11,8 +11,8 @@ namespace test_kyber {
 //
 // - A random key pair can be generated
 // - Public key can be used for encrypting 32 -bytes random message
-// - Secret key can decrypt (k * du * 32 + dv * 32) -bytes cipher text to 32
-// -bytes plain text
+// - Secret key can decrypt (k * du * 32 + dv * 32) -bytes cipher text to
+//   32 -bytes plain text
 //
 // works as expected.
 template<const size_t k,
@@ -43,12 +43,12 @@ test_kyber_cpa_pke()
   random_data<uint8_t>(txt, mlen);
   random_data<uint8_t>(rcoin, mlen);
 
-  indcpa::keygen<k, eta1>(pkey, skey);
-  indcpa::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
-  indcpa::decrypt<k, du, dv>(skey, enc, dec);
+  cpapke::keygen<k, eta1>(pkey, skey);
+  cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+  cpapke::decrypt<k, du, dv>(skey, enc, dec);
 
   for (size_t i = 0; i < mlen; i++) {
-    assert((txt[i] ^ dec[i]) == 0);
+    assert(!static_cast<bool>(txt[i] ^ dec[i]));
   }
 
   std::free(pkey);

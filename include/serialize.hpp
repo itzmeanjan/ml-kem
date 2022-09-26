@@ -2,8 +2,8 @@
 #include "ff.hpp"
 #include <cstring>
 
-// IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+// IND-CPA-secure Public Key Encryption Scheme Utilities
+namespace kyber_utils {
 
 // Compile-time check to ensure that at min 1 -bit and at max 12 -bits ( from
 // LSB side ) of polynomial coefficients are considered to be significant during
@@ -78,7 +78,7 @@ decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
     const size_t poff = i % l;
 
     const uint8_t bit = (arr[aidx] >> aoff) & 0b1;
-    poly[pidx].v = poly[pidx].v ^ static_cast<uint16_t>(bit << poff);
+    poly[pidx].v = poly[pidx].v ^ static_cast<uint16_t>(bit) << poff;
   }
 }
 

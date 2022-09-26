@@ -4,7 +4,7 @@
 #include "serialize.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+namespace cpapke {
 
 // Given (k * 12 * 32) -bytes secret key and (k * du * 32 + dv * 32) -bytes
 // encrypted ( cipher ) text, this routine recovers 32 -bytes plain text which
@@ -29,10 +29,10 @@ decrypt(
     const size_t uoff = i * ntt::N;
     const size_t encoff = i * du * 32;
 
-    decode<du>(enc + encoff, u + uoff);
+    kyber_utils::decode<du>(enc + encoff, u + uoff);
 
     for (size_t l = 0; l < ntt::N; l++) {
-      u[uoff + l] = indcpa::decompress<du>(u[uoff + l]);
+      u[uoff + l] = kyber_utils::decompress<du>(u[uoff + l]);
     }
   }
 
@@ -40,10 +40,10 @@ decrypt(
   ff::ff_t v[ntt::N]{};
 
   constexpr size_t encoff = k * du * 32;
-  decode<dv>(enc + encoff, v);
+  kyber_utils::decode<dv>(enc + encoff, v);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = indcpa::decompress<dv>(v[i]);
+    v[i] = kyber_utils::decompress<dv>(v[i]);
   }
 
   // step 3
@@ -53,7 +53,7 @@ decrypt(
     const size_t soff = i * ntt::N;
     const size_t skoff = i * 12 * 32;
 
-    decode<12>(seckey + skoff, s_prime + soff);
+    kyber_utils::decode<12>(seckey + skoff, s_prime + soff);
   }
 
   // step 4
@@ -84,10 +84,10 @@ decrypt(
   std::memcpy(t, tmp, sizeof(tmp));
 
   for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = compress<1>(v[i] - t[i]);
+    v[i] = kyber_utils::compress<1>(v[i] - t[i]);
   }
 
-  encode<1>(v, dec);
+  kyber_utils::encode<1>(v, dec);
 }
 
 }

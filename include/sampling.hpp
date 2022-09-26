@@ -3,8 +3,8 @@
 #include "shake128.hpp"
 #include <cstdint>
 
-// IND-CPA-secure Public Key Encryption Scheme
-namespace indcpa {
+// IND-CPA-secure Public Key Encryption Scheme Utilities
+namespace kyber_utils {
 
 // Uniform sampling in R_q | q = 3329
 //

@@ -23,8 +23,8 @@ test_compression()
   for (size_t i = 0; i < cnt; i++) {
     const auto a = ff::ff_t::random();
 
-    const auto b = indcpa::compress<d>(a);
-    const auto c = indcpa::decompress<d>(b);
+    const auto b = kyber_utils::compress<d>(a);
+    const auto c = kyber_utils::decompress<d>(b);
 
     const uint16_t br0[]{ static_cast<uint16_t>(ff::Q - c.v), c.v };
     const bool flg0 = c.v <= (ff::Q >> 1);
@@ -35,7 +35,7 @@ test_compression()
     const auto a_prime = static_cast<int32_t>(br1[flg1]);
 
     const size_t err = static_cast<size_t>(std::abs(c_prime - a_prime));
-    const size_t terr = indcpa::compute_error<d>();
+    const size_t terr = kyber_utils::compute_error<d>();
 
     assert(err <= terr);
   }

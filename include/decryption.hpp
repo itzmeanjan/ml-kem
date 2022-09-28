@@ -30,10 +30,7 @@ decrypt(
     const size_t encoff = i * du * 32;
 
     kyber_utils::decode<du>(enc + encoff, u + uoff);
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      u[uoff + l] = kyber_utils::decompress<du>(u[uoff + l]);
-    }
+    kyber_utils::poly_decompress<du>(u + uoff);
   }
 
   // step 2
@@ -41,10 +38,7 @@ decrypt(
 
   constexpr size_t encoff = k * du * 32;
   kyber_utils::decode<dv>(enc + encoff, v);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = kyber_utils::decompress<dv>(v[i]);
-  }
+  kyber_utils::poly_decompress<dv>(v);
 
   // step 3
   ff::ff_t s_prime[k * ntt::N]{};
@@ -80,9 +74,10 @@ decrypt(
   ntt::intt(t);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = kyber_utils::compress<1>(v[i] - t[i]);
+    v[i] = v[i] - t[i];
   }
 
+  kyber_utils::poly_compress<1>(v);
   kyber_utils::encode<1>(v, dec);
 }
 

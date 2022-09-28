@@ -96,15 +96,13 @@ bit_rev(const size_t v)
 // computes number theoretic transform using cooley-tukey algorithm, producing
 // polynomial f' s.t. its coefficients are placed in bit-reversed order
 //
+// Note, this routine mutates input i.e. it's an in-place NTT implementation.
+//
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
 static void
-ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
-    ff::ff_t* const __restrict dst        // polynomial f' with 256 coefficients
-)
+ntt(ff::ff_t* const __restrict poly)
 {
-  std::memcpy(dst, src, N * sizeof(ff::ff_t));
-
   for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
@@ -120,13 +118,13 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
       const ff::ff_t ζ_exp = NTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
-        const auto a = dst[i];
-        const auto b = dst[i + len];
+        const auto a = poly[i];
+        const auto b = poly[i + len];
 
         const auto tmp = ζ_exp * b;
 
-        dst[i] = a + tmp;
-        dst[i + len] = a - tmp;
+        poly[i] = a + tmp;
+        poly[i + len] = a - tmp;
       }
     }
   }
@@ -137,15 +135,13 @@ ntt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
 // number theoretic transform using cooley-tukey algorithm, producing polynomial
 // f' s.t. its coefficients are placed in standard order
 //
+// Note, this routine mutates input i.e. it's an in-place iNTT implementation.
+//
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
 static void
-intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
-     ff::ff_t* const __restrict dst // polynomial f' with 256 coefficients
-)
+intt(ff::ff_t* const __restrict poly)
 {
-  std::memcpy(dst, src, N * sizeof(ff::ff_t));
-
   for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
@@ -163,16 +159,16 @@ intt(const ff::ff_t* const __restrict src, // polynomial f with 256 coefficients
       const ff::ff_t neg_ζ_exp = INTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
-        const auto tmp = dst[i];
+        const auto tmp = poly[i];
 
-        dst[i] = tmp + dst[i + len];
-        dst[i + len] = (tmp - dst[i + len]) * neg_ζ_exp;
+        poly[i] = tmp + poly[i + len];
+        poly[i + len] = (tmp - poly[i + len]) * neg_ζ_exp;
       }
     }
   }
 
   for (size_t i = 0; i < N; i++) {
-    dst[i] = dst[i] * INV_N;
+    poly[i] = poly[i] * INV_N;
   }
 }
 

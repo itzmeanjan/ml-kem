@@ -20,22 +20,22 @@ test_ntt_intt()
 
   ff::ff_t* poly_a = static_cast<ff::ff_t*>(std::malloc(poly_len));
   ff::ff_t* poly_b = static_cast<ff::ff_t*>(std::malloc(poly_len));
-  ff::ff_t* poly_c = static_cast<ff::ff_t*>(std::malloc(poly_len));
 
   for (size_t i = 0; i < ntt::N; i++) {
     poly_a[i] = ff::ff_t::random();
   }
 
-  ntt::ntt(poly_a, poly_b);
-  ntt::intt(poly_b, poly_c);
+  std::memcpy(poly_b, poly_a, poly_len);
+
+  ntt::ntt(poly_b);
+  ntt::intt(poly_b);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    assert(poly_a[i] == poly_c[i]);
+    assert(poly_a[i] == poly_b[i]);
   }
 
   std::free(poly_a);
   std::free(poly_b);
-  std::free(poly_c);
 }
 
 }

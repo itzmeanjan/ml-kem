@@ -119,11 +119,21 @@ struct ff_t
   // Computes canonical form of prime field subtraction
   constexpr ff_t operator-(const ff_t& rhs) const
   {
-    const uint16_t t0 = Q + this->v - rhs.v;
+    const uint16_t t0 = (Q + this->v) - rhs.v;
     const bool flg = t0 >= Q;
     const uint16_t t1 = t0 - flg * Q;
 
     return ff_t{ t1 };
+  }
+
+  // Computes canonical form of prime field compound subtraction
+  constexpr void operator-=(const ff_t& rhs)
+  {
+    const uint16_t t0 = (Q + this->v) - rhs.v;
+    const bool flg = t0 >= Q;
+    const uint16_t t1 = t0 - flg * Q;
+
+    this->v = t1;
   }
 
   // Computes canonical form of prime field negation
@@ -156,6 +166,25 @@ struct ff_t
     const uint16_t t7 = t6 - flg * Q;
 
     return ff_t{ t7 };
+  }
+
+  // Computes canonical form of compound modular multiplication
+  // over Z_q | q = 3329
+  constexpr void operator*=(const ff_t& rhs)
+  {
+    const uint32_t t0 = static_cast<uint32_t>(this->v);
+    const uint32_t t1 = static_cast<uint32_t>(rhs.v);
+    const uint32_t t2 = t0 * t1;
+
+    const uint64_t t3 = static_cast<uint64_t>(t2) * static_cast<uint64_t>(R);
+    const uint32_t t4 = static_cast<uint32_t>(t3 >> 24);
+    const uint32_t t5 = t4 * static_cast<uint32_t>(Q);
+    const uint16_t t6 = static_cast<uint16_t>(t2 - t5);
+
+    const bool flg = t6 >= Q;
+    const uint16_t t7 = t6 - flg * Q;
+
+    this->v = t7;
   }
 
   // Computes canonical form of multiplicative inverse of prime field element,

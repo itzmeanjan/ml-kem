@@ -31,7 +31,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
 {
   // step 1
   uint8_t d[32]{};
-  random_data<uint8_t>(d, sizeof(d));
+  kyber_utils::random_data<uint8_t>(d, sizeof(d));
 
   // step 2
   uint8_t g_out[64]{};

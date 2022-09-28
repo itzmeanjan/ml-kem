@@ -59,8 +59,8 @@ encrypt(benchmark::State& state)
   std::memset(skey, 0, sklen);
   std::memset(enc, 0, enclen);
 
-  random_data<uint8_t>(txt, mlen);
-  random_data<uint8_t>(rcoin, mlen);
+  kyber_utils::random_data<uint8_t>(txt, mlen);
+  kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
   cpapke::keygen<k, eta1>(pkey, skey);
 
@@ -109,8 +109,8 @@ decrypt(benchmark::State& state)
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
-  random_data<uint8_t>(txt, mlen);
-  random_data<uint8_t>(rcoin, mlen);
+  kyber_utils::random_data<uint8_t>(txt, mlen);
+  kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
   cpapke::keygen<k, eta1>(pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);

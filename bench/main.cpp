@@ -43,6 +43,9 @@ BENCHMARK(bench_kyber::ntt);
 BENCHMARK(bench_kyber::intt);
 BENCHMARK(bench_kyber::polymul);
 
+// register for benchmarking random byte generation using system randomness
+BENCHMARK(bench_kyber::random_data<32>);
+
 // register for benchmarking IND-CPA-secure Kyber Public Key Encryption
 BENCHMARK(bench_kyber::pke_keygen<2, 3>);        // kyber512
 BENCHMARK(bench_kyber::encrypt<2, 3, 2, 10, 4>); // kyber512

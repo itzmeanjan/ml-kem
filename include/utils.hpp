@@ -6,6 +6,9 @@
 #include <sstream>
 #include <type_traits>
 
+// IND-CPA-secure Public Key Encryption Scheme Utilities
+namespace kyber_utils {
+
 // Generates N -many random values of type T | N >= 0
 template<typename T>
 static inline void
@@ -33,4 +36,6 @@ to_hex(const uint8_t* const bytes, const size_t len)
   }
 
   return ss.str();
+}
+
 }

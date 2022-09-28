@@ -74,7 +74,7 @@ decrypt(
   ntt::intt(t);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = v[i] - t[i];
+    v[i] -= t[i];
   }
 
   kyber_utils::poly_compress<1>(v);

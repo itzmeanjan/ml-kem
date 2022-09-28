@@ -109,7 +109,7 @@ ntt(ff::ff_t* const __restrict poly)
     const size_t k_beg = N >> (l + 1);
 
     for (size_t start = 0; start < N; start += lenx2) {
-      const size_t k_now = k_beg ^ (start >> (l + 1));
+      const size_t k_now = k_beg + (start >> (l + 1));
       // Looking up precomputed constant, though it can be computed using
       //
       // ζ ^ bit_rev<LOG2N - 1>(k_now)
@@ -118,13 +118,11 @@ ntt(ff::ff_t* const __restrict poly)
       const ff::ff_t ζ_exp = NTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
-        const auto a = poly[i];
-        const auto b = poly[i + len];
+        auto tmp = ζ_exp;
+        tmp *= poly[i + len];
 
-        const auto tmp = ζ_exp * b;
-
-        poly[i] = a + tmp;
-        poly[i + len] = a - tmp;
+        poly[i + len] = poly[i] - tmp;
+        poly[i] += tmp;
       }
     }
   }
@@ -161,14 +159,15 @@ intt(ff::ff_t* const __restrict poly)
       for (size_t i = start; i < start + len; i++) {
         const auto tmp = poly[i];
 
-        poly[i] = tmp + poly[i + len];
-        poly[i + len] = (tmp - poly[i + len]) * neg_ζ_exp;
+        poly[i] += poly[i + len];
+        poly[i + len] = tmp - poly[i + len];
+        poly[i + len] *= neg_ζ_exp;
       }
     }
   }
 
   for (size_t i = 0; i < N; i++) {
-    poly[i] = poly[i] * INV_N;
+    poly[i] *= INV_N;
   }
 }
 
@@ -190,8 +189,24 @@ basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
         const ff::ff_t ζ                    // zeta
 )
 {
-  h[0] = f[1] * g[1] * ζ + f[0] * g[0];
-  h[1] = f[0] * g[1] + f[1] * g[0];
+  ff::ff_t f0 = f[0];
+  ff::ff_t f1 = f[1];
+
+  f0 *= g[0];
+  f1 *= g[1];
+  f1 *= ζ;
+  f1 += f0;
+
+  h[0] = f1;
+
+  ff::ff_t g0 = g[0];
+  ff::ff_t g1 = g[1];
+
+  g1 *= f[0];
+  g0 *= f[1];
+  g1 += g0;
+
+  h[1] = g1;
 }
 
 // Given two degree-255 polynomials in NTT form, this routine performs 128

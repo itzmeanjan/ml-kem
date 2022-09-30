@@ -1,4 +1,4 @@
-CXX = clang++
+CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
 OPTFLAGS = -O3 -march=native
 IFLAGS = -I ./include
@@ -14,7 +14,6 @@ testing: test/a.out
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
-	rm -rf deps
 
 format:
 	find . -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla

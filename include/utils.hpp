@@ -38,4 +38,28 @@ to_hex(const uint8_t* const bytes, const size_t len)
   return ss.str();
 }
 
+// Compile-time compute IND-CPA-secure Kyber PKE public key length ( in bytes )
+template<const size_t k>
+static inline constexpr size_t
+get_cpapke_public_key_len()
+{
+  return k * 12 * 32 + 32;
+}
+
+// Compile-time compute IND-CPA-secure Kyber PKE secret key length ( in bytes )
+template<const size_t k>
+static inline constexpr size_t
+get_cpapke_secret_key_len()
+{
+  return k * 12 * 32;
+}
+
+// Compile-time compute IND-CPA-secure Kyber PKE cipher text length ( in bytes )
+template<const size_t k, const size_t du, const size_t dv>
+static inline constexpr size_t
+get_cpapke_cipher_len()
+{
+  return k * du * 32 + dv * 32;
+}
+
 }

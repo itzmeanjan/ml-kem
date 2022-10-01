@@ -58,11 +58,10 @@ main()
   }
   assert(!flg);
 
-  std::cout << "pubkey : " << kyber_utils::to_hex(pubkey, pklen) << "\n\n";
-  std::cout << "seckey : " << kyber_utils::to_hex(seckey, sklen) << "\n\n";
-
+  std::cout << "pubkey : " << kyber_utils::to_hex(pubkey, pklen) << "\n";
+  std::cout << "seckey : " << kyber_utils::to_hex(seckey, sklen) << "\n";
   std::cout << "plain text : " << kyber_utils::to_hex(msg, mlen) << "\n";
-  std::cout << "cipher     : " << kyber_utils::to_hex(enc, mlen) << "\n";
+  std::cout << "cipher     : " << kyber_utils::to_hex(enc, enclen) << "\n";
   std::cout << "decrypted  : " << kyber_utils::to_hex(dec, mlen) << "\n";
 
   // deallocate acquired memory resources

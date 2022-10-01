@@ -1,6 +1,51 @@
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
 
+## Motivation
+
+Kyber is selected by NIST as post-quantum secure public key encryption (PKE) and key exchange mechanism (KEM) as part of NIST's post-quantum cryptography (PQC) standardization initiative.
+
+Kyber offers both
+
+- IND-CPA-secure public key encryption [Kyber CPAPKE]
+- IND-CCA2-secure key encapsulation mechanism [Kyber CCAKEM]
+
+while its security is based on hardness of solving learning-with-errors (LWE) problem in module lattices.
+
+Under **IND-CPA-secure Kyber PKE**, two communicating parties both generating their key pairs while publishing their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by respective secret key ( which is private to key owner ) and 32 -bytes message can be recovered back.
+
+Algorithm | Input | Output | Namespace | Header
+--- | --- | --- | --- | ---
+PKE KeyGen | ... | Public Key and Secret Key | `cpapke::` | [pke_keygen.hpp](./include/pke_keygen.hpp)
+Encryption | Public Key, 32 -bytes message and 32 -bytes random coin | Cipher Text | `cpapke::` | [encryption.hpp](include/encryption.hpp)
+Decryption | Secret Key and Cipher Text | 32 -bytes message | `cpapke::` | [decryption.hpp](./include/decryption.hpp)
+
+> When a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on IND-CPA-secure Kyber PKE, we can construct an IND-CCA2-secure KEM.
+
+While with **IND-CCA2-secure Kyber KEM**, two parties interested in secretly communicating over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 in this context ) which is obtained by both of these parties as result of seeding SHAKE256 with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE.
+
+Algorithm | Input | Output | Namespace | Header
+--- | --- | --- | --- | ---
+KEM KeyGen | ... | Public Key and Secret Key | `ccakem::` | [kem_keygen.hpp](./include/kem_keygen.hpp)
+Encapsulation | Public Key | Cipher Text and SHAKE256 KDF | `ccakem::` | [encapsulation.hpp](./include/encapsulation.hpp)
+Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF | `ccakem::` | [decapsulation.hpp](./include/decapsulation.hpp)
+
+> IND-CPA-secure Kyber PKE can be used for asynchronous secure communication such as email.
+
+> IND-CCA2-secure Kyber KEM can be used for synchronous secure communication such as TLS.
+
+Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber PKE and KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification, as submitted to NIST PQC final round call.
+
+> Find Kyber specification [here](https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip)
+
+> See NIST selected PQC candidates [here](https://csrc.nist.gov/Projects/post-quantum-cryptography/selected-algorithms-2022)
+
+Variant | `k` | `η1` | `η2` | `du` | `dv`
+--- | --- | --- | --- | --- | ---
+Kyber512 | 2 | 3 | 2 | 10 | 4
+Kyber768 | 3 | 2 | 2 | 10 | 4
+Kyber1024 | 4 | 2 | 2 | 11 | 5
+
 ## Prerequisites
 
 - A C++ compiler with C++20 standard library such as `g++`/ `clang++`

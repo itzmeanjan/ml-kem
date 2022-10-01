@@ -60,8 +60,8 @@ main()
   {
     using namespace kyber_utils;
 
-    std::cout << "pubkey : " << to_hex(pubkey, pklen) << "\n\n";
-    std::cout << "seckey : " << to_hex(seckey, sklen) << "\n\n";
+    std::cout << "pubkey : " << to_hex(pubkey, pklen) << "\n";
+    std::cout << "seckey : " << to_hex(seckey, sklen) << "\n";
     std::cout << "shared secret 0 : " << to_hex(shrd_key0, klen) << "\n";
     std::cout << "shared secret 1 : " << to_hex(shrd_key1, klen) << "\n";
   }

@@ -35,15 +35,13 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
     const uint16_t d2 = (static_cast<uint16_t>(buf[1] >> 4) << 0) ^
                         (static_cast<uint16_t>(buf[2]) << 4);
 
-    if (d1 < q) {
-      poly[i] = ff::ff_t{ d1 };
-      i++;
-    }
+    const bool flg0 = d1 < q;
+    poly[i] = ff::ff_t{ static_cast<uint16_t>(d1 * flg0) };
+    i = i + 1 * flg0;
 
-    if ((d2 < q) && (i < n)) {
-      poly[i] = ff::ff_t{ d2 };
-      i++;
-    }
+    const bool flg1 = (d2 < q) & (i < n);
+    poly[i] = ff::ff_t{ static_cast<uint16_t>(d2 * flg1) };
+    i = i + 1 * flg1;
   }
 }
 

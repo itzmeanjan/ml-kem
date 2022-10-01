@@ -4,8 +4,10 @@
 BENCHMARK(bench_kyber::ff_add);
 BENCHMARK(bench_kyber::ff_compound_add);
 BENCHMARK(bench_kyber::ff_sub);
+BENCHMARK(bench_kyber::ff_compound_sub);
 BENCHMARK(bench_kyber::ff_neg);
 BENCHMARK(bench_kyber::ff_mul);
+BENCHMARK(bench_kyber::ff_compound_mul);
 BENCHMARK(bench_kyber::ff_inv);
 BENCHMARK(bench_kyber::ff_div);
 BENCHMARK(bench_kyber::ff_exp);
@@ -40,6 +42,9 @@ BENCHMARK(bench_kyber::decompress<11>);
 BENCHMARK(bench_kyber::ntt);
 BENCHMARK(bench_kyber::intt);
 BENCHMARK(bench_kyber::polymul);
+
+// register for benchmarking random byte generation using system randomness
+BENCHMARK(bench_kyber::random_data<32>);
 
 // register for benchmarking IND-CPA-secure Kyber Public Key Encryption
 BENCHMARK(bench_kyber::pke_keygen<2, 3>);        // kyber512

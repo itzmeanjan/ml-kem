@@ -40,7 +40,7 @@ encapsulate(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   uint8_t g_out[64]{};
   uint8_t kdf_in[64]{};
 
-  random_data<uint8_t>(m, sizeof(m));
+  kyber_utils::random_data<uint8_t>(m, sizeof(m));
 
   sha3_256::hash(m, sizeof(m), g_in);
   sha3_256::hash(pubkey, pklen, g_in + 32);

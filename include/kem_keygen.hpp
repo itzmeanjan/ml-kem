@@ -32,7 +32,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   constexpr size_t skoff1 = skoff0 + pklen;
   constexpr size_t skoff2 = skoff1 + 32;
 
-  random_data<uint8_t>(seckey + skoff2, zlen);    // random sample 32 -bytes z
+  kyber_utils::random_data<uint8_t>(seckey + skoff2, zlen); // sample 32 -bytes
   cpapke::keygen<k, eta1>(pubkey, seckey);        // CPAPKE key generation
   std::memcpy(seckey + skoff0, pubkey, pklen);    // copy public key
   sha3_256::hash(pubkey, pklen, seckey + skoff1); // hash public key

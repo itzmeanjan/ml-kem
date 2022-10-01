@@ -118,19 +118,16 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   kyber_utils::cbd<eta2>(prf_out_eta2, e2);
 
   // step 18
-  ff::ff_t r_prime[k * ntt::N]{};
-
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::ntt(r + off, r_prime + off);
+    ntt::ntt(r + off);
   }
 
   // step 19
   ff::ff_t u[k * ntt::N]{};
   std::memset(u, 0, sizeof(u));
 
-  ff::ff_t tmp0[ntt::N]{};
-  ff::ff_t tmp1[ntt::N]{};
+  ff::ff_t tmp[ntt::N]{};
 
   for (size_t i = 0; i < k; i++) {
     const size_t uoff = i * ntt::N;
@@ -140,15 +137,14 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
       const size_t aoff = (i * k + j) * ntt::N;
       const size_t roff = j * ntt::N;
 
-      ntt::polymul(A_prime + aoff, r_prime + roff, tmp0);
+      ntt::polymul(A_prime + aoff, r + roff, tmp);
 
       for (size_t l = 0; l < ntt::N; l++) {
-        u[uoff + l] += tmp0[l];
+        u[uoff + l] += tmp[l];
       }
     }
 
-    ntt::intt(u + uoff, tmp1);
-    std::memcpy(u + uoff, tmp1, sizeof(tmp1));
+    ntt::intt(u + uoff);
 
     for (size_t l = 0; l < ntt::N; l++) {
       u[uoff + l] += e1[e1off + l];
@@ -163,15 +159,14 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     const size_t toff = i * ntt::N;
     const size_t roff = i * ntt::N;
 
-    ntt::polymul(t_prime + toff, r_prime + roff, tmp0);
+    ntt::polymul(t_prime + toff, r + roff, tmp);
 
     for (size_t l = 0; l < ntt::N; l++) {
-      v[l] += tmp0[l];
+      v[l] += tmp[l];
     }
   }
 
-  ntt::intt(v, tmp1);
-  std::memcpy(v, tmp1, sizeof(tmp1));
+  ntt::intt(v);
 
   for (size_t i = 0; i < ntt::N; i++) {
     v[i] += e2[i];
@@ -179,10 +174,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   ff::ff_t m[ntt::N]{};
   kyber_utils::decode<1>(msg, m);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    m[i] = kyber_utils::decompress<1>(m[i]);
-  }
+  kyber_utils::poly_decompress<1>(m);
 
   for (size_t i = 0; i < ntt::N; i++) {
     v[i] += m[i];
@@ -193,19 +185,14 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
     const size_t uoff = i * ntt::N;
     const size_t encoff = i * du * 32;
 
-    for (size_t l = 0; l < ntt ::N; l++) {
-      u[uoff + l] = kyber_utils::compress<du>(u[uoff + l]);
-    }
-
+    kyber_utils::poly_compress<du>(u + uoff);
     kyber_utils::encode<du>(u + uoff, enc + encoff);
   }
 
   // step 22
-  for (size_t i = 0; i < ntt ::N; i++) {
-    v[i] = kyber_utils::compress<dv>(v[i]);
-  }
-
   constexpr size_t encoff = k * du * 32;
+
+  kyber_utils::poly_compress<dv>(v);
   kyber_utils::encode<dv>(v, enc + encoff);
 }
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "ff.hpp"
+#include "ntt.hpp"
 #include <cmath>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
@@ -29,7 +30,7 @@ check_d(const size_t d)
 // round call
 // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
 template<const size_t d>
-static ff::ff_t
+inline static ff::ff_t
 compress(const ff::ff_t x) requires(check_d(d))
 {
   constexpr uint16_t t0 = 1u << d;
@@ -58,7 +59,7 @@ compress(const ff::ff_t x) requires(check_d(d))
 // round call
 // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
 template<const size_t d>
-static ff::ff_t
+inline static ff::ff_t
 decompress(const ff::ff_t x) requires(check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
@@ -93,6 +94,28 @@ compute_error()
 
   const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
   return t2;
+}
+
+// Utility function to compress each of 256 coefficients of a degree-255
+// polynomial s.t. input polynomial is mutated.
+template<const size_t d>
+inline static void
+poly_compress(ff::ff_t* const __restrict poly) requires(check_d(d))
+{
+  for (size_t i = 0; i < ntt::N; i++) {
+    poly[i] = compress<d>(poly[i]);
+  }
+}
+
+// Utility function to decompress each of 256 coefficients of a degree-255
+// polynomial s.t. input polynomial is mutated.
+template<const size_t d>
+inline static void
+poly_decompress(ff::ff_t* const __restrict poly) requires(check_d(d))
+{
+  for (size_t i = 0; i < ntt::N; i++) {
+    poly[i] = decompress<d>(poly[i]);
+  }
 }
 
 }

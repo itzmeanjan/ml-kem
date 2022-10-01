@@ -30,10 +30,7 @@ decrypt(
     const size_t encoff = i * du * 32;
 
     kyber_utils::decode<du>(enc + encoff, u + uoff);
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      u[uoff + l] = kyber_utils::decompress<du>(u[uoff + l]);
-    }
+    kyber_utils::poly_decompress<du>(u + uoff);
   }
 
   // step 2
@@ -41,10 +38,7 @@ decrypt(
 
   constexpr size_t encoff = k * du * 32;
   kyber_utils::decode<dv>(enc + encoff, v);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = kyber_utils::decompress<dv>(v[i]);
-  }
+  kyber_utils::poly_decompress<dv>(v);
 
   // step 3
   ff::ff_t s_prime[k * ntt::N]{};
@@ -57,12 +51,9 @@ decrypt(
   }
 
   // step 4
-  ff::ff_t u_prime[k * ntt::N]{};
-
   for (size_t i = 0; i < k; i++) {
     const size_t uoff = i * ntt::N;
-
-    ntt::ntt(u + uoff, u_prime + uoff);
+    ntt::ntt(u + uoff);
   }
 
   ff::ff_t t[ntt::N]{};
@@ -73,20 +64,20 @@ decrypt(
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
 
-    ntt::polymul(s_prime + off, u_prime + off, tmp);
+    ntt::polymul(s_prime + off, u + off, tmp);
 
     for (size_t l = 0; l < ntt::N; l++) {
       t[l] += tmp[l];
     }
   }
 
-  ntt::intt(t, tmp);
-  std::memcpy(t, tmp, sizeof(tmp));
+  ntt::intt(t);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    v[i] = kyber_utils::compress<1>(v[i] - t[i]);
+    v[i] -= t[i];
   }
 
+  kyber_utils::poly_compress<1>(v);
   kyber_utils::encode<1>(v, dec);
 }
 

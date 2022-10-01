@@ -31,7 +31,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
 {
   // step 1
   uint8_t d[32]{};
-  random_data<uint8_t>(d, sizeof(d));
+  kyber_utils::random_data<uint8_t>(d, sizeof(d));
 
   // step 2
   uint8_t g_out[64]{};
@@ -102,20 +102,11 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
     N += 1;
   }
 
-  // step 17
-  ff::ff_t s_prime[k * ntt::N]{};
-
+  // step 17, 18
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::ntt(s + off, s_prime + off);
-  }
-
-  // step 18
-  ff::ff_t e_prime[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-    ntt::ntt(e + off, e_prime + off);
+    ntt::ntt(s + off);
+    ntt::ntt(e + off);
   }
 
   // step 19
@@ -132,7 +123,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
       const size_t aoff = (i * k + j) * ntt::N;
       const size_t soff = j * ntt::N;
 
-      ntt::polymul(A_prime + aoff, s_prime + soff, tmp);
+      ntt::polymul(A_prime + aoff, s + soff, tmp);
 
       for (size_t l = 0; l < ntt::N; l++) {
         t_prime[toff + l] += tmp[l];
@@ -140,19 +131,17 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
     }
 
     for (size_t l = 0; l < ntt::N; l++) {
-      t_prime[toff + l] += e_prime[eoff + l];
+      t_prime[toff + l] += e[eoff + l];
     }
   }
 
   // step 20, 21, 22
   for (size_t i = 0; i < k; i++) {
-    const size_t toff = i * ntt::N;
-    const size_t soff = i * ntt::N;
-    const size_t pkoff = i * 12 * 32;
-    const size_t skoff = i * 12 * 32;
+    const size_t off0 = i * ntt::N;
+    const size_t off1 = i * 12 * 32;
 
-    kyber_utils::encode<12>(t_prime + toff, pubkey + pkoff);
-    kyber_utils::encode<12>(s_prime + soff, seckey + skoff);
+    kyber_utils::encode<12>(t_prime + off0, pubkey + off1);
+    kyber_utils::encode<12>(s + off0, seckey + off1);
   }
 
   constexpr size_t pkoff = k * 12 * 32;

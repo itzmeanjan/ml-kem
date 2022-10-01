@@ -34,7 +34,11 @@ Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF | `ccakem::` | [decaps
 
 > IND-CCA2-secure Kyber KEM can be used for synchronous secure communication such as TLS.
 
-Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber PKE and KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification, as submitted to NIST PQC final round call.
+Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber PKE and KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification, as submitted to NIST PQC final round call. Only dependency is `sha3`, which is itself a zero-dependency, header-only C++ library that I decided to write to modularize SHA3 implementation, which is fairly common symmetric key primitive used in post-quantum cryptographic constructions such as Kyber, Dilithium, Falcon etc.
+
+- `sha3` is pinned to specific commit using git submodule in `kyber`
+- See [usage](#usage) section below for git submodule set up guide.
+- Find more about `sha3` [here](https://github.com/itzmeanjan/sha3.git)
 
 > Find Kyber specification [here](https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip)
 
@@ -75,6 +79,16 @@ git version 2.34.1
 ```
 
 - For benchmarking Kyber implementation on CPU systems, you'll need to have `google-benchmark` globally installed. You may want to follow [this](https://github.com/google/benchmark/tree/60b16f1#installation) guide.
+
+- For importing `sha3` dependency, initialize & update git submodule after cloning this repository
+
+```bash
+git clone https://github.com/itzmeanjan/kyber.git
+cd kyber
+git submodule update --init
+
+# now you can {test, benchmark, use} `kyber`
+```
 
 ## Testing
 

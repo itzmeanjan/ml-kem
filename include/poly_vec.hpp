@@ -49,7 +49,7 @@ matrix_multiply(const ff::ff_t* const __restrict a,
 // polynomial coefficients are in non-NTT form ), this routine applies in-place
 // polynomial NTT over k polynomials
 template<const size_t k>
-static void
+inline static void
 poly_vec_ntt(ff::ff_t* const __restrict vec)
 {
   for (size_t i = 0; i < k; i++) {
@@ -63,12 +63,44 @@ poly_vec_ntt(ff::ff_t* const __restrict vec)
 // order ), this routine applies in-place polynomial iNTT over those k
 // polynomials
 template<const size_t k>
-static void
+inline static void
 poly_vec_intt(ff::ff_t* const __restrict vec)
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
     ntt::intt(vec + off);
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
+// routine adds it to another polynomial vector of same dimension
+template<const size_t k>
+inline static void
+poly_vec_add_to(const ff::ff_t* const __restrict src,
+                ff::ff_t* const __restrict dst)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+
+    for (size_t l = 0; l < ntt::N; l++) {
+      dst[off + l] += src[off + l];
+    }
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
+// routine subtracts it to another polynomial vector of same dimension
+template<const size_t k>
+inline static void
+poly_vec_sub_from(const ff::ff_t* const __restrict src,
+                  ff::ff_t* const __restrict dst)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+
+    for (size_t l = 0; l < ntt::N; l++) {
+      dst[off + l] -= src[off + l];
+    }
   }
 }
 

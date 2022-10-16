@@ -72,15 +72,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   std::memset(t_prime, 0, sizeof(t_prime));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t toff = i * ntt::N;
-    const size_t eoff = i * ntt::N;
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      t_prime[toff + l] += e[eoff + l];
-    }
-  }
+  kyber_utils::poly_vec_add_to<k>(e, t_prime);
 
   // step 20, 21, 22
   for (size_t i = 0; i < k; i++) {

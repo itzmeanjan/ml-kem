@@ -79,15 +79,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
   kyber_utils::poly_vec_intt<k>(u);
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    const size_t e1off = i * ntt::N;
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      u[uoff + l] += e1[e1off + l];
-    }
-  }
+  kyber_utils::poly_vec_add_to<k>(e1, u);
 
   // step 20
   ff::ff_t v[ntt::N]{};
@@ -95,18 +87,12 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   kyber_utils::poly_vec_intt<1>(v);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] += e2[i];
-  }
+  kyber_utils::poly_vec_add_to<1>(e2, v);
 
   ff::ff_t m[ntt::N]{};
   kyber_utils::decode<1>(msg, m);
   kyber_utils::poly_decompress<1>(m);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] += m[i];
-  }
+  kyber_utils::poly_vec_add_to<1>(m, v);
 
   // step 21
   for (size_t i = 0; i < k; i++) {

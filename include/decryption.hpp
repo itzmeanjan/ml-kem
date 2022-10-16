@@ -59,10 +59,7 @@ decrypt(
 
   kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
   kyber_utils::poly_vec_intt<1>(t);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] -= t[i];
-  }
+  kyber_utils::poly_vec_sub_from<1>(t, v);
 
   kyber_utils::poly_compress<1>(v);
   kyber_utils::encode<1>(v, dec);

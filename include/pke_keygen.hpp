@@ -3,7 +3,6 @@
 #include "sampling.hpp"
 #include "serialize.hpp"
 #include "sha3_512.hpp"
-#include "shake256.hpp"
 #include "utils.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
@@ -52,42 +51,16 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
 
   // step 9, 10, 11, 12
   uint8_t prf_in[33]{};
-  uint8_t prf_out[64 * eta1]{};
-
   std::memcpy(prf_in, sigma, sizeof(g_out) >> 1);
 
   ff::ff_t s[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    prf_in[32] = N;
-
-    shake256::shake256 hasher{};
-    hasher.hash(prf_in, sizeof(prf_in));
-    hasher.read(prf_out, sizeof(prf_out));
-
-    kyber_utils::cbd<eta1>(prf_out, s + off);
-
-    N += 1;
-  }
+  kyber_utils::generate_vector<k, eta1>(s, prf_in, N);
+  N += k;
 
   // step 13, 14, 15, 16
   ff::ff_t e[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    prf_in[32] = N;
-
-    shake256::shake256 hasher{};
-    hasher.hash(prf_in, sizeof(prf_in));
-    hasher.read(prf_out, sizeof(prf_out));
-
-    kyber_utils::cbd<eta1>(prf_out, e + off);
-
-    N += 1;
-  }
+  kyber_utils::generate_vector<k, eta1>(e, prf_in, N);
+  N += k;
 
   // step 17, 18
   for (size_t i = 0; i < k; i++) {

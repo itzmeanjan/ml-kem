@@ -64,11 +64,8 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   N += k;
 
   // step 17, 18
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-    ntt::ntt(s + off);
-    ntt::ntt(e + off);
-  }
+  kyber_utils::poly_vec_ntt<k>(s);
+  kyber_utils::poly_vec_ntt<k>(e);
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};

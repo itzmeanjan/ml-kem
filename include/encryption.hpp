@@ -71,22 +71,18 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   kyber_utils::generate_vector<1, eta2>(e2, prf_in, N);
 
   // step 18
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-    ntt::ntt(r + off);
-  }
+  kyber_utils::poly_vec_ntt<k>(r);
 
   // step 19
   ff::ff_t u[k * ntt::N]{};
   std::memset(u, 0, sizeof(u));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
+  kyber_utils::poly_vec_intt<k>(u);
 
   for (size_t i = 0; i < k; i++) {
     const size_t uoff = i * ntt::N;
     const size_t e1off = i * ntt::N;
-
-    ntt::intt(u + uoff);
 
     for (size_t l = 0; l < ntt::N; l++) {
       u[uoff + l] += e1[e1off + l];
@@ -98,7 +94,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   std::memset(v, 0, sizeof(v));
 
   kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
-  ntt::intt(v);
+  kyber_utils::poly_vec_intt<1>(v);
 
   for (size_t i = 0; i < ntt::N; i++) {
     v[i] += e2[i];

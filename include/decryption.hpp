@@ -1,6 +1,7 @@
 #pragma once
 #include "compression.hpp"
 #include "ntt.hpp"
+#include "poly_vec.hpp"
 #include "serialize.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
@@ -51,27 +52,13 @@ decrypt(
   }
 
   // step 4
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    ntt::ntt(u + uoff);
-  }
+  kyber_utils::poly_vec_ntt<k>(u);
 
   ff::ff_t t[ntt::N]{};
-  ff::ff_t tmp[ntt::N]{};
-
   std::memset(t, 0, sizeof(t));
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    ntt::polymul(s_prime + off, u + off, tmp);
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      t[l] += tmp[l];
-    }
-  }
-
-  ntt::intt(t);
+  kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
+  kyber_utils::poly_vec_intt<1>(t);
 
   for (size_t i = 0; i < ntt::N; i++) {
     v[i] -= t[i];

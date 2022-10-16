@@ -45,4 +45,31 @@ matrix_multiply(const ff::ff_t* const __restrict a,
   }
 }
 
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials ( where
+// polynomial coefficients are in non-NTT form ), this routine applies in-place
+// polynomial NTT over k polynomials
+template<const size_t k>
+static void
+poly_vec_ntt(ff::ff_t* const __restrict vec)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+    ntt::ntt(vec + off);
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials ( where
+// polynomial coefficients are in NTT form i.e. they are placed in bit-reversed
+// order ), this routine applies in-place polynomial iNTT over those k
+// polynomials
+template<const size_t k>
+static void
+poly_vec_intt(ff::ff_t* const __restrict vec)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+    ntt::intt(vec + off);
+  }
+}
+
 }

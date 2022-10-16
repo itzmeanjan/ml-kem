@@ -1,6 +1,7 @@
 #pragma once
 #include "compression.hpp"
 #include "ntt.hpp"
+#include "poly_vec.hpp"
 #include "sampling.hpp"
 #include "serialize.hpp"
 
@@ -79,22 +80,11 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   ff::ff_t u[k * ntt::N]{};
   std::memset(u, 0, sizeof(u));
 
-  ff::ff_t tmp[ntt::N]{};
+  kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
 
   for (size_t i = 0; i < k; i++) {
     const size_t uoff = i * ntt::N;
     const size_t e1off = i * ntt::N;
-
-    for (size_t j = 0; j < k; j++) {
-      const size_t aoff = (i * k + j) * ntt::N;
-      const size_t roff = j * ntt::N;
-
-      ntt::polymul(A_prime + aoff, r + roff, tmp);
-
-      for (size_t l = 0; l < ntt::N; l++) {
-        u[uoff + l] += tmp[l];
-      }
-    }
 
     ntt::intt(u + uoff);
 
@@ -107,17 +97,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   ff::ff_t v[ntt::N]{};
   std::memset(v, 0, sizeof(v));
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t toff = i * ntt::N;
-    const size_t roff = i * ntt::N;
-
-    ntt::polymul(t_prime + toff, r + roff, tmp);
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      v[l] += tmp[l];
-    }
-  }
-
+  kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   ntt::intt(v);
 
   for (size_t i = 0; i < ntt::N; i++) {

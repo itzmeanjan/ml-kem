@@ -1,5 +1,6 @@
 #pragma once
 #include "ntt.hpp"
+#include "poly_vec.hpp"
 #include "sampling.hpp"
 #include "serialize.hpp"
 #include "sha3_512.hpp"
@@ -71,24 +72,13 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};
-  ff::ff_t tmp[ntt::N]{};
-
   std::memset(t_prime, 0, sizeof(t_prime));
+
+  kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
 
   for (size_t i = 0; i < k; i++) {
     const size_t toff = i * ntt::N;
     const size_t eoff = i * ntt::N;
-
-    for (size_t j = 0; j < k; j++) {
-      const size_t aoff = (i * k + j) * ntt::N;
-      const size_t soff = j * ntt::N;
-
-      ntt::polymul(A_prime + aoff, s + soff, tmp);
-
-      for (size_t l = 0; l < ntt::N; l++) {
-        t_prime[toff + l] += tmp[l];
-      }
-    }
 
     for (size_t l = 0; l < ntt::N; l++) {
       t_prime[toff + l] += e[eoff + l];

@@ -45,6 +45,38 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
   }
 }
 
+// Generate public matrix A in NTT domain, by sampling from a XOF ( read
+// SHAKE128 ), which is seeded with 32 -bytes key and two nonces ( each of 1
+// -byte )
+//
+// See step (4-8) of algorithm 4/ 5, defined in Kyber specification, as
+// submitted to NIST final round call
+// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+template<const size_t k, const bool transpose>
+static void
+generate_matrix(ff::ff_t* const __restrict mat,
+                uint8_t* const __restrict xof_in)
+{
+  for (size_t i = 0; i < k; i++) {
+    for (size_t j = 0; j < k; j++) {
+      const size_t off = (i * k + j) * ntt::N;
+
+      if constexpr (transpose) {
+        xof_in[32] = static_cast<uint8_t>(i);
+        xof_in[33] = static_cast<uint8_t>(j);
+      } else {
+        xof_in[32] = static_cast<uint8_t>(j);
+        xof_in[33] = static_cast<uint8_t>(i);
+      }
+
+      shake128::shake128 hasher{};
+      hasher.hash(xof_in, sizeof(xof_in));
+
+      parse(&hasher, mat + off);
+    }
+  }
+}
+
 // Compile time check to ensure that η ( read eta ) is either 2 or 3, as defined
 // in Kyber specification
 // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip

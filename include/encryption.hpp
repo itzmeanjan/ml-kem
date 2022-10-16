@@ -48,20 +48,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   std::memcpy(xof_in, rho, sizeof(xof_in) - 2);
 
   ff::ff_t A_prime[k * k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    for (size_t j = 0; j < k; j++) {
-      const size_t off = (i * k + j) * ntt::N;
-
-      xof_in[32] = static_cast<uint8_t>(i);
-      xof_in[33] = static_cast<uint8_t>(j);
-
-      shake128::shake128 hasher{};
-      hasher.hash(xof_in, sizeof(xof_in));
-
-      kyber_utils::parse(&hasher, A_prime + off);
-    }
-  }
+  kyber_utils::generate_matrix<k, true>(A_prime, xof_in);
 
   // step 1
   uint8_t N = 0;

@@ -1,8 +1,5 @@
 #pragma once
-#include "compression.hpp"
-#include "ntt.hpp"
 #include "poly_vec.hpp"
-#include "serialize.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
 namespace cpapke {
@@ -26,13 +23,8 @@ decrypt(
   // step 1
   ff::ff_t u[k * ntt::N]{};
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    const size_t encoff = i * du * 32;
-
-    kyber_utils::decode<du>(enc + encoff, u + uoff);
-    kyber_utils::poly_decompress<du>(u + uoff);
-  }
+  kyber_utils::poly_vec_decode<k, du>(enc, u);
+  kyber_utils::poly_vec_decompress<k, du>(u);
 
   // step 2
   ff::ff_t v[ntt::N]{};
@@ -43,13 +35,7 @@ decrypt(
 
   // step 3
   ff::ff_t s_prime[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t soff = i * ntt::N;
-    const size_t skoff = i * 12 * 32;
-
-    kyber_utils::decode<12>(seckey + skoff, s_prime + soff);
-  }
+  kyber_utils::poly_vec_decode<k, 12>(seckey, s_prime);
 
   // step 4
   kyber_utils::poly_vec_ntt<k>(u);

@@ -1,5 +1,6 @@
 #pragma once
-#include "ntt.hpp"
+#include "compression.hpp"
+#include "serialize.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
@@ -101,6 +102,62 @@ poly_vec_sub_from(const ff::ff_t* const __restrict src,
     for (size_t l = 0; l < ntt::N; l++) {
       dst[off + l] -= src[off + l];
     }
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this routine
+// encodes each of those polynomials into 32 x l -bytes, writing to a
+// (k x 32 x l) -bytes destination array
+template<const size_t k, const size_t l>
+inline static void
+poly_vec_encode(const ff::ff_t* const __restrict src,
+                uint8_t* const __restrict dst)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off0 = i * ntt::N;
+    const size_t off1 = i * l * 32;
+
+    kyber_utils::encode<l>(src + off0, dst + off1);
+  }
+}
+
+// Given a byte array of length (k x 32 x l) -bytes, this routine decodes them
+// into k degree-255 polynomials, writing them to a column vector of dimension
+// k x 1
+template<const size_t k, const size_t l>
+inline static void
+poly_vec_decode(const uint8_t* const __restrict src,
+                ff::ff_t* const __restrict dst)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off0 = i * l * 32;
+    const size_t off1 = i * ntt::N;
+
+    kyber_utils::decode<l>(src + off0, dst + off1);
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
+// k * 256 coefficients are compressed, while mutating input
+template<const size_t k, const size_t d>
+inline static void
+poly_vec_compress(ff::ff_t* const __restrict vec)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+    kyber_utils::poly_compress<d>(vec + off);
+  }
+}
+
+// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
+// k * 256 coefficients are decompressed, while mutating input
+template<const size_t k, const size_t d>
+inline static void
+poly_vec_decompress(ff::ff_t* const __restrict vec)
+{
+  for (size_t i = 0; i < k; i++) {
+    const size_t off = i * ntt::N;
+    kyber_utils::poly_decompress<d>(vec + off);
   }
 }
 

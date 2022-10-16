@@ -1,8 +1,6 @@
 #pragma once
-#include "ntt.hpp"
 #include "poly_vec.hpp"
 #include "sampling.hpp"
-#include "serialize.hpp"
 #include "sha3_512.hpp"
 #include "utils.hpp"
 
@@ -75,13 +73,8 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   kyber_utils::poly_vec_add_to<k>(e, t_prime);
 
   // step 20, 21, 22
-  for (size_t i = 0; i < k; i++) {
-    const size_t off0 = i * ntt::N;
-    const size_t off1 = i * 12 * 32;
-
-    kyber_utils::encode<12>(t_prime + off0, pubkey + off1);
-    kyber_utils::encode<12>(s + off0, seckey + off1);
-  }
+  kyber_utils::poly_vec_encode<k, 12>(t_prime, pubkey);
+  kyber_utils::poly_vec_encode<k, 12>(s, seckey);
 
   constexpr size_t pkoff = k * 12 * 32;
   std::memcpy(pubkey + pkoff, rho, sizeof(g_out) >> 1);

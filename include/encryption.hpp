@@ -1,9 +1,6 @@
 #pragma once
-#include "compression.hpp"
-#include "ntt.hpp"
 #include "poly_vec.hpp"
 #include "sampling.hpp"
-#include "serialize.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
 namespace cpapke {
@@ -31,13 +28,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 {
   // step 2
   ff::ff_t t_prime[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t toff = i * ntt::N;
-    const size_t pkoff = i * 12 * 32;
-
-    kyber_utils::decode<12>(pubkey + pkoff, t_prime + toff);
-  }
+  kyber_utils::poly_vec_decode<k, 12>(pubkey, t_prime);
 
   // step 3
   constexpr size_t pkoff = k * 12 * 32;
@@ -95,17 +86,11 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   kyber_utils::poly_vec_add_to<1>(m, v);
 
   // step 21
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    const size_t encoff = i * du * 32;
-
-    kyber_utils::poly_compress<du>(u + uoff);
-    kyber_utils::encode<du>(u + uoff, enc + encoff);
-  }
+  kyber_utils::poly_vec_compress<k, du>(u);
+  kyber_utils::poly_vec_encode<k, du>(u, enc);
 
   // step 22
   constexpr size_t encoff = k * du * 32;
-
   kyber_utils::poly_compress<dv>(v);
   kyber_utils::encode<dv>(v, enc + encoff);
 }

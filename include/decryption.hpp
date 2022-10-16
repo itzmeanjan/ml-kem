@@ -1,7 +1,5 @@
 #pragma once
-#include "compression.hpp"
-#include "ntt.hpp"
-#include "serialize.hpp"
+#include "poly_vec.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
 namespace cpapke {
@@ -25,13 +23,8 @@ decrypt(
   // step 1
   ff::ff_t u[k * ntt::N]{};
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    const size_t encoff = i * du * 32;
-
-    kyber_utils::decode<du>(enc + encoff, u + uoff);
-    kyber_utils::poly_decompress<du>(u + uoff);
-  }
+  kyber_utils::poly_vec_decode<k, du>(enc, u);
+  kyber_utils::poly_vec_decompress<k, du>(u);
 
   // step 2
   ff::ff_t v[ntt::N]{};
@@ -42,40 +35,17 @@ decrypt(
 
   // step 3
   ff::ff_t s_prime[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t soff = i * ntt::N;
-    const size_t skoff = i * 12 * 32;
-
-    kyber_utils::decode<12>(seckey + skoff, s_prime + soff);
-  }
+  kyber_utils::poly_vec_decode<k, 12>(seckey, s_prime);
 
   // step 4
-  for (size_t i = 0; i < k; i++) {
-    const size_t uoff = i * ntt::N;
-    ntt::ntt(u + uoff);
-  }
+  kyber_utils::poly_vec_ntt<k>(u);
 
   ff::ff_t t[ntt::N]{};
-  ff::ff_t tmp[ntt::N]{};
-
   std::memset(t, 0, sizeof(t));
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    ntt::polymul(s_prime + off, u + off, tmp);
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      t[l] += tmp[l];
-    }
-  }
-
-  ntt::intt(t);
-
-  for (size_t i = 0; i < ntt::N; i++) {
-    v[i] -= t[i];
-  }
+  kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
+  kyber_utils::poly_vec_intt<1>(t);
+  kyber_utils::poly_vec_sub_from<1>(t, v);
 
   kyber_utils::poly_compress<1>(v);
   kyber_utils::encode<1>(v, dec);

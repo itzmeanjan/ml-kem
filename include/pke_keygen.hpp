@@ -1,9 +1,7 @@
 #pragma once
-#include "ntt.hpp"
+#include "poly_vec.hpp"
 #include "sampling.hpp"
-#include "serialize.hpp"
 #include "sha3_512.hpp"
-#include "shake256.hpp"
 #include "utils.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
@@ -45,104 +43,38 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   std::memcpy(xof_in, rho, sizeof(g_out) >> 1);
 
   ff::ff_t A_prime[k * k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    for (size_t j = 0; j < k; j++) {
-      const size_t off = (i * k + j) * ntt::N;
-
-      xof_in[32] = static_cast<uint8_t>(j);
-      xof_in[33] = static_cast<uint8_t>(i);
-
-      shake128::shake128 hasher{};
-      hasher.hash(xof_in, sizeof(xof_in));
-
-      kyber_utils::parse(&hasher, A_prime + off);
-    }
-  }
+  kyber_utils::generate_matrix<k, false>(A_prime, xof_in);
 
   // step 3
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
   uint8_t prf_in[33]{};
-  uint8_t prf_out[64 * eta1]{};
-
   std::memcpy(prf_in, sigma, sizeof(g_out) >> 1);
 
   ff::ff_t s[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    prf_in[32] = N;
-
-    shake256::shake256 hasher{};
-    hasher.hash(prf_in, sizeof(prf_in));
-    hasher.read(prf_out, sizeof(prf_out));
-
-    kyber_utils::cbd<eta1>(prf_out, s + off);
-
-    N += 1;
-  }
+  kyber_utils::generate_vector<k, eta1>(s, prf_in, N);
+  N += k;
 
   // step 13, 14, 15, 16
   ff::ff_t e[k * ntt::N]{};
-
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-
-    prf_in[32] = N;
-
-    shake256::shake256 hasher{};
-    hasher.hash(prf_in, sizeof(prf_in));
-    hasher.read(prf_out, sizeof(prf_out));
-
-    kyber_utils::cbd<eta1>(prf_out, e + off);
-
-    N += 1;
-  }
+  kyber_utils::generate_vector<k, eta1>(e, prf_in, N);
+  N += k;
 
   // step 17, 18
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
-    ntt::ntt(s + off);
-    ntt::ntt(e + off);
-  }
+  kyber_utils::poly_vec_ntt<k>(s);
+  kyber_utils::poly_vec_ntt<k>(e);
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};
-  ff::ff_t tmp[ntt::N]{};
-
   std::memset(t_prime, 0, sizeof(t_prime));
 
-  for (size_t i = 0; i < k; i++) {
-    const size_t toff = i * ntt::N;
-    const size_t eoff = i * ntt::N;
-
-    for (size_t j = 0; j < k; j++) {
-      const size_t aoff = (i * k + j) * ntt::N;
-      const size_t soff = j * ntt::N;
-
-      ntt::polymul(A_prime + aoff, s + soff, tmp);
-
-      for (size_t l = 0; l < ntt::N; l++) {
-        t_prime[toff + l] += tmp[l];
-      }
-    }
-
-    for (size_t l = 0; l < ntt::N; l++) {
-      t_prime[toff + l] += e[eoff + l];
-    }
-  }
+  kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
+  kyber_utils::poly_vec_add_to<k>(e, t_prime);
 
   // step 20, 21, 22
-  for (size_t i = 0; i < k; i++) {
-    const size_t off0 = i * ntt::N;
-    const size_t off1 = i * 12 * 32;
-
-    kyber_utils::encode<12>(t_prime + off0, pubkey + off1);
-    kyber_utils::encode<12>(s + off0, seckey + off1);
-  }
+  kyber_utils::poly_vec_encode<k, 12>(t_prime, pubkey);
+  kyber_utils::poly_vec_encode<k, 12>(s, seckey);
 
   constexpr size_t pkoff = k * 12 * 32;
   std::memcpy(pubkey + pkoff, rho, sizeof(g_out) >> 1);

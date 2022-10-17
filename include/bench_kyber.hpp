@@ -4,5 +4,6 @@
 #include "bench_kem_kyber.hpp"
 #include "bench_ntt.hpp"
 #include "bench_pke_kyber.hpp"
+#include "bench_sampling.hpp"
 #include "bench_serialize.hpp"
 #include "bench_utils.hpp"

@@ -92,6 +92,26 @@ encode(const ff::ff_t* const __restrict poly, // degree 255 polynomial
       arr[boff + 4] = (static_cast<uint8_t>(poly[poff + 7].v & mask5) << 3) |
                       static_cast<uint8_t>((poly[poff + 6].v >> 2) & mask3);
     }
+  } else if constexpr (l == 10) {
+    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr uint16_t mask8 = 0b11111111;
+    constexpr uint16_t mask6 = 0b111111;
+    constexpr uint16_t mask4 = 0b1111;
+    constexpr uint16_t mask2 = 0b11;
+
+    for (size_t i = 0; i < itr_cnt; i++) {
+      const size_t poff = i << 2;
+      const size_t boff = i * 5;
+
+      arr[boff + 0] = static_cast<uint8_t>(poly[poff + 0].v & mask8);
+      arr[boff + 1] = static_cast<uint8_t>((poly[poff + 1].v & mask6) << 2) |
+                      static_cast<uint8_t>((poly[poff + 0].v >> 8) & mask2);
+      arr[boff + 2] = static_cast<uint8_t>((poly[poff + 2].v & mask4) << 4) |
+                      static_cast<uint8_t>((poly[poff + 1].v >> 6) & mask4);
+      arr[boff + 3] = static_cast<uint8_t>((poly[poff + 3].v & mask2) << 6) |
+                      static_cast<uint8_t>((poly[poff + 2].v >> 4) & mask6);
+      arr[boff + 4] = static_cast<uint8_t>((poly[poff + 3].v >> 2) & mask8);
+    }
   } else {
     for (size_t i = 0; i < blen; i++) {
       const size_t pidx = i / l;
@@ -177,6 +197,25 @@ decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
       poly[poff + 6].v = static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) |
                          static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
       poly[poff + 7].v = static_cast<uint16_t>((arr[boff + 4] >> 3) & mask5);
+    }
+  } else if constexpr (l == 10) {
+    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr uint8_t mask6 = 0b111111;
+    constexpr uint8_t mask4 = 0b1111;
+    constexpr uint8_t mask2 = 0b11;
+
+    for (size_t i = 0; i < itr_cnt; i++) {
+      const size_t poff = i << 2;
+      const size_t boff = i * 5;
+
+      poly[poff + 0].v = (static_cast<uint16_t>(arr[boff + 1] & mask2) << 8) |
+                         static_cast<uint16_t>(arr[boff + 0]);
+      poly[poff + 1].v = (static_cast<uint16_t>(arr[boff + 2] & mask4) << 6) |
+                         static_cast<uint16_t>(arr[boff + 1] >> 2);
+      poly[poff + 2].v = (static_cast<uint16_t>(arr[boff + 3] & mask6) << 4) |
+                         static_cast<uint16_t>(arr[boff + 2] >> 4);
+      poly[poff + 3].v = (static_cast<uint16_t>(arr[boff + 4]) << 2) |
+                         static_cast<uint16_t>(arr[boff + 3] >> 6);
     }
   } else {
     for (size_t i = 0; i < blen; i++) {

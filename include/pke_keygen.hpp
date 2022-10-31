@@ -35,30 +35,24 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   uint8_t g_out[64]{};
   sha3_512::hash(d, sizeof(d), g_out);
 
-  const uint8_t* const rho = g_out + 0;
-  const uint8_t* const sigma = g_out + 32;
+  const uint8_t* rho = g_out + 0;
+  const uint8_t* sigma = g_out + 32;
 
   // step 4, 5, 6, 7, 8
-  uint8_t xof_in[34]{};
-  std::memcpy(xof_in, rho, sizeof(g_out) >> 1);
-
   ff::ff_t A_prime[k * k * ntt::N]{};
-  kyber_utils::generate_matrix<k, false>(A_prime, xof_in);
+  kyber_utils::generate_matrix<k, false>(A_prime, rho);
 
   // step 3
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
-  uint8_t prf_in[33]{};
-  std::memcpy(prf_in, sigma, sizeof(g_out) >> 1);
-
   ff::ff_t s[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta1>(s, prf_in, N);
+  kyber_utils::generate_vector<k, eta1>(s, sigma, N);
   N += k;
 
   // step 13, 14, 15, 16
   ff::ff_t e[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta1>(e, prf_in, N);
+  kyber_utils::generate_vector<k, eta1>(e, sigma, N);
   N += k;
 
   // step 17, 18
@@ -77,7 +71,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   kyber_utils::poly_vec_encode<k, 12>(s, seckey);
 
   constexpr size_t pkoff = k * 12 * 32;
-  std::memcpy(pubkey + pkoff, rho, sizeof(g_out) >> 1);
+  std::memcpy(pubkey + pkoff, rho, 32);
 }
 
 }

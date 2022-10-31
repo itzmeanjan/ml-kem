@@ -13,6 +13,7 @@ BENCHMARK(bench_kyber::ff_div);
 BENCHMARK(bench_kyber::ff_exp);
 
 // register for benchmarking generation of public matrix A
+BENCHMARK(bench_kyber::parse);
 BENCHMARK(bench_kyber::generate_matrix<2, true>);
 BENCHMARK(bench_kyber::generate_matrix<2, false>);
 BENCHMARK(bench_kyber::generate_matrix<3, true>);

@@ -13,12 +13,17 @@ BENCHMARK(bench_kyber::ff_div);
 BENCHMARK(bench_kyber::ff_exp);
 
 // register for benchmarking generation of public matrix A
+BENCHMARK(bench_kyber::parse);
 BENCHMARK(bench_kyber::generate_matrix<2, true>);
 BENCHMARK(bench_kyber::generate_matrix<2, false>);
 BENCHMARK(bench_kyber::generate_matrix<3, true>);
 BENCHMARK(bench_kyber::generate_matrix<3, false>);
 BENCHMARK(bench_kyber::generate_matrix<4, true>);
 BENCHMARK(bench_kyber::generate_matrix<4, false>);
+
+// register for benchmarking sampling from centered binomial distribution Bη
+BENCHMARK(bench_kyber::cbd<2>);
+BENCHMARK(bench_kyber::cbd<3>);
 
 // register for benchmarking polynomial encoding and byte array decoding
 BENCHMARK(bench_kyber::encode<1>);

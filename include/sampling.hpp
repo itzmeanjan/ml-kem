@@ -22,27 +22,43 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
       ff::ff_t* const __restrict poly              // Degree 255 polynomial
 )
 {
-  constexpr size_t n = 256;
-  constexpr uint16_t q = ((1 << 8) * 13) + 1;
+  size_t i = 0, j = 0;
 
-  size_t i = 0;
-  uint8_t buf[3]{};
+  uint8_t buf[3 * ntt::N]{};
+  hasher->read(buf, sizeof(buf));
 
-  while (i < n) {
-    hasher->read(buf, sizeof(buf));
+  while ((i < sizeof(buf)) && (j < ntt::N)) {
+    const uint16_t d1 = (static_cast<uint16_t>(buf[i + 1] & 0b1111) << 8) |
+                        (static_cast<uint16_t>(buf[i + 0]) << 0);
+    const uint16_t d2 = (static_cast<uint16_t>(buf[i + 2]) << 4) |
+                        (static_cast<uint16_t>(buf[i + 1] >> 4));
 
-    const uint16_t d1 = (static_cast<uint16_t>(buf[1] & 15) << 8) ^
+    const bool flg0 = d1 < ff::Q;
+    poly[j].v = d1 * flg0;
+    j += 1 * flg0;
+
+    const bool flg1 = (d2 < ff::Q) & (j < ntt::N);
+    poly[j].v = d2 * flg1;
+    j += 1 * flg1;
+
+    i += 3;
+  }
+
+  while (j < ntt::N) {
+    hasher->read(buf, 3);
+
+    const uint16_t d1 = (static_cast<uint16_t>(buf[1] & 0b1111) << 8) |
                         (static_cast<uint16_t>(buf[0]) << 0);
-    const uint16_t d2 = (static_cast<uint16_t>(buf[1] >> 4) << 0) ^
-                        (static_cast<uint16_t>(buf[2]) << 4);
+    const uint16_t d2 = (static_cast<uint16_t>(buf[2]) << 4) |
+                        (static_cast<uint16_t>(buf[1] >> 4));
 
-    const bool flg0 = d1 < q;
-    poly[i] = ff::ff_t{ static_cast<uint16_t>(d1 * flg0) };
-    i = i + 1 * flg0;
+    const bool flg0 = d1 < ff::Q;
+    poly[j].v = d1 * flg0;
+    j += 1 * flg0;
 
-    const bool flg1 = (d2 < q) & (i < n);
-    poly[i] = ff::ff_t{ static_cast<uint16_t>(d2 * flg1) };
-    i = i + 1 * flg1;
+    const bool flg1 = (d2 < ff::Q) & (j < ntt::N);
+    poly[j].v = d2 * flg1;
+    j += 1 * flg1;
   }
 }
 

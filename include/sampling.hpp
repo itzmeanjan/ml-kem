@@ -117,32 +117,76 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
     ff::ff_t* const __restrict poly      // Degree 255 polynomial
     ) requires(check_eta(eta))
 {
-  constexpr size_t n = 256;
-  constexpr uint16_t q = ((1 << 8) * 13) + 1;
+  if constexpr (eta == 2) {
+    constexpr size_t till = 64 * eta;
+    constexpr uint8_t mask8 = 0b01010101;
+    constexpr uint8_t mask2 = 0b11;
 
-  for (size_t i = 0; i < n; i++) {
-    uint16_t a = 0;
-    for (size_t j = 0; j < eta; j++) {
-      const size_t off = 2 * i * eta + j;
+    for (size_t i = 0; i < till; i++) {
+      const size_t poff = i << 1;
+      const uint8_t word = prf[i];
 
-      const size_t byte_off = off >> 3;
-      const size_t bit_off = off & 7ul;
+      const uint8_t t0 = (word >> 0) & mask8;
+      const uint8_t t1 = (word >> 1) & mask8;
+      const uint8_t t2 = t0 + t1;
 
-      a += (prf[byte_off] >> bit_off) & 0b1;
+      poly[poff + 0] = ff::ff_t{ static_cast<uint16_t>((t2 >> 0) & mask2) } -
+                       ff::ff_t{ static_cast<uint16_t>((t2 >> 2) & mask2) };
+      poly[poff + 1] = ff::ff_t{ static_cast<uint16_t>((t2 >> 4) & mask2) } -
+                       ff::ff_t{ static_cast<uint16_t>((t2 >> 6) & mask2) };
     }
+  } else if constexpr (eta == 3) {
+    constexpr size_t till = 64;
+    constexpr uint32_t mask24 = 0b001001001001001001001001u;
+    constexpr uint32_t mask3 = 0b111u;
 
-    uint16_t b = 0;
-    for (size_t j = 0; j < eta; j++) {
-      const size_t off = 2 * i * eta + eta + j;
+    for (size_t i = 0; i < till; i++) {
+      const size_t boff = i * 3;
+      const size_t poff = i << 2;
 
-      const size_t byte_off = off >> 3;
-      const size_t bit_off = off & 7ul;
+      const uint32_t word = (static_cast<uint32_t>(prf[boff + 2]) << 16) |
+                            (static_cast<uint32_t>(prf[boff + 1]) << 8) |
+                            (static_cast<uint32_t>(prf[boff + 0]) << 0);
 
-      b += (prf[byte_off] >> bit_off) & 0b1;
+      const uint32_t t0 = (word >> 0) & mask24;
+      const uint32_t t1 = (word >> 1) & mask24;
+      const uint32_t t2 = (word >> 2) & mask24;
+      const uint32_t t3 = t0 + t1 + t2;
+
+      poly[poff + 0] = ff::ff_t{ static_cast<uint16_t>((t3 >> 0) & mask3) } -
+                       ff::ff_t{ static_cast<uint16_t>((t3 >> 3) & mask3) };
+      poly[poff + 1] = ff::ff_t{ static_cast<uint16_t>((t3 >> 6) & mask3) } -
+                       ff::ff_t{ static_cast<uint16_t>((t3 >> 9) & mask3) };
+      poly[poff + 2] = ff::ff_t{ static_cast<uint16_t>((t3 >> 12) & mask3) } -
+                       ff::ff_t{ static_cast<uint16_t>((t3 >> 15) & mask3) };
+      poly[poff + 3] = ff::ff_t{ static_cast<uint16_t>((t3 >> 18) & mask3) } -
+                       ff::ff_t{ static_cast<uint16_t>((t3 >> 21) & mask3) };
     }
+  } else {
+    for (size_t i = 0; i < ntt::N; i++) {
+      uint16_t a = 0;
+      for (size_t j = 0; j < eta; j++) {
+        const size_t off = 2 * i * eta + j;
 
-    const uint16_t coeff = a > b ? a - b : q - (b - a);
-    poly[i] = ff::ff_t{ coeff };
+        const size_t byte_off = off >> 3;
+        const size_t bit_off = off & 7ul;
+
+        a += (prf[byte_off] >> bit_off) & 0b1;
+      }
+
+      uint16_t b = 0;
+      for (size_t j = 0; j < eta; j++) {
+        const size_t off = 2 * i * eta + eta + j;
+
+        const size_t byte_off = off >> 3;
+        const size_t bit_off = off & 7ul;
+
+        b += (prf[byte_off] >> bit_off) & 0b1;
+      }
+
+      const ff::ff_t coeff = ff::ff_t{ a } - ff::ff_t{ b };
+      poly[i] = coeff;
+    }
   }
 }
 

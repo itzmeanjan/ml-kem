@@ -22,29 +22,10 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
       ff::ff_t* const __restrict poly              // Degree 255 polynomial
 )
 {
-  size_t i = 0, j = 0;
+  size_t i = 0;
+  uint8_t buf[3]{};
 
-  uint8_t buf[3 * ntt::N]{};
-  hasher->read(buf, sizeof(buf));
-
-  while ((i < sizeof(buf)) && (j < ntt::N)) {
-    const uint16_t d1 = (static_cast<uint16_t>(buf[i + 1] & 0b1111) << 8) |
-                        (static_cast<uint16_t>(buf[i + 0]) << 0);
-    const uint16_t d2 = (static_cast<uint16_t>(buf[i + 2]) << 4) |
-                        (static_cast<uint16_t>(buf[i + 1] >> 4));
-
-    const bool flg0 = d1 < ff::Q;
-    poly[j].v = d1 * flg0;
-    j += 1 * flg0;
-
-    const bool flg1 = (d2 < ff::Q) & (j < ntt::N);
-    poly[j].v = d2 * flg1;
-    j += 1 * flg1;
-
-    i += 3;
-  }
-
-  while (j < ntt::N) {
+  while (i < ntt::N) {
     hasher->read(buf, 3);
 
     const uint16_t d1 = (static_cast<uint16_t>(buf[1] & 0b1111) << 8) |
@@ -53,12 +34,14 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
                         (static_cast<uint16_t>(buf[1] >> 4));
 
     const bool flg0 = d1 < ff::Q;
-    poly[j].v = d1 * flg0;
-    j += 1 * flg0;
+    const ff::ff_t br0[]{ poly[i], ff::ff_t{ d1 } };
+    poly[i] = br0[flg0];
+    i += 1 * flg0;
 
-    const bool flg1 = (d2 < ff::Q) & (j < ntt::N);
-    poly[j].v = d2 * flg1;
-    j += 1 * flg1;
+    const bool flg1 = (d2 < ff::Q) & (i < ntt::N);
+    const ff::ff_t br1[]{ poly[i], ff::ff_t{ d2 } };
+    poly[i] = br1[flg1];
+    i += 1 * flg1;
   }
 }
 
@@ -72,8 +55,11 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
 template<const size_t k, const bool transpose>
 static void
 generate_matrix(ff::ff_t* const __restrict mat,
-                uint8_t* const __restrict xof_in)
+                const uint8_t* const __restrict rho)
 {
+  uint8_t xof_in[32 + 2]{};
+  std::memcpy(xof_in, rho, 32);
+
   for (size_t i = 0; i < k; i++) {
     for (size_t j = 0; j < k; j++) {
       const size_t off = (i * k + j) * ntt::N;
@@ -196,15 +182,17 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 template<const size_t k, const size_t eta>
 static void
 generate_vector(ff::ff_t* const __restrict vec,
-                uint8_t* const __restrict prf_in,
+                const uint8_t* const __restrict sigma,
                 const uint8_t nonce)
 {
   uint8_t prf_out[64 * eta]{};
+  uint8_t prf_in[32 + 1]{};
+  std::memcpy(prf_in, sigma, 32);
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
 
-    prf_in[32] = nonce + i;
+    prf_in[32] = nonce + static_cast<uint8_t>(i);
 
     shake256::shake256 hasher{};
     hasher.hash(prf_in, sizeof(prf_in));

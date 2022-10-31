@@ -37,16 +37,11 @@ compress(const ff::ff_t x) requires(check_d(d))
   constexpr uint32_t t1 = static_cast<uint32_t>(ff::Q >> 1);
 
   const uint32_t t2 = static_cast<uint32_t>(x.v) << d;
+  const uint32_t t3 = t2 + t1;
+  const uint16_t t4 = static_cast<uint16_t>(t3 / ff::Q);
+  const uint16_t t5 = t4 & (t0 - 1);
 
-  const uint32_t t3 = t2 / static_cast<uint32_t>(ff::Q);
-  const uint32_t t4 = t3 * static_cast<uint32_t>(ff::Q);
-  const uint32_t t5 = t2 - t4;
-
-  const bool flg = t5 >= t1;
-  const uint16_t t6 = static_cast<uint16_t>(t3 + 1u * flg);
-  const uint16_t t7 = t6 & (t0 - 1);
-
-  return ff::ff_t{ t7 };
+  return ff::ff_t{ t5 };
 }
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses
@@ -66,15 +61,10 @@ decompress(const ff::ff_t x) requires(check_d(d))
   constexpr uint32_t t1 = t0 >> 1;
 
   const uint32_t t2 = static_cast<uint32_t>(ff::Q * x.v);
+  const uint32_t t3 = t2 + t1;
+  const uint16_t t4 = static_cast<uint16_t>(t3 >> d);
 
-  const uint32_t t3 = t2 >> d;
-  const uint32_t t4 = t3 << d;
-  const uint32_t t5 = t2 - t4;
-
-  const bool flg = t5 >= t1;
-  const uint16_t t6 = static_cast<uint16_t>(t3 + 1u * flg);
-
-  return ff::ff_t{ t6 };
+  return ff::ff_t{ t4 };
 }
 
 // Decompression error that can happen for some given `d` s.t.

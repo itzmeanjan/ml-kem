@@ -37,4 +37,30 @@ generate_matrix(benchmark::State& state)
   std::free(xof);
 }
 
+// Benchmark how long does it take to sample a degree-255 polynomial from a
+// centered binomial distribution Bη.
+template<const size_t eta>
+void
+cbd(benchmark::State& state)
+{
+  constexpr size_t prflen = 64 * eta;
+  constexpr size_t plen = ntt::N * sizeof(ff::ff_t);
+
+  uint8_t* prf = static_cast<uint8_t*>(std::malloc(prflen));
+  ff::ff_t* poly = static_cast<ff::ff_t*>(std::malloc(plen));
+
+  kyber_utils::random_data<uint8_t>(prf, prflen);
+
+  for (auto _ : state) {
+    kyber_utils::cbd<eta>(prf, poly);
+
+    benchmark::DoNotOptimize(prf);
+    benchmark::DoNotOptimize(poly);
+    benchmark::ClobberMemory();
+  }
+
+  std::free(prf);
+  std::free(poly);
+}
+
 }

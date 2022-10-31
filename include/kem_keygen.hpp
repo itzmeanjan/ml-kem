@@ -12,16 +12,13 @@ namespace ccakem {
 // public key: (k * 12 * 32 + 32) -bytes wide
 // secret key: (k * 24 * 32 + 96) -bytes wide [ includes public key ]
 //
-// Note, 32 -bytes random sampling is done pretty naively ( see
-// ./utils.hpp ), it uses C++ standard library's `<random>` functionality. Also
-// see https://en.cppreference.com/w/cpp/header/random for more information.
-//
-// See algorithm 7 defined in Kyber specification, as submitted to NIST PQC
-// final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 7 defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta1>
 static void
-keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
+keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
+       const uint8_t* const __restrict z, // 32 -bytes seed ( used in CCA-KEM )
+       uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // (k * 24 * 32 + 96) -bytes secret key
 )
 {
@@ -32,8 +29,8 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   constexpr size_t skoff1 = skoff0 + pklen;
   constexpr size_t skoff2 = skoff1 + 32;
 
-  kyber_utils::random_data<uint8_t>(seckey + skoff2, zlen); // sample 32 -bytes
-  cpapke::keygen<k, eta1>(pubkey, seckey);        // CPAPKE key generation
+  std::memcpy(seckey + skoff2, z, zlen);
+  cpapke::keygen<k, eta1>(d, pubkey, seckey);     // CPAPKE key generation
   std::memcpy(seckey + skoff0, pubkey, pklen);    // copy public key
   sha3_256::hash(pubkey, pklen, seckey + skoff1); // hash public key
 }

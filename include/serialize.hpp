@@ -25,9 +25,8 @@ check_l(const size_t l)
 // of them ) coefficient ∈ [0, 2^l), this routine serializes the polynomial to a
 // byte array of length 32 * l -bytes
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification,
-// as submitted to NIST PQC final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t l>
 static void
 encode(const ff::ff_t* const __restrict poly, // degree 255 polynomial
@@ -176,9 +175,8 @@ encode(const ff::ff_t* const __restrict poly, // degree 255 polynomial
 // polynomial of degree 255 s.t. significant portion of each ( total 256 of them
 // ) coefficient ∈ [0, 2^l)
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification,
-// as submitted to NIST PQC final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t l>
 static void
 decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes

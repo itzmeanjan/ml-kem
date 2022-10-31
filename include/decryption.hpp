@@ -9,9 +9,8 @@ namespace cpapke {
 // was encrypted using respective public key, which is associated with this
 // secret key.
 //
-// See algorithm 6 defined in Kyber specification, as submitted to NIST PQC
-// final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 6 defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t du, const size_t dv>
 static void
 decrypt(

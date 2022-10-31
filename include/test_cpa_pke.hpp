@@ -2,6 +2,7 @@
 #include "decryption.hpp"
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
+#include "utils.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation
@@ -23,11 +24,13 @@ template<const size_t k,
 static void
 test_kyber_cpa_pke()
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t mlen = 32;
   constexpr size_t enclen = k * du * 32 + dv * 32;
 
+  uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* rcoin = static_cast<uint8_t*>(std::malloc(mlen));
@@ -40,10 +43,11 @@ test_kyber_cpa_pke()
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
+  kyber_utils::random_data<uint8_t>(seed, slen);
   kyber_utils::random_data<uint8_t>(txt, mlen);
   kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
-  cpapke::keygen<k, eta1>(pkey, skey);
+  cpapke::keygen<k, eta1>(seed, pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
   cpapke::decrypt<k, du, dv>(skey, enc, dec);
 
@@ -51,6 +55,7 @@ test_kyber_cpa_pke()
     assert(!static_cast<bool>(txt[i] ^ dec[i]));
   }
 
+  std::free(seed);
   std::free(pkey);
   std::free(skey);
   std::free(rcoin);

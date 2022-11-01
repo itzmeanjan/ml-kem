@@ -1,4 +1,4 @@
-#include "kyber.hpp"
+#include "kyber_pke.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -11,7 +11,7 @@ main()
   // Kyber-512 Public Key Encryption (PKE) parameters
   //
   // See table 1 of Kyber specification for all suggested parameters
-  // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+  // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
   constexpr size_t k = 2;
   constexpr size_t eta1 = 3;
   constexpr size_t eta2 = 2;
@@ -44,11 +44,11 @@ main()
   kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
   // CPA-secure PKE key generation
-  cpapke::keygen<k, eta1>(pubkey, seckey);
+  kyber_pke::keygen<k, eta1>(pubkey, seckey);
   // CPA-secure 32 -bytes message encryption
-  cpapke::encrypt<k, eta1, eta2, du, dv>(pubkey, msg, rcoin, enc);
+  kyber_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, msg, rcoin, enc);
   // CPA-secure decryption to 32 -bytes message
-  cpapke::decrypt<k, du, dv>(seckey, enc, dec);
+  kyber_pke::decrypt<k, du, dv>(seckey, enc, dec);
 
   // check that encrypted ( using public key ) plain text is same as decrypted (
   // using secret key ) one
@@ -56,7 +56,6 @@ main()
   for (size_t i = 0; i < mlen; i++) {
     flg |= static_cast<bool>(msg[i] ^ dec[i]);
   }
-  assert(!flg);
 
   std::cout << "pubkey : " << kyber_utils::to_hex(pubkey, pklen) << "\n";
   std::cout << "seckey : " << kyber_utils::to_hex(seckey, sklen) << "\n";
@@ -71,6 +70,9 @@ main()
   std::free(msg);
   std::free(rcoin);
   std::free(dec);
+
+  // don't assert until memory allocation is freed !
+  assert(!flg);
 
   return EXIT_SUCCESS;
 }

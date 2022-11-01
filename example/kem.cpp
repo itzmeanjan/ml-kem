@@ -1,4 +1,4 @@
-#include "kyber.hpp"
+#include "kyber_kem.hpp"
 #include <cassert>
 #include <iostream>
 
@@ -11,7 +11,7 @@ main()
   // Kyber-512 Key Encapsulation Mechanism (KEM) parameters
   //
   // See table 1 of Kyber specification for all suggested parameters
-  // https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+  // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
   constexpr size_t k = 2;
   constexpr size_t eta1 = 3;
   constexpr size_t eta2 = 2;
@@ -37,11 +37,11 @@ main()
   std::memset(cipher, 0, ctlen);
 
   // CCA-secure KEM key generation
-  ccakem::keygen<k, eta1>(pubkey, seckey);
+  kyber_kem::keygen<k, eta1>(pubkey, seckey);
   // CCA-secure key encapsulation using public key, producing KDF
-  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(pubkey, cipher);
+  auto skdf = kyber_kem::encapsulate<k, eta1, eta2, du, dv>(pubkey, cipher);
   // CCA-secure key decapsulation using secret key, producing KDF
-  auto rkdf = ccakem::decapsulate<k, eta1, eta2, du, dv>(seckey, cipher);
+  auto rkdf = kyber_kem::decapsulate<k, eta1, eta2, du, dv>(seckey, cipher);
 
   // key encapsulator ( who had public key ), derives 32 -bytes key from its KDF
   skdf.read(shrd_key0, klen);
@@ -55,7 +55,6 @@ main()
   for (size_t i = 0; i < klen; i++) {
     flg |= static_cast<bool>(shrd_key0[i] ^ shrd_key1[i]);
   }
-  assert(!flg);
 
   {
     using namespace kyber_utils;
@@ -71,6 +70,9 @@ main()
   std::free(cipher);
   std::free(shrd_key0);
   std::free(shrd_key1);
+
+  // defer assertion until end ( let memory allocation be freed first )
+  assert(!flg);
 
   return EXIT_SUCCESS;
 }

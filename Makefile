@@ -6,6 +6,11 @@ DEP_IFLAGS = -I ./sha3/include
 
 all: testing
 
+wrapper/libkyber_kem.so: wrapper/kyber_kem.cpp include/*.hpp sha3/include/*.hpp
+	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) -fPIC --shared $< -o $@
+
+lib: wrapper/libkyber_kem.so
+
 test/a.out: test/main.cpp include/*.hpp sha3/include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -o $@
 

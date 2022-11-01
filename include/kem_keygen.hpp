@@ -14,6 +14,12 @@ namespace ccakem {
 //
 // See algorithm 7 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+//
+// Note, this routine allows you to pass two 32 -bytes seeds ( see first &
+// second parameter ), which is designed this way for ease of writing test cases
+// against known answer tests, obtained from Kyber reference implementation
+// https://github.com/pq-crystals/kyber.git. It also helps in properly
+// benchmarking underlying KEM's key generation implementation.
 template<const size_t k, const size_t eta1>
 inline static void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )

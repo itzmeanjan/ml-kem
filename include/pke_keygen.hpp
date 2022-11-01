@@ -15,6 +15,12 @@ namespace cpapke {
 //
 // See algorithm 4 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+//
+// Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
+// which is designed this way for ease of writing test cases against known
+// answer tests, obtained from Kyber reference implementation
+// https://github.com/pq-crystals/kyber.git. It also helps in properly
+// benchmarking underlying PKE's key generation implementation.
 template<const size_t k, const size_t eta1>
 inline static void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed

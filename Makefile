@@ -4,7 +4,7 @@ OPTFLAGS = -O3 -march=native
 IFLAGS = -I ./include
 DEP_IFLAGS = -I ./sha3/include
 
-all: testing
+all: testing test_kat
 
 wrapper/libkyber_kem.so: wrapper/kyber_kem.cpp include/*.hpp sha3/include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) -fPIC --shared $< -o $@
@@ -16,6 +16,9 @@ test/a.out: test/main.cpp include/*.hpp sha3/include/*.hpp
 
 testing: test/a.out
 	./$<
+
+test_kat:
+	bash test_kat.sh
 
 clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf

@@ -59,8 +59,9 @@ test_kyber_cca_kem()
   skdf.read(sender_key, klen);
   rkdf.read(receiver_key, klen);
 
+  bool flg = false;
   for (size_t i = 0; i < klen; i++) {
-    assert(!static_cast<bool>(sender_key[i] ^ receiver_key[i]));
+    flg |= static_cast<bool>(sender_key[i] ^ receiver_key[i]);
   }
 
   std::free(d);
@@ -71,6 +72,8 @@ test_kyber_cca_kem()
   std::free(cipher);
   std::free(sender_key);
   std::free(receiver_key);
+
+  assert(!flg);
 }
 
 }

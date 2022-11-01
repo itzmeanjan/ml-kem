@@ -51,8 +51,9 @@ test_kyber_cpa_pke()
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
   cpapke::decrypt<k, du, dv>(skey, enc, dec);
 
+  bool flg = false;
   for (size_t i = 0; i < mlen; i++) {
-    assert(!static_cast<bool>(txt[i] ^ dec[i]));
+    flg |= static_cast<bool>(txt[i] ^ dec[i]);
   }
 
   std::free(seed);
@@ -62,6 +63,8 @@ test_kyber_cpa_pke()
   std::free(txt);
   std::free(enc);
   std::free(dec);
+
+  assert(!flg);
 }
 
 }

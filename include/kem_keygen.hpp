@@ -15,7 +15,7 @@ namespace ccakem {
 // See algorithm 7 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta1>
-static void
+inline static void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
        const uint8_t* const __restrict z, // 32 -bytes seed ( used in CCA-KEM )
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key

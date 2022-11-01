@@ -12,7 +12,7 @@ namespace cpapke {
 // See algorithm 6 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t du, const size_t dv>
-static void
+inline static void
 decrypt(
   const uint8_t* const __restrict seckey, // (k * 12 * 32) -bytes secret key
   const uint8_t* const __restrict enc,    // (k * du * 32 + dv * 32) -bytes

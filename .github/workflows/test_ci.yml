@@ -17,6 +17,8 @@ jobs:
       run: sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10; sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
     - name: Fetch Dependency
       run: git submodule update --init
+    - name: Install Python dependencies
+      run: python3 -m pip install -r wrapper/python/requirements.txt --user
     - name: Execute Tests
       run: make
     - name: Cleanup

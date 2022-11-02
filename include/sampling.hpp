@@ -14,9 +14,8 @@ namespace kyber_utils {
 // to uniform random byte stream, produced polynomial coefficients are also
 // statiscally close to randomly sampled elements of R_q.
 //
-// See algorithm 1, defined in Kyber specification, present in NIST PQC final
-// round submission package
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 1, defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static void
 parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
       ff::ff_t* const __restrict poly              // Degree 255 polynomial
@@ -49,9 +48,8 @@ parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
 // sampling from a XOF ( read SHAKE128 ), which is seeded with 32 -bytes key and
 // two nonces ( each of 1 -byte )
 //
-// See step (4-8) of algorithm 4/ 5, defined in Kyber specification, as
-// submitted to NIST final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See step (4-8) of algorithm 4/ 5, defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const bool transpose>
 static void
 generate_matrix(ff::ff_t* const __restrict mat,
@@ -82,7 +80,7 @@ generate_matrix(ff::ff_t* const __restrict mat,
 
 // Compile time check to ensure that η ( read eta ) is either 2 or 3, as defined
 // in Kyber specification
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 inline static constexpr bool
 check_eta(const size_t eta)
 {
@@ -94,9 +92,8 @@ check_eta(const size_t eta)
 // A degree 255 polynomial deterministically sampled from 64 * eta -bytes output
 // of a pseudorandom function ( PRF )
 //
-// See algorithm 2, defined in Kyber specification, present in NIST PQC final
-// round submission package
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 2, defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t eta>
 static void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
@@ -177,8 +174,8 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 }
 
 // Sample a polynomial vector from Bη, following step (9-12) of algorithm 4,
-// defined in Kyber specification, as submitted to NIST final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta>
 static void
 generate_vector(ff::ff_t* const __restrict vec,

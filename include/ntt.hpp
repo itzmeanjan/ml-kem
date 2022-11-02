@@ -180,8 +180,8 @@ intt(ff::ff_t* const __restrict poly)
 //
 // h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
 //
-// See page 6 of Kyber specification as submitted to NIST PQC final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See page 6 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static void
 basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
         const ff::ff_t* const __restrict g, // degree-1 polynomial

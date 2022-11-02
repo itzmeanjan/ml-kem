@@ -2,6 +2,7 @@
 #include "decapsulation.hpp"
 #include "encapsulation.hpp"
 #include "kem_keygen.hpp"
+#include "utils.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
@@ -12,18 +13,26 @@ template<const size_t k, const size_t eta1>
 void
 kem_keygen(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
 
+  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
 
   std::memset(pkey, 0, pklen);
   std::memset(skey, 0, sklen);
 
-  for (auto _ : state) {
-    ccakem::keygen<k, eta1>(pkey, skey);
+  kyber_utils::random_data<uint8_t>(d, slen);
+  kyber_utils::random_data<uint8_t>(z, slen);
 
+  for (auto _ : state) {
+    ccakem::keygen<k, eta1>(d, z, pkey, skey);
+
+    benchmark::DoNotOptimize(d);
+    benchmark::DoNotOptimize(z);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(skey);
     benchmark::ClobberMemory();
@@ -31,6 +40,8 @@ kem_keygen(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(d);
+  std::free(z);
   std::free(pkey);
   std::free(skey);
 }
@@ -44,11 +55,15 @@ template<const size_t k,
 void
 encapsulate(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
   constexpr size_t ctlen = k * du * 32 + dv * 32;
   constexpr size_t klen = 32;
 
+  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* m = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
@@ -59,12 +74,17 @@ encapsulate(benchmark::State& state)
   std::memset(cipher, 0, ctlen);
   std::memset(sender_key, 0, klen);
 
-  ccakem::keygen<k, eta1>(pkey, skey);
+  kyber_utils::random_data<uint8_t>(d, slen);
+  kyber_utils::random_data<uint8_t>(z, slen);
+  kyber_utils::random_data<uint8_t>(m, slen);
+
+  ccakem::keygen<k, eta1>(d, z, pkey, skey);
 
   for (auto _ : state) {
-    auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(pkey, cipher);
+    auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
     skdf.read(sender_key, klen);
 
+    benchmark::DoNotOptimize(m);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(cipher);
     benchmark::DoNotOptimize(sender_key);
@@ -73,6 +93,9 @@ encapsulate(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(d);
+  std::free(z);
+  std::free(m);
   std::free(pkey);
   std::free(skey);
   std::free(cipher);
@@ -88,11 +111,15 @@ template<const size_t k,
 void
 decapsulate(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
   constexpr size_t ctlen = k * du * 32 + dv * 32;
   constexpr size_t klen = 32;
 
+  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* m = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
@@ -105,8 +132,12 @@ decapsulate(benchmark::State& state)
   std::memset(sender_key, 0, klen);
   std::memset(receiver_key, 0, klen);
 
-  ccakem::keygen<k, eta1>(pkey, skey);
-  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(pkey, cipher);
+  kyber_utils::random_data<uint8_t>(d, slen);
+  kyber_utils::random_data<uint8_t>(z, slen);
+  kyber_utils::random_data<uint8_t>(m, slen);
+
+  ccakem::keygen<k, eta1>(d, z, pkey, skey);
+  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
   skdf.read(sender_key, klen);
 
   for (auto _ : state) {
@@ -125,6 +156,9 @@ decapsulate(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(d);
+  std::free(z);
+  std::free(m);
   std::free(pkey);
   std::free(skey);
   std::free(cipher);

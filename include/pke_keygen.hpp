@@ -2,7 +2,6 @@
 #include "poly_vec.hpp"
 #include "sampling.hpp"
 #include "sha3_512.hpp"
-#include "utils.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
 namespace cpapke {
@@ -14,26 +13,26 @@ namespace cpapke {
 // public key: (k * 12 * 32 + 32) -bytes wide
 // secret key: (k * 12 * 32) -bytes wide
 //
-// Note, initial 32 -bytes random sampling is done pretty naively ( see
-// ./utils.hpp ), it uses C++ standard library's `<random>` functionality. Also
-// see https://en.cppreference.com/w/cpp/header/random for more information.
+// See algorithm 4 defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 //
-// See algorithm 4 defined in Kyber specification, as submitted to NIST PQC
-// final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
+// which is designed this way for ease of writing test cases against known
+// answer tests, obtained from Kyber reference implementation
+// https://github.com/pq-crystals/kyber.git. It also helps in properly
+// benchmarking underlying PKE's key generation implementation.
 template<const size_t k, const size_t eta1>
-static void
-keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
+inline static void
+keygen(const uint8_t* const __restrict d, // 32 -bytes seed
+       uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
 )
 {
-  // step 1
-  uint8_t d[32]{};
-  kyber_utils::random_data<uint8_t>(d, sizeof(d));
+  constexpr size_t dlen = 32;
 
   // step 2
   uint8_t g_out[64]{};
-  sha3_512::hash(d, sizeof(d), g_out);
+  sha3_512::hash(d, dlen, g_out);
 
   const uint8_t* rho = g_out + 0;
   const uint8_t* sigma = g_out + 32;

@@ -2,6 +2,7 @@
 #include "decapsulation.hpp"
 #include "encapsulation.hpp"
 #include "kem_keygen.hpp"
+#include "utils.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation
@@ -29,10 +30,14 @@ template<const size_t k,
 static void
 test_kyber_cca_kem()
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
   constexpr size_t ctlen = k * du * 32 + dv * 32;
 
+  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
+  uint8_t* m = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
@@ -43,22 +48,32 @@ test_kyber_cca_kem()
   std::memset(skey, 0, sklen);
   std::memset(cipher, 0, ctlen);
 
-  ccakem::keygen<k, eta1>(pkey, skey);
-  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(pkey, cipher);
+  kyber_utils::random_data<uint8_t>(d, slen);
+  kyber_utils::random_data<uint8_t>(z, slen);
+  kyber_utils::random_data<uint8_t>(m, slen);
+
+  ccakem::keygen<k, eta1>(d, z, pkey, skey);
+  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
   auto rkdf = ccakem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
 
   skdf.read(sender_key, klen);
   rkdf.read(receiver_key, klen);
 
+  bool flg = false;
   for (size_t i = 0; i < klen; i++) {
-    assert(!static_cast<bool>(sender_key[i] ^ receiver_key[i]));
+    flg |= static_cast<bool>(sender_key[i] ^ receiver_key[i]);
   }
 
+  std::free(d);
+  std::free(z);
+  std::free(m);
   std::free(pkey);
   std::free(skey);
   std::free(cipher);
   std::free(sender_key);
   std::free(receiver_key);
+
+  assert(!flg);
 }
 
 }

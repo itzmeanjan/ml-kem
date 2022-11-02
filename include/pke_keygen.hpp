@@ -2,7 +2,6 @@
 #include "poly_vec.hpp"
 #include "sampling.hpp"
 #include "sha3_512.hpp"
-#include "utils.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
 namespace cpapke {
@@ -14,51 +13,45 @@ namespace cpapke {
 // public key: (k * 12 * 32 + 32) -bytes wide
 // secret key: (k * 12 * 32) -bytes wide
 //
-// Note, initial 32 -bytes random sampling is done pretty naively ( see
-// ./utils.hpp ), it uses C++ standard library's `<random>` functionality. Also
-// see https://en.cppreference.com/w/cpp/header/random for more information.
+// See algorithm 4 defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 //
-// See algorithm 4 defined in Kyber specification, as submitted to NIST PQC
-// final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
+// which is designed this way for ease of writing test cases against known
+// answer tests, obtained from Kyber reference implementation
+// https://github.com/pq-crystals/kyber.git. It also helps in properly
+// benchmarking underlying PKE's key generation implementation.
 template<const size_t k, const size_t eta1>
-static void
-keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
+inline static void
+keygen(const uint8_t* const __restrict d, // 32 -bytes seed
+       uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
 )
 {
-  // step 1
-  uint8_t d[32]{};
-  kyber_utils::random_data<uint8_t>(d, sizeof(d));
+  constexpr size_t dlen = 32;
 
   // step 2
   uint8_t g_out[64]{};
-  sha3_512::hash(d, sizeof(d), g_out);
+  sha3_512::hash(d, dlen, g_out);
 
-  const uint8_t* const rho = g_out + 0;
-  const uint8_t* const sigma = g_out + 32;
+  const uint8_t* rho = g_out + 0;
+  const uint8_t* sigma = g_out + 32;
 
   // step 4, 5, 6, 7, 8
-  uint8_t xof_in[34]{};
-  std::memcpy(xof_in, rho, sizeof(g_out) >> 1);
-
   ff::ff_t A_prime[k * k * ntt::N]{};
-  kyber_utils::generate_matrix<k, false>(A_prime, xof_in);
+  kyber_utils::generate_matrix<k, false>(A_prime, rho);
 
   // step 3
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
-  uint8_t prf_in[33]{};
-  std::memcpy(prf_in, sigma, sizeof(g_out) >> 1);
-
   ff::ff_t s[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta1>(s, prf_in, N);
+  kyber_utils::generate_vector<k, eta1>(s, sigma, N);
   N += k;
 
   // step 13, 14, 15, 16
   ff::ff_t e[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta1>(e, prf_in, N);
+  kyber_utils::generate_vector<k, eta1>(e, sigma, N);
   N += k;
 
   // step 17, 18
@@ -77,7 +70,7 @@ keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
   kyber_utils::poly_vec_encode<k, 12>(s, seckey);
 
   constexpr size_t pkoff = k * 12 * 32;
-  std::memcpy(pubkey + pkoff, rho, sizeof(g_out) >> 1);
+  std::memcpy(pubkey + pkoff, rho, 32);
 }
 
 }

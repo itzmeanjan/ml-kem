@@ -2,6 +2,7 @@
 #include "decryption.hpp"
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
+#include "utils.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
@@ -12,18 +13,22 @@ template<const size_t k, const size_t eta1>
 void
 pke_keygen(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32;
 
+  uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
 
   std::memset(pkey, 0, pklen);
   std::memset(skey, 0, sklen);
+  kyber_utils::random_data<uint8_t>(seed, slen);
 
   for (auto _ : state) {
-    cpapke::keygen<k, eta1>(pkey, skey);
+    cpapke::keygen<k, eta1>(seed, pkey, skey);
 
+    benchmark::DoNotOptimize(seed);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(skey);
     benchmark::ClobberMemory();
@@ -31,6 +36,7 @@ pke_keygen(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(seed);
   std::free(pkey);
   std::free(skey);
 }
@@ -44,11 +50,13 @@ template<const size_t k,
 void
 encrypt(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t mlen = 32;
   constexpr size_t enclen = k * du * 32 + dv * 32;
 
+  uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* rcoin = static_cast<uint8_t*>(std::malloc(mlen));
@@ -59,10 +67,11 @@ encrypt(benchmark::State& state)
   std::memset(skey, 0, sklen);
   std::memset(enc, 0, enclen);
 
+  kyber_utils::random_data<uint8_t>(seed, slen);
   kyber_utils::random_data<uint8_t>(txt, mlen);
   kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
-  cpapke::keygen<k, eta1>(pkey, skey);
+  cpapke::keygen<k, eta1>(seed, pkey, skey);
 
   for (auto _ : state) {
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
@@ -76,6 +85,7 @@ encrypt(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(seed);
   std::free(pkey);
   std::free(skey);
   std::free(rcoin);
@@ -92,11 +102,13 @@ template<const size_t k,
 void
 decrypt(benchmark::State& state)
 {
+  constexpr size_t slen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t mlen = 32;
   constexpr size_t enclen = k * du * 32 + dv * 32;
 
+  uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* rcoin = static_cast<uint8_t*>(std::malloc(mlen));
@@ -109,10 +121,11 @@ decrypt(benchmark::State& state)
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
+  kyber_utils::random_data<uint8_t>(seed, slen);
   kyber_utils::random_data<uint8_t>(txt, mlen);
   kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
-  cpapke::keygen<k, eta1>(pkey, skey);
+  cpapke::keygen<k, eta1>(seed, pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
 
   for (auto _ : state) {
@@ -130,6 +143,7 @@ decrypt(benchmark::State& state)
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
 
+  std::free(seed);
   std::free(pkey);
   std::free(skey);
   std::free(rcoin);

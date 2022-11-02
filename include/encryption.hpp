@@ -11,15 +11,14 @@ namespace cpapke {
 // INDCPA-secure Kyber encryption algorithm, computing compressed cipher text of
 // (k * du * 32 + dv * 32) -bytes.
 //
-// See algorithm 5 defined in Kyber specification, as submitted to NIST PQC
-// final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See algorithm 5 defined in Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k,
          const size_t eta1,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static void
+inline static void
 encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict msg,    // 32 -bytes message
         const uint8_t* const __restrict rcoin,  // 32 -bytes random coin
@@ -35,31 +34,25 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   const uint8_t* const rho = pubkey + pkoff;
 
   // step 4, 5, 6, 7, 8
-  uint8_t xof_in[34]{};
-  std::memcpy(xof_in, rho, sizeof(xof_in) - 2);
-
   ff::ff_t A_prime[k * k * ntt::N]{};
-  kyber_utils::generate_matrix<k, true>(A_prime, xof_in);
+  kyber_utils::generate_matrix<k, true>(A_prime, rho);
 
   // step 1
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
-  uint8_t prf_in[33]{};
-  std::memcpy(prf_in, rcoin, sizeof(prf_in) - 1);
-
   ff::ff_t r[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta1>(r, prf_in, N);
+  kyber_utils::generate_vector<k, eta1>(r, rcoin, N);
   N += k;
 
   // step 13, 14, 15, 16
   ff::ff_t e1[k * ntt::N]{};
-  kyber_utils::generate_vector<k, eta2>(e1, prf_in, N);
+  kyber_utils::generate_vector<k, eta2>(e1, rcoin, N);
   N += k;
 
   // step 17
   ff::ff_t e2[ntt::N]{};
-  kyber_utils::generate_vector<1, eta2>(e2, prf_in, N);
+  kyber_utils::generate_vector<1, eta2>(e2, rcoin, N);
 
   // step 18
   kyber_utils::poly_vec_ntt<k>(r);

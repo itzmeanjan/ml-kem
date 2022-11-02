@@ -10,8 +10,8 @@ namespace kyber_utils {
 // during polynomial coefficient compression/ decompression is within tolerable
 // bounds.
 //
-// See page 5 of Kyber specification, as submitted to NIST PQC final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See page 5 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 constexpr bool
 check_d(const size_t d)
 {
@@ -26,9 +26,8 @@ check_d(const size_t d)
 // Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding
 // some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q))
 //
-// See top of page 5 of Kyber specification, as submitted to NIST PQC final
-// round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See top of page 5 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
 inline static ff::ff_t
 compress(const ff::ff_t x) requires(check_d(d))
@@ -37,16 +36,11 @@ compress(const ff::ff_t x) requires(check_d(d))
   constexpr uint32_t t1 = static_cast<uint32_t>(ff::Q >> 1);
 
   const uint32_t t2 = static_cast<uint32_t>(x.v) << d;
+  const uint32_t t3 = t2 + t1;
+  const uint16_t t4 = static_cast<uint16_t>(t3 / ff::Q);
+  const uint16_t t5 = t4 & (t0 - 1);
 
-  const uint32_t t3 = t2 / static_cast<uint32_t>(ff::Q);
-  const uint32_t t4 = t3 * static_cast<uint32_t>(ff::Q);
-  const uint32_t t5 = t2 - t4;
-
-  const bool flg = t5 >= t1;
-  const uint16_t t6 = static_cast<uint16_t>(t3 + 1u * flg);
-  const uint16_t t7 = t6 & (t0 - 1);
-
-  return ff::ff_t{ t7 };
+  return ff::ff_t{ t5 };
 }
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses
@@ -55,9 +49,8 @@ compress(const ff::ff_t x) requires(check_d(d))
 // This routine recovers the compressed element with error probability as
 // defined in eq. 2 of Kyber specification.
 //
-// See top of page 5 of Kyber specification, as submitted to NIST PQC final
-// round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See top of page 5 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
 inline static ff::ff_t
 decompress(const ff::ff_t x) requires(check_d(d))
@@ -66,15 +59,10 @@ decompress(const ff::ff_t x) requires(check_d(d))
   constexpr uint32_t t1 = t0 >> 1;
 
   const uint32_t t2 = static_cast<uint32_t>(ff::Q * x.v);
+  const uint32_t t3 = t2 + t1;
+  const uint16_t t4 = static_cast<uint16_t>(t3 >> d);
 
-  const uint32_t t3 = t2 >> d;
-  const uint32_t t4 = t3 << d;
-  const uint32_t t5 = t2 - t4;
-
-  const bool flg = t5 >= t1;
-  const uint16_t t6 = static_cast<uint16_t>(t3 + 1u * flg);
-
-  return ff::ff_t{ t6 };
+  return ff::ff_t{ t4 };
 }
 
 // Decompression error that can happen for some given `d` s.t.
@@ -83,8 +71,8 @@ decompress(const ff::ff_t x) requires(check_d(d))
 //
 // |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
 //
-// See eq. 2 of Kyber specification, as submitted to NIST PQC final round call
-// https://csrc.nist.gov/CSRC/media/Projects/post-quantum-cryptography/documents/round-3/submissions/Kyber-Round3.zip
+// See eq. 2 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
 inline static size_t
 compute_error()

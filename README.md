@@ -86,7 +86,7 @@ git version 2.34.1
 $ python3 --version
 Python 3.10.8
 
-# Downlaod Python dependencies
+# Download Python dependencies
 $ python3 -m pip install -r wrapper/python/requirements.txt --user
 ```
 
@@ -248,12 +248,10 @@ You may notice that Kyber PKE implementation ( present in [kyber_pke.hpp](./incl
 - Encryption : [encryption.hpp](./include/encryption.hpp)
 - Decryption : [decryption.hpp](./include/decryption.hpp)
 
-which have little different ( somewhat generic ) looking interface. They are kept that way so that it becomes easier to write test cases against Known Answer Tests, obtained from Kyber reference implementation, following steps described in this [gist](https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710). This compartmentalization also helps benchmarking keygen, encrypt, decrypt routines, without getting influenced by the delay of sampling of randomness from system.
+which have little different ( somewhat generic ) looking interface. They are kept that way so that it becomes easier to write test cases using Known Answer Tests ( read test vectors ), obtained from Kyber reference implementation, following steps described in this [gist](https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710). This compartmentalization also helps benchmarking keygen, encrypt, decrypt routines, without getting influenced by the delay of sampling of randomness from system.
 
 If it turns out to be the case that you're not happy with system randomness, used during PKE keygen ( in namespace `kyber_pke::` ), you can always start using the underlying API, which lives under namespace `cpapke::`. For how to use, take a look at [kyber_pke.hpp](./include/kyber_pke.hpp).
 
-Similarly, you'll notice [kyber_kem.hpp](./include/kyber_kem.hpp) follows similar approach, acting as a thin wrapper on top of underlying generic Kyber KEM implementation, exposing nicer APIs, while abstracting randomness sampling. 
+Similarly, you'll notice [kyber_kem.hpp](./include/kyber_kem.hpp) follows same approach, acting as a thin wrapper on top of underlying generic Kyber KEM implementation ( living under namespace `ccakem::` ), exposing nicer APIs, while abstracting randomness sampling. When in need of more control over randomness being used in Kyber KEM, I suggest you switch to using underlying KEM API; you can find usage examples in (just) above linked file.
 
-Here also, you can look at (just) above linked file to see how to use underlying Kyber KEM API, where you get the freedom of choosing your custom sampled random bytes.
-
-Finally, system randomness source, that's used for sampling random bytes during keygen or encapsulation, is **ideally** supposed to be from h/w secure element. But it's not guaranteed to be the case on all platforms. I suggest you read [this](https://en.cppreference.com/w/cpp/numeric/random/random_device), as that's what's used for randomness, in wrapper implementations.
+Finally, system randomness source, that's used for sampling random bytes during keygen or encapsulation, is **ideally** supposed to be from h/w secure element. But it's not guaranteed to be the case on all platforms. I suggest you read [this](https://en.cppreference.com/w/cpp/numeric/random/random_device), as that's what we use for randomness, in wrapper implementations.

@@ -24,6 +24,7 @@ def test_kyber512():
             pk = fd.readline()
             sk = fd.readline()
             m = fd.readline()
+            ct = fd.readline()
             ss = fd.readline()
 
             # extract out required fields
@@ -32,6 +33,7 @@ def test_kyber512():
             pk = [i.strip() for i in pk.split("=")][-1]
             sk = [i.strip() for i in sk.split("=")][-1]
             m = [i.strip() for i in m.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
             ss = [i.strip() for i in ss.split("=")][-1]
 
             # convert input hex strings to bytes object
@@ -65,6 +67,12 @@ def test_kyber512():
                     for i in range(len(m) >> 1)
                 ]
             )
+            ct = bytes(
+                [
+                    int(f"0x{ct[(i << 1): ((i+1) << 1)]}", base=16)
+                    for i in range(len(ct) >> 1)
+                ]
+            )
             ss = bytes(
                 [
                     int(f"0x{ss[(i << 1): ((i+1) << 1)]}", base=16)
@@ -78,6 +86,7 @@ def test_kyber512():
 
             assert pk == pkey, "[Kyber512 KEM] Public Key doesn't match"
             assert sk == skey, "[Kyber512 KEM] Secret Key doesn't match"
+            assert ct == ctxt, "[Kyber512 KEM] Cipher Text doesn't match"
             assert ss == shrd_key0, "[Kyber512 KEM] Shared Secret Key doesn't match"
             assert (
                 shrd_key0 == shrd_key1
@@ -104,6 +113,7 @@ def test_kyber768():
             pk = fd.readline()
             sk = fd.readline()
             m = fd.readline()
+            ct = fd.readline()
             ss = fd.readline()
 
             # extract out required fields
@@ -112,6 +122,7 @@ def test_kyber768():
             pk = [i.strip() for i in pk.split("=")][-1]
             sk = [i.strip() for i in sk.split("=")][-1]
             m = [i.strip() for i in m.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
             ss = [i.strip() for i in ss.split("=")][-1]
 
             # convert input hex strings to bytes object
@@ -145,6 +156,12 @@ def test_kyber768():
                     for i in range(len(m) >> 1)
                 ]
             )
+            ct = bytes(
+                [
+                    int(f"0x{ct[(i << 1): ((i+1) << 1)]}", base=16)
+                    for i in range(len(ct) >> 1)
+                ]
+            )
             ss = bytes(
                 [
                     int(f"0x{ss[(i << 1): ((i+1) << 1)]}", base=16)
@@ -158,6 +175,7 @@ def test_kyber768():
 
             assert pk == pkey, "[Kyber768 KEM] Public Key doesn't match"
             assert sk == skey, "[Kyber768 KEM] Secret Key doesn't match"
+            assert ct == ctxt, "[Kyber768 KEM] Cipher Text doesn't match"
             assert ss == shrd_key0, "[Kyber768 KEM] Shared Secret Key doesn't match"
             assert (
                 shrd_key0 == shrd_key1
@@ -184,6 +202,7 @@ def test_kyber1024():
             pk = fd.readline()
             sk = fd.readline()
             m = fd.readline()
+            ct = fd.readline()
             ss = fd.readline()
 
             # extract out required fields
@@ -192,6 +211,7 @@ def test_kyber1024():
             pk = [i.strip() for i in pk.split("=")][-1]
             sk = [i.strip() for i in sk.split("=")][-1]
             m = [i.strip() for i in m.split("=")][-1]
+            ct = [i.strip() for i in ct.split("=")][-1]
             ss = [i.strip() for i in ss.split("=")][-1]
 
             # convert input hex strings to bytes object
@@ -225,6 +245,12 @@ def test_kyber1024():
                     for i in range(len(m) >> 1)
                 ]
             )
+            ct = bytes(
+                [
+                    int(f"0x{ct[(i << 1): ((i+1) << 1)]}", base=16)
+                    for i in range(len(ct) >> 1)
+                ]
+            )
             ss = bytes(
                 [
                     int(f"0x{ss[(i << 1): ((i+1) << 1)]}", base=16)
@@ -238,6 +264,7 @@ def test_kyber1024():
 
             assert pk == pkey, "[Kyber1024 KEM] Public Key doesn't match"
             assert sk == skey, "[Kyber1024 KEM] Secret Key doesn't match"
+            assert ct == ctxt, "[Kyber1024 KEM] Cipher Text doesn't match"
             assert ss == shrd_key0, "[Kyber1024 KEM] Shared Secret Key doesn't match"
             assert (
                 shrd_key0 == shrd_key1

@@ -23,8 +23,8 @@ template<const size_t a_rows,
 static void
 matrix_multiply(const ff::ff_t* const __restrict a,
                 const ff::ff_t* const __restrict b,
-                ff::ff_t* const __restrict c) requires(check_matrix_dim(a_cols,
-                                                                        b_rows))
+                ff::ff_t* const __restrict c)
+  requires(check_matrix_dim(a_cols, b_rows))
 {
   ff::ff_t tmp[ntt::N]{};
 

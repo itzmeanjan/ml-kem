@@ -98,7 +98,8 @@ template<const size_t eta>
 static void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
     ff::ff_t* const __restrict poly      // Degree 255 polynomial
-    ) requires(check_eta(eta))
+    )
+  requires(check_eta(eta))
 {
   if constexpr (eta == 2) {
     constexpr size_t till = 64 * eta;

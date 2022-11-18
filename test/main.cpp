@@ -1,4 +1,4 @@
-#include "test_kyber.hpp"
+#include "test/test_kyber.hpp"
 #include <iostream>
 
 int

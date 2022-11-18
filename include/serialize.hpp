@@ -31,7 +31,8 @@ template<const size_t l>
 static void
 encode(const ff::ff_t* const __restrict poly, // degree 255 polynomial
        uint8_t* const __restrict arr // byte array of length 32*l -bytes
-       ) requires(check_l(l))
+       )
+  requires(check_l(l))
 {
   constexpr size_t len = 32 * l;
   constexpr size_t blen = len << 3;
@@ -181,7 +182,8 @@ template<const size_t l>
 static void
 decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
        ff::ff_t* const __restrict poly      // degree 255 polynomial
-       ) requires(check_l(l))
+       )
+  requires(check_l(l))
 {
   constexpr size_t n = 256;
   constexpr size_t len = 32 * l;

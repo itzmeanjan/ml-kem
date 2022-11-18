@@ -1,4 +1,4 @@
-#include "bench_kyber.hpp"
+#include "bench/bench_kyber.hpp"
 
 // register for benchmarking arithmetic over prime field
 BENCHMARK(bench_kyber::ff_add);

@@ -30,7 +30,8 @@ check_d(const size_t d)
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
 inline static ff::ff_t
-compress(const ff::ff_t x) requires(check_d(d))
+compress(const ff::ff_t x)
+  requires(check_d(d))
 {
   constexpr uint16_t t0 = 1u << d;
   constexpr uint32_t t1 = static_cast<uint32_t>(ff::Q >> 1);
@@ -53,7 +54,8 @@ compress(const ff::ff_t x) requires(check_d(d))
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
 inline static ff::ff_t
-decompress(const ff::ff_t x) requires(check_d(d))
+decompress(const ff::ff_t x)
+  requires(check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
   constexpr uint32_t t1 = t0 >> 1;
@@ -88,7 +90,8 @@ compute_error()
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
 inline static void
-poly_compress(ff::ff_t* const __restrict poly) requires(check_d(d))
+poly_compress(ff::ff_t* const __restrict poly)
+  requires(check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {
     poly[i] = compress<d>(poly[i]);
@@ -99,7 +102,8 @@ poly_compress(ff::ff_t* const __restrict poly) requires(check_d(d))
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
 inline static void
-poly_decompress(ff::ff_t* const __restrict poly) requires(check_d(d))
+poly_decompress(ff::ff_t* const __restrict poly)
+  requires(check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {
     poly[i] = decompress<d>(poly[i]);

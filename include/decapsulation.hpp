@@ -26,7 +26,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256
+inline shake256::shake256<false>
 decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
   const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes

@@ -17,8 +17,8 @@ namespace kyber_utils {
 // See algorithm 1, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static void
-parse(shake128::shake128* const __restrict hasher, // Squeezes arbitrary bytes
-      ff::ff_t* const __restrict poly              // Degree 255 polynomial
+parse(shake128::shake128<false>* const __restrict hasher, // Squeezes bytes
+      ff::ff_t* const __restrict poly // Degree 255 polynomial
 )
 {
   size_t i = 0;

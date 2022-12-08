@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -pedantic
-OPTFLAGS = -O3 -march=native
+OPTFLAGS = -O3 -march=native -mtune=native
 IFLAGS = -I ./include
 DEP_IFLAGS = -I ./sha3/include
 
@@ -32,4 +32,4 @@ bench/a.out: bench/main.cpp include/*.hpp sha3/include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out
-	./$<
+	./$< --benchmark_counters_tabular=true

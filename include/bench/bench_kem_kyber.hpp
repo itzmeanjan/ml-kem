@@ -3,6 +3,7 @@
 #include "encapsulation.hpp"
 #include "kem_keygen.hpp"
 #include "utils.hpp"
+#include "x86_64_cpu_cycles.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
@@ -28,8 +29,21 @@ kem_keygen(benchmark::State& state)
   kyber_utils::random_data<uint8_t>(d, slen);
   kyber_utils::random_data<uint8_t>(z, slen);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     ccakem::keygen<k, eta1>(d, z, pkey, skey);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(d);
     benchmark::DoNotOptimize(z);
@@ -39,6 +53,11 @@ kem_keygen(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(d);
   std::free(z);
@@ -80,9 +99,22 @@ encapsulate(benchmark::State& state)
 
   ccakem::keygen<k, eta1>(d, z, pkey, skey);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
     skdf.read(sender_key, klen);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(m);
     benchmark::DoNotOptimize(pkey);
@@ -92,6 +124,11 @@ encapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(d);
   std::free(z);
@@ -140,9 +177,22 @@ decapsulate(benchmark::State& state)
   auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
   skdf.read(sender_key, klen);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     auto rkdf = ccakem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
     rkdf.read(receiver_key, klen);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(cipher);
@@ -155,6 +205,11 @@ decapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(d);
   std::free(z);

@@ -1,6 +1,6 @@
 ## Benchmarking Kyber PKE & KEM
 
-For benchmarking this Kyber implementation ( along with its components ) on CPU systems, you need to issue
+For benchmarking this Kyber PKE & KEM implementation on CPU systems, you need to issue
 
 ```bash
 make benchmark
@@ -10,10 +10,14 @@ make benchmark
 
 > Because most of the CPUs employ dynamic frequency boosting technique, when benchmarking routines, you may want to disable CPU frequency scaling by following [this](https://github.com/google/benchmark/blob/60b16f1/docs/user_guide.md#disabling-cpu-frequency-scaling) guide.
 
+> **Note**
+
+> On x86_64 architecture average CPU cycle spent in keygen/ {encrypt, encapsulate}/ {decrypt, decapsulate} routine is measured using compiler built-in `__rdtsc`. I've tested it with both Clang and GCC.
+
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( compiled with Clang )
 
 ```bash
-2022-11-01T12:58:37+04:00
+2022-12-08T12:25:59+04:00
 Running ./bench/a.out
 Run on (8 X 2400 MHz CPU s)
 CPU Caches:
@@ -21,237 +25,102 @@ CPU Caches:
   L1 Instruction 32 KiB
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB
-Load Average: 1.53, 1.82, 2.22
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            3.98 ns         3.98 ns    173441627
-bench_kyber::ff_compound_add                   2.09 ns         2.07 ns    358886018
-bench_kyber::ff_sub                            4.36 ns         4.35 ns    158630880
-bench_kyber::ff_compound_sub                   2.20 ns         2.18 ns    326427069
-bench_kyber::ff_neg                           0.806 ns        0.805 ns    854826104
-bench_kyber::ff_mul                            6.75 ns         6.74 ns    102879146
-bench_kyber::ff_compound_mul                   4.48 ns         4.47 ns    157113422
-bench_kyber::ff_inv                             100 ns          100 ns     10000000
-bench_kyber::ff_div                            51.1 ns         51.1 ns     10092709
-bench_kyber::ff_exp                             410 ns          410 ns      1734696
-bench_kyber::parse                             2162 ns         2161 ns       314605
-bench_kyber::generate_matrix<2, true>          9293 ns         9284 ns        74171
-bench_kyber::generate_matrix<2, false>         9205 ns         9198 ns        75258
-bench_kyber::generate_matrix<3, true>         20605 ns        20596 ns        33275
-bench_kyber::generate_matrix<3, false>        21074 ns        20982 ns        33803
-bench_kyber::generate_matrix<4, true>         36987 ns        36936 ns        19007
-bench_kyber::generate_matrix<4, false>        37258 ns        37218 ns        19208
-bench_kyber::cbd<2>                            39.3 ns         39.2 ns     17917982
-bench_kyber::cbd<3>                            97.9 ns         97.8 ns      7007989
-bench_kyber::encode<1>                         44.4 ns         44.4 ns     15793404 bytes_per_second=687.902M/s
-bench_kyber::decode<1>                         35.7 ns         35.7 ns     19597797 bytes_per_second=855.24M/s
-bench_kyber::encode<4>                         18.0 ns         17.9 ns     39057705 bytes_per_second=6.64392G/s
-bench_kyber::decode<4>                         15.9 ns         15.9 ns     44094210 bytes_per_second=7.51432G/s
-bench_kyber::encode<5>                         78.1 ns         78.1 ns      8905852 bytes_per_second=1.90839G/s
-bench_kyber::decode<5>                         62.1 ns         62.1 ns     11123647 bytes_per_second=2.4008G/s
-bench_kyber::encode<10>                         399 ns          398 ns      1764513 bytes_per_second=766.292M/s
-bench_kyber::decode<10>                        67.4 ns         67.3 ns     10249502 bytes_per_second=4.42792G/s
-bench_kyber::encode<11>                         127 ns          127 ns      5497569 bytes_per_second=2.58286G/s
-bench_kyber::decode<11>                         121 ns          121 ns      5671139 bytes_per_second=2.7094G/s
-bench_kyber::encode<12>                         192 ns          192 ns      3597751 bytes_per_second=1.86614G/s
-bench_kyber::decode<12>                        37.9 ns         37.9 ns     18675382 bytes_per_second=9.44575G/s
-bench_kyber::compress<1>                       3.48 ns         3.48 ns    199230401
-bench_kyber::decompress<1>                     4.23 ns         4.23 ns    164535540
-bench_kyber::compress<4>                       3.47 ns         3.47 ns    199662286
-bench_kyber::decompress<4>                     4.21 ns         4.21 ns    166740112
-bench_kyber::compress<5>                       3.49 ns         3.48 ns    201197990
-bench_kyber::decompress<5>                     4.21 ns         4.21 ns    166470469
-bench_kyber::compress<10>                      3.50 ns         3.49 ns    200092042
-bench_kyber::decompress<10>                    4.21 ns         4.21 ns    166744878
-bench_kyber::compress<11>                      3.54 ns         3.53 ns    198303654
-bench_kyber::decompress<11>                    4.22 ns         4.21 ns    166788979
-bench_kyber::ntt                               1484 ns         1482 ns       468299
-bench_kyber::intt                              1425 ns         1425 ns       491438
-bench_kyber::polymul                            369 ns          369 ns      1889803
-bench_kyber::random_data<32>                  11687 ns        11670 ns        58157
-bench_kyber::pke_keygen<2, 3>                 20972 ns        20958 ns        33039 items_per_second=47.7135k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          22719 ns        22705 ns        28724 items_per_second=44.043k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>           5671 ns         5663 ns       111028 items_per_second=176.588k/s
-bench_kyber::pke_keygen<3, 2>                 37180 ns        37155 ns        18633 items_per_second=26.9144k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>          41523 ns        41334 ns        16629 items_per_second=24.193k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>           8107 ns         8071 ns        84272 items_per_second=123.904k/s
-bench_kyber::pke_keygen<4, 2>                 63764 ns        63625 ns        10917 items_per_second=15.717k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>          65369 ns        65201 ns         9475 items_per_second=15.3373k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          10236 ns        10218 ns        67106 items_per_second=97.8644k/s
-bench_kyber::kem_keygen<2, 3>                 23048 ns        23025 ns        30009 items_per_second=43.4318k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      27794 ns        27768 ns        25043 items_per_second=36.0129k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>      30928 ns        30912 ns        22176 items_per_second=32.3497k/s
-bench_kyber::kem_keygen<3, 2>                 40539 ns        40506 ns        17152 items_per_second=24.6877k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>      47923 ns        47879 ns        14828 items_per_second=20.8862k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>      51955 ns        51902 ns        12725 items_per_second=19.2671k/s
-bench_kyber::kem_keygen<4, 2>                 64043 ns        63997 ns        10380 items_per_second=15.6258k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>      71999 ns        71930 ns         9489 items_per_second=13.9025k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>      77664 ns        77599 ns         8569 items_per_second=12.8868k/s
+Load Average: 1.37, 1.67, 1.78
+-----------------------------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations average_cpu_cycles items_per_second
+-----------------------------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 21438 ns        21395 ns        32382            51.427k        46.739k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          22996 ns        22962 ns        30500            55.172k       43.5502k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>           5660 ns         5654 ns       119793            13.566k       176.875k/s
+bench_kyber::pke_keygen<3, 2>                 37535 ns        37489 ns        18645             90.06k       26.6747k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>          40276 ns        40223 ns        17492            96.643k       24.8612k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>           7709 ns         7695 ns        88807            18.484k       129.958k/s
+bench_kyber::pke_keygen<4, 2>                 60666 ns        60614 ns        11374           145.572k        16.498k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>          63328 ns        63269 ns        11000           151.968k       15.8055k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          10045 ns        10038 ns        67741            24.087k       99.6218k/s
+bench_kyber::kem_keygen<2, 3>                 23974 ns        23600 ns        29888            57.522k       42.3732k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      27877 ns        27847 ns        24345            66.887k       35.9108k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      32213 ns        32112 ns        22439            77.292k       31.1414k/s
+bench_kyber::kem_keygen<3, 2>                 40342 ns        40315 ns        16870            96.803k       24.8049k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>      47345 ns        47305 ns        14778           113.611k       21.1395k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>      51619 ns        51586 ns        12987           123.868k        19.385k/s
+bench_kyber::kem_keygen<4, 2>                 64723 ns        64670 ns        10216           155.316k       15.4631k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>      72587 ns        72478 ns         9560           174.191k       13.7974k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>      78441 ns        78362 ns         8804            188.24k       12.7613k/s
 ```
 
 ### On ARM Cortex-A72 ( compiled with GCC )
 
 ```bash
-2022-11-01T09:02:23+00:00
+2022-12-08T08:35:19+00:00
 Running ./bench/a.out
 Run on (16 X 166.66 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x16)
   L1 Instruction 48 KiB (x16)
   L2 Unified 2048 KiB (x4)
-Load Average: 0.36, 0.09, 0.03
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            7.83 ns         7.83 ns     89351926
-bench_kyber::ff_compound_add                   2.61 ns         2.61 ns    268163220
-bench_kyber::ff_sub                            7.83 ns         7.83 ns     89387539
-bench_kyber::ff_compound_sub                   2.61 ns         2.61 ns    268173304
-bench_kyber::ff_neg                            2.25 ns         2.25 ns    310700374
-bench_kyber::ff_mul                            11.7 ns         11.7 ns     59591221
-bench_kyber::ff_compound_mul                   6.53 ns         6.53 ns    107266950
-bench_kyber::ff_inv                            48.4 ns         48.4 ns     12992777
-bench_kyber::ff_div                            35.3 ns         35.3 ns     15751668
-bench_kyber::ff_exp                             840 ns          840 ns       846324
-bench_kyber::parse                             7866 ns         7866 ns        88972
-bench_kyber::generate_matrix<2, true>         32264 ns        32264 ns        21847
-bench_kyber::generate_matrix<2, false>        32390 ns        32389 ns        21639
-bench_kyber::generate_matrix<3, true>         72586 ns        72584 ns         9642
-bench_kyber::generate_matrix<3, false>        72703 ns        72701 ns         9647
-bench_kyber::generate_matrix<4, true>        129328 ns       129327 ns         5433
-bench_kyber::generate_matrix<4, false>       128551 ns       128549 ns         5416
-bench_kyber::cbd<2>                             222 ns          222 ns      3147606
-bench_kyber::cbd<3>                             328 ns          328 ns      2133918
-bench_kyber::encode<1>                         95.5 ns         95.5 ns      7332494 bytes_per_second=319.677M/s
-bench_kyber::decode<1>                          344 ns          344 ns      2035004 bytes_per_second=88.7186M/s
-bench_kyber::encode<4>                         78.8 ns         78.8 ns      8887744 bytes_per_second=1.51362G/s
-bench_kyber::decode<4>                          108 ns          108 ns      6483824 bytes_per_second=1.10426G/s
-bench_kyber::encode<5>                          249 ns          249 ns      2812914 bytes_per_second=613.179M/s
-bench_kyber::decode<5>                          271 ns          271 ns      2586122 bytes_per_second=563.774M/s
-bench_kyber::encode<10>                         279 ns          279 ns      2510103 bytes_per_second=1094.31M/s
-bench_kyber::decode<10>                         343 ns          343 ns      2042620 bytes_per_second=890.514M/s
-bench_kyber::encode<11>                         325 ns          325 ns      2156674 bytes_per_second=1034.26M/s
-bench_kyber::decode<11>                         352 ns          352 ns      1988130 bytes_per_second=953.444M/s
-bench_kyber::encode<12>                         149 ns          149 ns      4710053 bytes_per_second=2.40356G/s
-bench_kyber::decode<12>                         151 ns          151 ns      4647373 bytes_per_second=2.37431G/s
-bench_kyber::compress<1>                       4.79 ns         4.79 ns    146276236
-bench_kyber::decompress<1>                     7.40 ns         7.40 ns     94641368
-bench_kyber::compress<4>                       4.79 ns         4.79 ns    146276269
-bench_kyber::decompress<4>                     7.40 ns         7.40 ns     94648524
-bench_kyber::compress<5>                       4.79 ns         4.79 ns    146274376
-bench_kyber::decompress<5>                     7.40 ns         7.40 ns     94644731
-bench_kyber::compress<10>                      4.79 ns         4.79 ns    146276819
-bench_kyber::decompress<10>                    7.40 ns         7.40 ns     94648078
-bench_kyber::compress<11>                      4.79 ns         4.79 ns    146275183
-bench_kyber::decompress<11>                    7.40 ns         7.40 ns     94645222
-bench_kyber::ntt                               5240 ns         5240 ns       133601
-bench_kyber::intt                              5181 ns         5181 ns       135115
-bench_kyber::polymul                            845 ns          845 ns       828389
-bench_kyber::random_data<32>                   4679 ns         4679 ns       149634
-bench_kyber::pke_keygen<2, 3>                 75153 ns        75152 ns         9316 items_per_second=13.3063k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          79989 ns        79988 ns         8744 items_per_second=12.5019k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>          19280 ns        19280 ns        36311 items_per_second=51.8666k/s
-bench_kyber::pke_keygen<3, 2>                126275 ns       126273 ns         5551 items_per_second=7.91936k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>         136362 ns       136359 ns         5119 items_per_second=7.3336k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>          26013 ns        26013 ns        26907 items_per_second=38.4421k/s
-bench_kyber::pke_keygen<4, 2>                204584 ns       204583 ns         3444 items_per_second=4.88799k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>         215498 ns       215495 ns         3207 items_per_second=4.64047k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          32809 ns        32809 ns        21332 items_per_second=30.4792k/s
-bench_kyber::kem_keygen<2, 3>                 85759 ns        85759 ns         8209 items_per_second=11.6606k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>     107750 ns       107749 ns         6603 items_per_second=9.28083k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>     114161 ns       114158 ns         6123 items_per_second=8.75981k/s
-bench_kyber::kem_keygen<3, 2>                141852 ns       141849 ns         4935 items_per_second=7.04976k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>     172686 ns       172683 ns         4017 items_per_second=5.79095k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>     183051 ns       183048 ns         3830 items_per_second=5.46303k/s
-bench_kyber::kem_keygen<4, 2>                223604 ns       223603 ns         3127 items_per_second=4.47221k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>     261831 ns       261824 ns         2656 items_per_second=3.81935k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>     275633 ns       275632 ns         2543 items_per_second=3.62803k/s
+Load Average: 0.08, 0.02, 0.01
+----------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 57386 ns        57385 ns        12190        17.426k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          64532 ns        64530 ns        10798       15.4966k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>          20983 ns        20983 ns        33361       47.6585k/s
+bench_kyber::pke_keygen<3, 2>                100210 ns       100207 ns         6996       9.97934k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>         109874 ns       109871 ns         6373       9.10162k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>          28322 ns        28322 ns        24714       35.3086k/s
+bench_kyber::pke_keygen<4, 2>                158289 ns       158287 ns         4422       6.31765k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>         169808 ns       169807 ns         4126       5.88905k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          35835 ns        35833 ns        19535        27.907k/s
+bench_kyber::kem_keygen<2, 3>                 62022 ns        62021 ns        11316       16.1236k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      75746 ns        75743 ns         9249       13.2025k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      92372 ns        92371 ns         7562        10.826k/s
+bench_kyber::kem_keygen<3, 2>                106517 ns       106516 ns         6562       9.38829k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>     124890 ns       124887 ns         5606       8.00725k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>     147424 ns       147422 ns         4735       6.78326k/s
+bench_kyber::kem_keygen<4, 2>                166919 ns       166917 ns         4193       5.99102k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>     189034 ns       189028 ns         3697       5.29021k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     219775 ns       219762 ns         3192       4.55039k/s
 ```
 
 ### On ARM Cortex-A72 ( compiled with Clang )
 
 ```bash
-2022-11-01T09:10:09+00:00
+2022-12-08T08:36:52+00:00
 Running ./bench/a.out
 Run on (16 X 166.66 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x16)
   L1 Instruction 48 KiB (x16)
   L2 Unified 2048 KiB (x4)
-Load Average: 0.22, 0.12, 0.08
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            8.51 ns         8.51 ns     82926178
-bench_kyber::ff_compound_add                   5.55 ns         5.55 ns    127026407
-bench_kyber::ff_sub                            8.36 ns         8.36 ns     83752358
-bench_kyber::ff_compound_sub                   6.00 ns         6.00 ns    117081322
-bench_kyber::ff_neg                            1.74 ns         1.74 ns    402243119
-bench_kyber::ff_mul                            12.2 ns         12.2 ns     56914817
-bench_kyber::ff_compound_mul                   8.31 ns         8.31 ns     84274572
-bench_kyber::ff_inv                            52.0 ns         52.0 ns     12897199
-bench_kyber::ff_div                            52.4 ns         52.4 ns     21450425
-bench_kyber::ff_exp                             770 ns          770 ns      1054975
-bench_kyber::parse                             6262 ns         6262 ns       111814
-bench_kyber::generate_matrix<2, true>         26198 ns        26197 ns        26728
-bench_kyber::generate_matrix<2, false>        26625 ns        26625 ns        26462
-bench_kyber::generate_matrix<3, true>         59504 ns        59501 ns        11803
-bench_kyber::generate_matrix<3, false>        59554 ns        59553 ns        11724
-bench_kyber::generate_matrix<4, true>        105769 ns       105768 ns         6643
-bench_kyber::generate_matrix<4, false>       106321 ns       106318 ns         6587
-bench_kyber::cbd<2>                             300 ns          300 ns      2331886
-bench_kyber::cbd<3>                             368 ns          368 ns      1899560
-bench_kyber::encode<1>                          192 ns          192 ns      3651495 bytes_per_second=159.182M/s
-bench_kyber::decode<1>                          218 ns          218 ns      3211419 bytes_per_second=140.008M/s
-bench_kyber::encode<4>                         31.8 ns         31.8 ns     21997977 bytes_per_second=3.74623G/s
-bench_kyber::decode<4>                         58.7 ns         58.7 ns     11916494 bytes_per_second=2.02959G/s
-bench_kyber::encode<5>                          149 ns          148 ns      4713605 bytes_per_second=1027.54M/s
-bench_kyber::decode<5>                          193 ns          193 ns      3623820 bytes_per_second=789.941M/s
-bench_kyber::encode<10>                         185 ns          185 ns      3779281 bytes_per_second=1.60908G/s
-bench_kyber::decode<10>                         176 ns          176 ns      3971060 bytes_per_second=1.68947G/s
-bench_kyber::encode<11>                         214 ns          214 ns      3263455 bytes_per_second=1.52834G/s
-bench_kyber::decode<11>                         259 ns          259 ns      2704093 bytes_per_second=1.2664G/s
-bench_kyber::encode<12>                        79.2 ns         79.2 ns      8840033 bytes_per_second=4.51665G/s
-bench_kyber::decode<12>                         112 ns          112 ns      6236059 bytes_per_second=3.18607G/s
-bench_kyber::compress<1>                       6.56 ns         6.56 ns    107267226
-bench_kyber::decompress<1>                     8.20 ns         8.20 ns     85403715
-bench_kyber::compress<4>                       6.61 ns         6.61 ns    106035408
-bench_kyber::decompress<4>                     8.20 ns         8.20 ns     85581435
-bench_kyber::compress<5>                       7.18 ns         7.18 ns     97527972
-bench_kyber::decompress<5>                     8.27 ns         8.27 ns     85018249
-bench_kyber::compress<10>                      7.14 ns         7.14 ns     98055630
-bench_kyber::decompress<10>                    8.20 ns         8.20 ns     86150097
-bench_kyber::compress<11>                      7.49 ns         7.48 ns     95828965
-bench_kyber::decompress<11>                    8.22 ns         8.22 ns     85506079
-bench_kyber::ntt                               5691 ns         5690 ns       123026
-bench_kyber::intt                              5086 ns         5086 ns       137613
-bench_kyber::polymul                            882 ns          882 ns       793672
-bench_kyber::random_data<32>                   4888 ns         4888 ns       143207
-bench_kyber::pke_keygen<2, 3>                 68053 ns        68052 ns        10320 items_per_second=14.6947k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          73295 ns        73295 ns         9544 items_per_second=13.6435k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>          22265 ns        22265 ns        31437 items_per_second=44.9136k/s
-bench_kyber::pke_keygen<3, 2>                115663 ns       115660 ns         6041 items_per_second=8.64603k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>         124915 ns       124915 ns         5605 items_per_second=8.00547k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>          30083 ns        30083 ns        23270 items_per_second=33.2413k/s
-bench_kyber::pke_keygen<4, 2>                186275 ns       186273 ns         3776 items_per_second=5.36848k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>         195347 ns       195341 ns         3590 items_per_second=5.11925k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          38405 ns        38405 ns        18227 items_per_second=26.0383k/s
-bench_kyber::kem_keygen<2, 3>                 75857 ns        75856 ns         9214 items_per_second=13.1829k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      95223 ns        95221 ns         7495 items_per_second=10.5018k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>     107170 ns       107170 ns         6556 items_per_second=9.33099k/s
-bench_kyber::kem_keygen<3, 2>                127567 ns       127567 ns         5489 items_per_second=7.83904k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>     153117 ns       153116 ns         4565 items_per_second=6.531k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>     170086 ns       170077 ns         4121 items_per_second=5.8797k/s
-bench_kyber::kem_keygen<4, 2>                201657 ns       201652 ns         3464 items_per_second=4.95905k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>     231690 ns       231689 ns         3024 items_per_second=4.31614k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>     253299 ns       253297 ns         2769 items_per_second=3.94793k/s
+Load Average: 0.25, 0.09, 0.03
+----------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 58064 ns        58064 ns        12026       17.2225k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          68359 ns        68358 ns        10252       14.6288k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>          22375 ns        22375 ns        31278       44.6922k/s
+bench_kyber::pke_keygen<3, 2>                100087 ns       100083 ns         7014       9.99166k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>         114019 ns       114018 ns         6128       8.77053k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>          30274 ns        30273 ns        23124       33.0327k/s
+bench_kyber::pke_keygen<4, 2>                157806 ns       157802 ns         4439       6.33704k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>         168377 ns       168374 ns         4196       5.93917k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          38756 ns        38755 ns        18061       25.8029k/s
+bench_kyber::kem_keygen<2, 3>                 63094 ns        63094 ns        11072       15.8494k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      80582 ns        80581 ns         8703       12.4098k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      99613 ns        99610 ns         7013       10.0391k/s
+bench_kyber::kem_keygen<3, 2>                107269 ns       107266 ns         6474       9.32262k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>     130892 ns       130889 ns         5301       7.64004k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>     154406 ns       154406 ns         4539       6.47645k/s
+bench_kyber::kem_keygen<4, 2>                168146 ns       168145 ns         4146       5.94726k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>     189495 ns       189494 ns         3679       5.27721k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     221018 ns       221014 ns         3186        4.5246k/s
 ```
 
 ### On AWS Graviton3 ( compiled with GCC )
 
 ```bash
-2022-11-01T09:05:14+00:00
+2022-12-08T08:39:22+00:00
 Running ./bench/a.out
 Run on (64 X 2100 MHz CPU s)
 CPU Caches:
@@ -259,79 +128,34 @@ CPU Caches:
   L1 Instruction 64 KiB (x64)
   L2 Unified 1024 KiB (x64)
   L3 Unified 32768 KiB (x1)
-Load Average: 0.18, 0.05, 0.01
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            6.17 ns         6.17 ns    113365024
-bench_kyber::ff_compound_add                   2.31 ns         2.31 ns    302862107
-bench_kyber::ff_sub                            6.21 ns         6.21 ns    112795719
-bench_kyber::ff_compound_sub                   2.31 ns         2.31 ns    302855803
-bench_kyber::ff_neg                            1.32 ns         1.32 ns    532421787
-bench_kyber::ff_mul                            8.48 ns         8.48 ns     82597045
-bench_kyber::ff_compound_mul                   4.62 ns         4.62 ns    151388544
-bench_kyber::ff_inv                            51.4 ns         51.4 ns     10000000
-bench_kyber::ff_div                            24.4 ns         24.4 ns     34073839
-bench_kyber::ff_exp                             604 ns          604 ns      1160935
-bench_kyber::parse                             3681 ns         3681 ns       190065
-bench_kyber::generate_matrix<2, true>         14637 ns        14637 ns        47944
-bench_kyber::generate_matrix<2, false>        14624 ns        14623 ns        44635
-bench_kyber::generate_matrix<3, true>         33281 ns        33281 ns        21064
-bench_kyber::generate_matrix<3, false>        33089 ns        33088 ns        21217
-bench_kyber::generate_matrix<4, true>         59053 ns        59052 ns        11796
-bench_kyber::generate_matrix<4, false>        58838 ns        58837 ns        11889
-bench_kyber::cbd<2>                            55.8 ns         55.7 ns     12557006
-bench_kyber::cbd<3>                             102 ns          102 ns      6836846
-bench_kyber::encode<1>                         46.2 ns         46.2 ns     15146742 bytes_per_second=660.86M/s
-bench_kyber::decode<1>                          125 ns          125 ns      5615531 bytes_per_second=244.999M/s
-bench_kyber::encode<4>                         19.2 ns         19.2 ns     36360271 bytes_per_second=6.19797G/s
-bench_kyber::decode<4>                         28.6 ns         28.6 ns     24501560 bytes_per_second=4.16713G/s
-bench_kyber::encode<5>                         81.7 ns         81.7 ns      8567833 bytes_per_second=1.82408G/s
-bench_kyber::decode<5>                          110 ns          110 ns      6382373 bytes_per_second=1.35875G/s
-bench_kyber::encode<10>                         102 ns          102 ns      6892848 bytes_per_second=2.93169G/s
-bench_kyber::decode<10>                         115 ns          115 ns      6095239 bytes_per_second=2.59419G/s
-bench_kyber::encode<11>                         115 ns          115 ns      6104813 bytes_per_second=2.85985G/s
-bench_kyber::decode<11>                         132 ns          132 ns      5297263 bytes_per_second=2.48012G/s
-bench_kyber::encode<12>                        34.5 ns         34.5 ns     20385394 bytes_per_second=10.3753G/s
-bench_kyber::decode<12>                        43.8 ns         43.8 ns     15978514 bytes_per_second=8.16941G/s
-bench_kyber::compress<1>                       3.85 ns         3.85 ns    181706164
-bench_kyber::decompress<1>                     5.39 ns         5.39 ns    129781087
-bench_kyber::compress<4>                       3.85 ns         3.85 ns    181716088
-bench_kyber::decompress<4>                     5.39 ns         5.39 ns    129795400
-bench_kyber::compress<5>                       3.85 ns         3.85 ns    181714344
-bench_kyber::decompress<5>                     5.39 ns         5.39 ns    129793812
-bench_kyber::compress<10>                      3.85 ns         3.85 ns    181704078
-bench_kyber::decompress<10>                    5.39 ns         5.39 ns    129790705
-bench_kyber::compress<11>                      3.85 ns         3.85 ns    181714944
-bench_kyber::decompress<11>                    5.39 ns         5.39 ns    129780268
-bench_kyber::ntt                               2038 ns         2038 ns       343589
-bench_kyber::intt                              2135 ns         2135 ns       327980
-bench_kyber::polymul                            296 ns          296 ns      2366542
-bench_kyber::random_data<32>                   1663 ns         1663 ns       420025
-bench_kyber::pke_keygen<2, 3>                 32694 ns        32694 ns        21414 items_per_second=30.5868k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          33318 ns        33317 ns        21015 items_per_second=30.015k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>           7429 ns         7429 ns        94258 items_per_second=134.615k/s
-bench_kyber::pke_keygen<3, 2>                 53423 ns        53422 ns        13084 items_per_second=18.719k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>          58078 ns        58076 ns        12197 items_per_second=17.2189k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>           9940 ns         9940 ns        70421 items_per_second=100.603k/s
-bench_kyber::pke_keygen<4, 2>                 86506 ns        86503 ns         8103 items_per_second=11.5603k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>          91906 ns        91902 ns         7705 items_per_second=10.8811k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          12601 ns        12600 ns        55546 items_per_second=79.3631k/s
-bench_kyber::kem_keygen<2, 3>                 35902 ns        35901 ns        19493 items_per_second=27.8541k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      43784 ns        43782 ns        15994 items_per_second=22.8405k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>      47195 ns        47194 ns        14848 items_per_second=21.189k/s
-bench_kyber::kem_keygen<3, 2>                 60265 ns        60262 ns        11801 items_per_second=16.5941k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>      72573 ns        72571 ns         9779 items_per_second=13.7796k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>      76683 ns        76682 ns         9121 items_per_second=13.0409k/s
-bench_kyber::kem_keygen<4, 2>                 94530 ns        94526 ns         7403 items_per_second=10.5791k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>     109032 ns       109030 ns         6417 items_per_second=9.17179k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>     114192 ns       114188 ns         6140 items_per_second=8.75749k/s
+Load Average: 0.00, 0.00, 0.00
+----------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 27196 ns        27195 ns        25798       36.7714k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          30182 ns        30181 ns        23215       33.1333k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>           6104 ns         6104 ns       114729        163.82k/s
+bench_kyber::pke_keygen<3, 2>                 51525 ns        51524 ns        13567       19.4083k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>          55684 ns        55683 ns        12625        17.959k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>           8204 ns         8203 ns        85277       121.901k/s
+bench_kyber::pke_keygen<4, 2>                 85430 ns        85429 ns         8149       11.7057k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>          89667 ns        89664 ns         7757       11.1527k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          10395 ns        10395 ns        67364       96.2027k/s
+bench_kyber::kem_keygen<2, 3>                 29579 ns        29578 ns        23111       33.8084k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      35843 ns        35842 ns        19651       27.9002k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      39495 ns        39495 ns        17724       25.3199k/s
+bench_kyber::kem_keygen<3, 2>                 54580 ns        54578 ns        12765       18.3223k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>      63088 ns        63085 ns        11058       15.8516k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>      67781 ns        67779 ns        10318       14.7539k/s
+bench_kyber::kem_keygen<4, 2>                 90504 ns        90503 ns         7694       11.0494k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>     100387 ns       100386 ns         6922       9.96158k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     106354 ns       106351 ns         6568       9.40286k/s
 ```
 
 ### On AWS Graviton3 ( compiled with Clang )
 
 ```bash
-2022-11-01T09:07:38+00:00
+2022-12-08T08:41:34+00:00
 Running ./bench/a.out
 Run on (64 X 2100 MHz CPU s)
 CPU Caches:
@@ -339,231 +163,96 @@ CPU Caches:
   L1 Instruction 64 KiB (x64)
   L2 Unified 1024 KiB (x64)
   L3 Unified 32768 KiB (x1)
-Load Average: 0.32, 0.22, 0.09
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            5.78 ns         5.78 ns    121106956
-bench_kyber::ff_compound_add                   3.47 ns         3.47 ns    201837114
-bench_kyber::ff_sub                            6.16 ns         6.16 ns    113558171
-bench_kyber::ff_compound_sub                   3.85 ns         3.85 ns    181709503
-bench_kyber::ff_neg                           0.891 ns        0.890 ns    786295119
-bench_kyber::ff_mul                            8.48 ns         8.48 ns     82591275
-bench_kyber::ff_compound_mul                   6.16 ns         6.16 ns    113565092
-bench_kyber::ff_inv                            25.5 ns         25.5 ns     22759174
-bench_kyber::ff_div                            34.4 ns         34.4 ns     20346439
-bench_kyber::ff_exp                             489 ns          489 ns      1456322
-bench_kyber::parse                             2326 ns         2326 ns       300896
-bench_kyber::generate_matrix<2, true>         10140 ns        10139 ns        69301
-bench_kyber::generate_matrix<2, false>        10028 ns        10028 ns        69574
-bench_kyber::generate_matrix<3, true>         22270 ns        22270 ns        31365
-bench_kyber::generate_matrix<3, false>        22399 ns        22399 ns        31353
-bench_kyber::generate_matrix<4, true>         42361 ns        42360 ns        16729
-bench_kyber::generate_matrix<4, false>        41695 ns        41694 ns        16855
-bench_kyber::cbd<2>                             101 ns          101 ns      6926846
-bench_kyber::cbd<3>                             153 ns          153 ns      4563846
-bench_kyber::encode<1>                         46.5 ns         46.5 ns     15060330 bytes_per_second=656.625M/s
-bench_kyber::decode<1>                         44.4 ns         44.4 ns     15735572 bytes_per_second=686.798M/s
-bench_kyber::encode<4>                         9.62 ns         9.62 ns     72871904 bytes_per_second=12.394G/s
-bench_kyber::decode<4>                         15.9 ns         15.9 ns     44234277 bytes_per_second=7.50922G/s
-bench_kyber::encode<5>                         57.5 ns         57.5 ns     12171148 bytes_per_second=2.58982G/s
-bench_kyber::decode<5>                         69.7 ns         69.7 ns     10095784 bytes_per_second=2.13925G/s
-bench_kyber::encode<10>                        53.3 ns         53.3 ns     13101569 bytes_per_second=5.58896G/s
-bench_kyber::decode<10>                        55.4 ns         55.4 ns     12612631 bytes_per_second=5.37706G/s
-bench_kyber::encode<11>                        91.9 ns         91.9 ns      7625590 bytes_per_second=3.56817G/s
-bench_kyber::decode<11>                         106 ns          106 ns      6607063 bytes_per_second=3.09577G/s
-bench_kyber::encode<12>                        24.4 ns         24.4 ns     28727948 bytes_per_second=14.6837G/s
-bench_kyber::decode<12>                        32.7 ns         32.7 ns     21441635 bytes_per_second=10.9525G/s
-bench_kyber::compress<1>                       5.01 ns         5.01 ns    139762836
-bench_kyber::decompress<1>                     4.62 ns         4.62 ns    151433777
-bench_kyber::compress<4>                       5.01 ns         5.01 ns    139773332
-bench_kyber::decompress<4>                     4.62 ns         4.62 ns    151419827
-bench_kyber::compress<5>                       5.01 ns         5.01 ns    139788126
-bench_kyber::decompress<5>                     4.62 ns         4.62 ns    151426354
-bench_kyber::compress<10>                      5.01 ns         5.01 ns    139785371
-bench_kyber::decompress<10>                    4.62 ns         4.62 ns    151426002
-bench_kyber::compress<11>                      5.01 ns         5.01 ns    139762898
-bench_kyber::decompress<11>                    4.62 ns         4.62 ns    151422419
-bench_kyber::ntt                               1724 ns         1724 ns       406703
-bench_kyber::intt                              1993 ns         1993 ns       351298
-bench_kyber::polymul                            385 ns          385 ns      1816713
-bench_kyber::random_data<32>                   1723 ns         1723 ns       406272
-bench_kyber::pke_keygen<2, 3>                 23712 ns        23712 ns        29626 items_per_second=42.1735k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          27534 ns        27534 ns        25910 items_per_second=36.3192k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>           7743 ns         7743 ns        90383 items_per_second=129.144k/s
-bench_kyber::pke_keygen<3, 2>                 40882 ns        40881 ns        17207 items_per_second=24.4612k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>          45974 ns        45973 ns        15226 items_per_second=21.752k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>          10395 ns        10395 ns        67328 items_per_second=96.2015k/s
-bench_kyber::pke_keygen<4, 2>                 67457 ns        67456 ns        10346 items_per_second=14.8246k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>          73381 ns        73379 ns         9316 items_per_second=13.6279k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          13234 ns        13234 ns        52903 items_per_second=75.5635k/s
-bench_kyber::kem_keygen<2, 3>                 26296 ns        26296 ns        26468 items_per_second=38.029k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      34453 ns        34451 ns        20619 items_per_second=29.0266k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>      38807 ns        38807 ns        18019 items_per_second=25.7689k/s
-bench_kyber::kem_keygen<3, 2>                 45580 ns        45579 ns        15557 items_per_second=21.9399k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>      55821 ns        55820 ns        12537 items_per_second=17.9149k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>      61482 ns        61480 ns        11269 items_per_second=16.2654k/s
-bench_kyber::kem_keygen<4, 2>                 73308 ns        73306 ns         9588 items_per_second=13.6414k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>      86185 ns        86183 ns         8153 items_per_second=11.6032k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>      93007 ns        93005 ns         7474 items_per_second=10.7522k/s
+Load Average: 0.11, 0.04, 0.01
+----------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 27224 ns        27223 ns        26213       36.7331k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          30511 ns        30510 ns        23108       32.7761k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>           8001 ns         8001 ns        87456       124.984k/s
+bench_kyber::pke_keygen<3, 2>                 48818 ns        48816 ns        14329        20.485k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>          53677 ns        53676 ns        13005       18.6304k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>          10670 ns        10670 ns        65610       93.7219k/s
+bench_kyber::pke_keygen<4, 2>                 79533 ns        79532 ns         8730       12.5735k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>          85473 ns        85471 ns         8172       11.6999k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          13616 ns        13615 ns        51408       73.4462k/s
+bench_kyber::kem_keygen<2, 3>                 28676 ns        28675 ns        24344       34.8737k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      35486 ns        35485 ns        19621       28.1811k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      41253 ns        41252 ns        17047       24.2413k/s
+bench_kyber::kem_keygen<3, 2>                 51775 ns        51774 ns        13442       19.3148k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>      61017 ns        61016 ns        11476       16.3893k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>      68946 ns        68945 ns        10224       14.5043k/s
+bench_kyber::kem_keygen<4, 2>                 84131 ns        84128 ns         8428       11.8866k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>      93867 ns        93864 ns         7389       10.6537k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     103757 ns       103755 ns         6752       9.63812k/s
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with GCC )
 
 ```bash
-2022-11-01T09:12:53+00:00
+2022-12-08T08:44:43+00:00
 Running ./bench/a.out
-Run on (4 X 2300.15 MHz CPU s)
+Run on (4 X 2300.25 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x2)
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.30, 0.08, 0.02
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            6.73 ns         6.73 ns    103909403
-bench_kyber::ff_compound_add                   2.97 ns         2.97 ns    235666360
-bench_kyber::ff_sub                            6.70 ns         6.70 ns    104436966
-bench_kyber::ff_compound_sub                   2.97 ns         2.97 ns    235676010
-bench_kyber::ff_neg                           0.917 ns        0.917 ns    764622674
-bench_kyber::ff_mul                            10.8 ns         10.8 ns     64824143
-bench_kyber::ff_compound_mul                   7.06 ns         7.06 ns     99116660
-bench_kyber::ff_inv                            59.5 ns         59.4 ns      8608749
-bench_kyber::ff_div                             104 ns          104 ns      9850444
-bench_kyber::ff_exp                             800 ns          800 ns       893689
-bench_kyber::parse                             4749 ns         4749 ns       147400
-bench_kyber::generate_matrix<2, true>         20687 ns        20687 ns        32113
-bench_kyber::generate_matrix<2, false>        20724 ns        20723 ns        33801
-bench_kyber::generate_matrix<3, true>         46667 ns        46667 ns        14920
-bench_kyber::generate_matrix<3, false>        46868 ns        46868 ns        15089
-bench_kyber::generate_matrix<4, true>         83370 ns        83371 ns         8329
-bench_kyber::generate_matrix<4, false>        82678 ns        82677 ns         8470
-bench_kyber::cbd<2>                            69.4 ns         69.4 ns     10076878
-bench_kyber::cbd<3>                             155 ns          155 ns      4503816
-bench_kyber::encode<1>                         54.7 ns         54.6 ns     13055642 bytes_per_second=558.431M/s
-bench_kyber::decode<1>                          292 ns          292 ns      2394225 bytes_per_second=104.396M/s
-bench_kyber::encode<4>                         32.5 ns         32.5 ns     21504282 bytes_per_second=3.66394G/s
-bench_kyber::decode<4>                         29.1 ns         29.1 ns     24059595 bytes_per_second=4.09791G/s
-bench_kyber::encode<5>                          171 ns          171 ns      4098817 bytes_per_second=892.796M/s
-bench_kyber::decode<5>                          216 ns          216 ns      3232425 bytes_per_second=705.226M/s
-bench_kyber::encode<10>                         210 ns          210 ns      3339801 bytes_per_second=1.42123G/s
-bench_kyber::decode<10>                         292 ns          292 ns      2396666 bytes_per_second=1045.76M/s
-bench_kyber::encode<11>                         277 ns          277 ns      2532126 bytes_per_second=1.18243G/s
-bench_kyber::decode<11>                         284 ns          284 ns      2467984 bytes_per_second=1.15557G/s
-bench_kyber::encode<12>                        84.6 ns         84.6 ns      8277791 bytes_per_second=4.22556G/s
-bench_kyber::decode<12>                        87.4 ns         87.4 ns      8003627 bytes_per_second=4.09043G/s
-bench_kyber::compress<1>                       4.83 ns         4.83 ns    145015268
-bench_kyber::decompress<1>                     5.94 ns         5.94 ns    117859987
-bench_kyber::compress<4>                       4.48 ns         4.48 ns    156321883
-bench_kyber::decompress<4>                     5.94 ns         5.94 ns    117859174
-bench_kyber::compress<5>                       4.13 ns         4.13 ns    169597992
-bench_kyber::decompress<5>                     5.94 ns         5.94 ns    117848945
-bench_kyber::compress<10>                      4.47 ns         4.47 ns    156449987
-bench_kyber::decompress<10>                    5.94 ns         5.94 ns    117862162
-bench_kyber::compress<11>                      4.47 ns         4.47 ns    156462995
-bench_kyber::decompress<11>                    5.94 ns         5.94 ns    117750877
-bench_kyber::ntt                               3282 ns         3282 ns       213146
-bench_kyber::intt                              5207 ns         5207 ns       134493
-bench_kyber::polymul                            632 ns          632 ns      1109547
-bench_kyber::random_data<32>                   3277 ns         3277 ns       213283
-bench_kyber::pke_keygen<2, 3>                 48398 ns        48398 ns        14374 items_per_second=20.6619k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          59286 ns        59285 ns        12036 items_per_second=16.8678k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>          14252 ns        14252 ns        48861 items_per_second=70.1672k/s
-bench_kyber::pke_keygen<3, 2>                 84221 ns        84217 ns         8299 items_per_second=11.8741k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>         100385 ns       100375 ns         6991 items_per_second=9.96264k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>          18649 ns        18648 ns        37581 items_per_second=53.6265k/s
-bench_kyber::pke_keygen<4, 2>                136006 ns       135999 ns         5154 items_per_second=7.35297k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>         156468 ns       156461 ns         4473 items_per_second=6.39135k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          23433 ns        23432 ns        29886 items_per_second=42.6764k/s
-bench_kyber::kem_keygen<2, 3>                 55636 ns        55634 ns        12611 items_per_second=17.9746k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      77838 ns        77833 ns         9145 items_per_second=12.848k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>      83294 ns        83293 ns         8396 items_per_second=12.0058k/s
-bench_kyber::kem_keygen<3, 2>                 94929 ns        94928 ns         7363 items_per_second=10.5343k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>     125472 ns       125472 ns         5593 items_per_second=7.96993k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>     133954 ns       133950 ns         5236 items_per_second=7.46549k/s
-bench_kyber::kem_keygen<4, 2>                149831 ns       149826 ns         4663 items_per_second=6.67439k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>     188777 ns       188771 ns         3705 items_per_second=5.29743k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>     200172 ns       200156 ns         3495 items_per_second=4.9961k/s
+Load Average: 0.08, 0.02, 0.01
+-----------------------------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations average_cpu_cycles items_per_second
+-----------------------------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 42781 ns        42780 ns        16359            98.365k       23.3755k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          52746 ns        52746 ns        13300           121.291k       18.9589k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>          13947 ns        13947 ns        50171            32.056k       71.6987k/s
+bench_kyber::pke_keygen<3, 2>                 75217 ns        75217 ns         9319           172.959k       13.2949k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>          89999 ns        89997 ns         7780           206.956k       11.1115k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>          18279 ns        18279 ns        38293            42.021k       54.7076k/s
+bench_kyber::pke_keygen<4, 2>                120849 ns       120844 ns         5795           277.928k       8.27514k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>         141813 ns       141804 ns         4922           326.138k         7.052k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          22900 ns        22899 ns        30602            52.646k       43.6705k/s
+bench_kyber::kem_keygen<2, 3>                 46402 ns        46398 ns        15161           106.694k       21.5527k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      62332 ns        62325 ns        11250           143.336k        16.045k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      73071 ns        73066 ns         9576           168.022k       13.6863k/s
+bench_kyber::kem_keygen<3, 2>                 80562 ns        80557 ns         8653           185.266k       12.4136k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>     104087 ns       104086 ns         6644           239.363k       9.60746k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>     118249 ns       118248 ns         5968           271.946k       8.45681k/s
+bench_kyber::kem_keygen<4, 2>                130242 ns       130228 ns         5372           299.526k       7.67884k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>     159012 ns       158991 ns         4422           365.674k       6.28966k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     172186 ns       172180 ns         4021           395.983k       5.80789k/s
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with Clang )
 
 ```bash
-2022-11-01T09:15:04+00:00
+2022-12-08T08:46:09+00:00
 Running ./bench/a.out
-Run on (4 X 2300.15 MHz CPU s)
+Run on (4 X 2300.25 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x2)
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.51, 0.28, 0.11
------------------------------------------------------------------------------------
-Benchmark                                         Time             CPU   Iterations
------------------------------------------------------------------------------------
-bench_kyber::ff_add                            6.75 ns         6.74 ns    103753961
-bench_kyber::ff_compound_add                   3.35 ns         3.35 ns    208965726
-bench_kyber::ff_sub                            7.10 ns         7.10 ns     98520875
-bench_kyber::ff_compound_sub                   3.78 ns         3.78 ns    185154523
-bench_kyber::ff_neg                            1.11 ns         1.11 ns    628782520
-bench_kyber::ff_mul                            10.8 ns         10.8 ns     64990397
-bench_kyber::ff_compound_mul                   7.43 ns         7.43 ns     94212483
-bench_kyber::ff_inv                            97.3 ns         97.3 ns     11756774
-bench_kyber::ff_div                             130 ns          130 ns     10876137
-bench_kyber::ff_exp                             627 ns          627 ns      1170213
-bench_kyber::parse                             3816 ns         3816 ns       183319
-bench_kyber::generate_matrix<2, true>         16706 ns        16705 ns        46910
-bench_kyber::generate_matrix<2, false>        17545 ns        17545 ns        43886
-bench_kyber::generate_matrix<3, true>         33348 ns        33349 ns        19635
-bench_kyber::generate_matrix<3, false>        35701 ns        35700 ns        20427
-bench_kyber::generate_matrix<4, true>         63136 ns        63136 ns        11112
-bench_kyber::generate_matrix<4, false>        63677 ns        63672 ns        11405
-bench_kyber::cbd<2>                            73.3 ns         73.3 ns      9556771
-bench_kyber::cbd<3>                             166 ns          166 ns      4214236
-bench_kyber::encode<1>                         37.2 ns         37.2 ns     18813398 bytes_per_second=821.368M/s
-bench_kyber::decode<1>                         61.4 ns         61.4 ns     11416905 bytes_per_second=497.257M/s
-bench_kyber::encode<4>                         47.9 ns         47.9 ns     14597853 bytes_per_second=2.48694G/s
-bench_kyber::decode<4>                         35.7 ns         35.7 ns     19603871 bytes_per_second=3.33915G/s
-bench_kyber::encode<5>                         72.3 ns         72.3 ns      9718351 bytes_per_second=2.06188G/s
-bench_kyber::decode<5>                         83.6 ns         83.6 ns      8371618 bytes_per_second=1.78201G/s
-bench_kyber::encode<10>                         217 ns          217 ns      3225364 bytes_per_second=1.37327G/s
-bench_kyber::decode<10>                         104 ns          104 ns      6719658 bytes_per_second=2.86156G/s
-bench_kyber::encode<11>                         192 ns          192 ns      3634980 bytes_per_second=1.70343G/s
-bench_kyber::decode<11>                         182 ns          182 ns      3855317 bytes_per_second=1.80495G/s
-bench_kyber::encode<12>                         113 ns          113 ns      6200497 bytes_per_second=3.16732G/s
-bench_kyber::decode<12>                        70.8 ns         70.8 ns      9877692 bytes_per_second=5.04965G/s
-bench_kyber::compress<1>                       5.96 ns         5.96 ns    117443723
-bench_kyber::decompress<1>                     7.06 ns         7.06 ns     99233209
-bench_kyber::compress<4>                       5.99 ns         5.99 ns    116991216
-bench_kyber::decompress<4>                     7.06 ns         7.06 ns     99145392
-bench_kyber::compress<5>                       5.99 ns         5.99 ns    116857105
-bench_kyber::decompress<5>                     7.06 ns         7.06 ns     99267713
-bench_kyber::compress<10>                      5.99 ns         5.99 ns    116999861
-bench_kyber::decompress<10>                    7.06 ns         7.06 ns     99227109
-bench_kyber::compress<11>                      5.99 ns         5.99 ns    116992145
-bench_kyber::decompress<11>                    7.05 ns         7.05 ns     99236562
-bench_kyber::ntt                               2508 ns         2508 ns       279155
-bench_kyber::intt                              2465 ns         2465 ns       283828
-bench_kyber::polymul                            742 ns          742 ns       943307
-bench_kyber::random_data<32>                   3381 ns         3381 ns       206916
-bench_kyber::pke_keygen<2, 3>                 37080 ns        37078 ns        19278 items_per_second=26.9701k/s
-bench_kyber::encrypt<2, 3, 2, 10, 4>          40018 ns        40017 ns        17657 items_per_second=24.9897k/s
-bench_kyber::decrypt<2, 3, 2, 10, 4>          10118 ns        10118 ns        69141 items_per_second=98.8376k/s
-bench_kyber::pke_keygen<3, 2>                 64048 ns        64043 ns        10827 items_per_second=15.6144k/s
-bench_kyber::encrypt<3, 2, 2, 10, 4>          66479 ns        66474 ns        10458 items_per_second=15.0434k/s
-bench_kyber::decrypt<3, 2, 2, 10, 4>          13810 ns        13810 ns        50689 items_per_second=72.4133k/s
-bench_kyber::pke_keygen<4, 2>                103526 ns       103524 ns         6823 items_per_second=9.65955k/s
-bench_kyber::encrypt<4, 2, 2, 11, 5>         113624 ns       113619 ns         6177 items_per_second=8.80135k/s
-bench_kyber::decrypt<4, 2, 2, 11, 5>          17613 ns        17612 ns        39752 items_per_second=56.7802k/s
-bench_kyber::kem_keygen<2, 3>                 40115 ns        40114 ns        17703 items_per_second=24.9288k/s
-bench_kyber::encapsulate<2, 3, 2, 10, 4>      46529 ns        46528 ns        14956 items_per_second=21.4926k/s
-bench_kyber::decapsulate<2, 3, 2, 10, 4>      52913 ns        52912 ns        13329 items_per_second=18.8993k/s
-bench_kyber::kem_keygen<3, 2>                 69023 ns        69016 ns        10145 items_per_second=14.4895k/s
-bench_kyber::encapsulate<3, 2, 2, 10, 4>      83534 ns        83529 ns         8731 items_per_second=11.9719k/s
-bench_kyber::decapsulate<3, 2, 2, 10, 4>      89694 ns        89689 ns         7736 items_per_second=11.1496k/s
-bench_kyber::kem_keygen<4, 2>                111698 ns       111695 ns         6391 items_per_second=8.95296k/s
-bench_kyber::encapsulate<4, 2, 2, 11, 5>     122291 ns       122290 ns         5606 items_per_second=8.17727k/s
-bench_kyber::decapsulate<4, 2, 2, 11, 5>     131389 ns       131389 ns         5076 items_per_second=7.611k/s
+Load Average: 0.17, 0.07, 0.02
+-----------------------------------------------------------------------------------------------------------------------
+Benchmark                                         Time             CPU   Iterations average_cpu_cycles items_per_second
+-----------------------------------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>                 33939 ns        33935 ns        20654            78.036k       29.4682k/s
+bench_kyber::encrypt<2, 3, 2, 10, 4>          37289 ns        37290 ns        18613            85.742k        26.817k/s
+bench_kyber::decrypt<2, 3, 2, 10, 4>          10109 ns        10109 ns        69314            23.228k        98.924k/s
+bench_kyber::pke_keygen<3, 2>                 60289 ns        60289 ns        11623            138.64k       16.5868k/s
+bench_kyber::encrypt<3, 2, 2, 10, 4>          65658 ns        65656 ns        10639           150.999k       15.2309k/s
+bench_kyber::decrypt<3, 2, 2, 10, 4>          13878 ns        13878 ns        50502            31.897k       72.0559k/s
+bench_kyber::pke_keygen<4, 2>                 96943 ns        96944 ns         7244           222.943k       10.3152k/s
+bench_kyber::encrypt<4, 2, 2, 11, 5>         103181 ns       103179 ns         6788           237.277k       9.69186k/s
+bench_kyber::decrypt<4, 2, 2, 11, 5>          17631 ns        17631 ns        39699            40.529k       56.7175k/s
+bench_kyber::kem_keygen<2, 3>                 37171 ns        37171 ns        18863            85.467k       26.9028k/s
+bench_kyber::encapsulate<2, 3, 2, 10, 4>      45461 ns        45461 ns        15435            104.53k       21.9971k/s
+bench_kyber::decapsulate<2, 3, 2, 10, 4>      51712 ns        51707 ns        13514           118.912k       19.3397k/s
+bench_kyber::kem_keygen<3, 2>                 65080 ns        65073 ns        10613           149.653k       15.3673k/s
+bench_kyber::encapsulate<3, 2, 2, 10, 4>      76921 ns        76916 ns         9150           176.899k       13.0013k/s
+bench_kyber::decapsulate<3, 2, 2, 10, 4>      85602 ns        85601 ns         8188           196.857k       11.6821k/s
+bench_kyber::kem_keygen<4, 2>                102946 ns       102944 ns         6793           236.745k       9.71401k/s
+bench_kyber::encapsulate<4, 2, 2, 11, 5>     117328 ns       117326 ns         5972           269.825k       8.52326k/s
+bench_kyber::decapsulate<4, 2, 2, 11, 5>     128166 ns       128162 ns         5436           294.754k       7.80265k/s
 ```

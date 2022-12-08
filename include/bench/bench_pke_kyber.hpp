@@ -3,6 +3,7 @@
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
 #include "utils.hpp"
+#include "x86_64_cpu_cycles.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
@@ -25,8 +26,21 @@ pke_keygen(benchmark::State& state)
   std::memset(skey, 0, sklen);
   kyber_utils::random_data<uint8_t>(seed, slen);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     cpapke::keygen<k, eta1>(seed, pkey, skey);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(seed);
     benchmark::DoNotOptimize(pkey);
@@ -35,6 +49,11 @@ pke_keygen(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(seed);
   std::free(pkey);
@@ -73,8 +92,21 @@ encrypt(benchmark::State& state)
 
   cpapke::keygen<k, eta1>(seed, pkey, skey);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(txt);
@@ -84,6 +116,11 @@ encrypt(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(seed);
   std::free(pkey);
@@ -128,8 +165,21 @@ decrypt(benchmark::State& state)
   cpapke::keygen<k, eta1>(seed, pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
 
+#if defined __x86_64__
+  uint64_t total_cycles = 0ul;
+#endif
+
   for (auto _ : state) {
+#if defined __x86_64__
+    const uint64_t start = cpu_cycles();
+#endif
+
     cpapke::decrypt<k, du, dv>(skey, enc, dec);
+
+#if defined __x86_64__
+    const uint64_t end = cpu_cycles();
+    total_cycles += (end - start);
+#endif
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(enc);
@@ -142,6 +192,11 @@ decrypt(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+#if defined __x86_64__
+  total_cycles /= static_cast<uint64_t>(state.iterations());
+  state.counters["average_cpu_cycles"] = static_cast<double>(total_cycles);
+#endif
 
   std::free(seed);
   std::free(pkey);

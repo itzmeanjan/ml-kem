@@ -35,4 +35,6 @@
 .vscode
 __pycache__
 
-deps
+# For Clangd
+compile_commands.json
+.cache

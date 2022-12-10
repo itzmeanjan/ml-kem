@@ -24,7 +24,7 @@ clean:
 	find . -name '*.out' -o -name '*.o' -o -name '*.so' -o -name '*.gch' | xargs rm -rf
 
 format:
-	find . -path ./sha3 -prune -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla && python3 -m black wrapper/python/*.py
+	find . -path ./sha3 -prune -name '*.hpp' -o -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i --style=Mozilla && python3 -m black wrapper/python/*.py
 
 bench/a.out: bench/main.cpp include/*.hpp sha3/include/*.hpp
 	# make sure you've google-benchmark globally installed;

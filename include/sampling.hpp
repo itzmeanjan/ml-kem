@@ -1,5 +1,6 @@
 #pragma once
 #include "ff.hpp"
+#include "ntt.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <cstdint>

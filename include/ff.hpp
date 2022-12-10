@@ -50,7 +50,7 @@ constexpr uint16_t TWO_ADIC_ROOT_OF_UNITY = 3061;
 //
 // Taken from
 // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L40-L67
-static constexpr std::array<int16_t, 3>
+static inline constexpr std::array<int16_t, 3>
 xgcd(const uint16_t x, const uint16_t y)
 {
   int16_t old_r = static_cast<int16_t>(x), r = static_cast<int16_t>(y);
@@ -88,16 +88,16 @@ struct ff_t
   // Value of field element | v ∈ [0, Q)
   uint16_t v = 0;
 
-  constexpr ff_t(const uint16_t a = 0) { v = a % Q; }
+  inline constexpr ff_t(const uint16_t a = 0) { v = a % Q; }
 
   // Generate field element having canonical value 0
-  static ff_t zero() { return ff_t{ 0 }; }
+  static inline ff_t zero() { return ff_t{ 0 }; }
 
   // Generate field element having canonical value 1
-  static ff_t one() { return ff_t{ 1 }; }
+  static inline ff_t one() { return ff_t{ 1 }; }
 
   // Computes canonical form of prime field addition
-  constexpr ff_t operator+(const ff_t& rhs) const
+  inline constexpr ff_t operator+(const ff_t& rhs) const
   {
     const uint16_t t0 = this->v + rhs.v;
     const bool flg = t0 >= Q;
@@ -107,7 +107,7 @@ struct ff_t
   }
 
   // Computes canonical form of prime field compound addition
-  constexpr void operator+=(const ff_t& rhs)
+  inline constexpr void operator+=(const ff_t& rhs)
   {
     const uint16_t t0 = this->v + rhs.v;
     const bool flg = t0 >= Q;
@@ -117,7 +117,7 @@ struct ff_t
   }
 
   // Computes canonical form of prime field subtraction
-  constexpr ff_t operator-(const ff_t& rhs) const
+  inline constexpr ff_t operator-(const ff_t& rhs) const
   {
     const uint16_t t0 = (Q + this->v) - rhs.v;
     const bool flg = t0 >= Q;
@@ -127,7 +127,7 @@ struct ff_t
   }
 
   // Computes canonical form of prime field compound subtraction
-  constexpr void operator-=(const ff_t& rhs)
+  inline constexpr void operator-=(const ff_t& rhs)
   {
     const uint16_t t0 = (Q + this->v) - rhs.v;
     const bool flg = t0 >= Q;
@@ -137,7 +137,7 @@ struct ff_t
   }
 
   // Computes canonical form of prime field negation
-  constexpr ff_t operator-() const
+  inline constexpr ff_t operator-() const
   {
     const uint16_t tmp = Q - this->v;
     return ff_t{ tmp };
@@ -151,7 +151,7 @@ struct ff_t
   //
   // See https://www.nayuki.io/page/barrett-reduction-algorithm for Barrett
   // reduction algorithm
-  constexpr ff_t operator*(const ff_t& rhs) const
+  inline constexpr ff_t operator*(const ff_t& rhs) const
   {
     const uint32_t t0 = static_cast<uint32_t>(this->v);
     const uint32_t t1 = static_cast<uint32_t>(rhs.v);
@@ -170,7 +170,7 @@ struct ff_t
 
   // Computes canonical form of compound modular multiplication
   // over Z_q | q = 3329
-  constexpr void operator*=(const ff_t& rhs)
+  inline constexpr void operator*=(const ff_t& rhs)
   {
     const uint32_t t0 = static_cast<uint32_t>(this->v);
     const uint32_t t1 = static_cast<uint32_t>(rhs.v);
@@ -199,7 +199,7 @@ struct ff_t
   //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L69-L94
-  constexpr ff_t inv() const
+  inline constexpr ff_t inv() const
   {
     const bool flg0 = this->v == 0;
     const uint16_t t0 = this->v + flg0 * 1;
@@ -216,7 +216,7 @@ struct ff_t
   }
 
   // Computes canonical form of prime field division
-  constexpr ff_t operator/(const ff_t& rhs) const
+  inline constexpr ff_t operator/(const ff_t& rhs) const
   {
     return (*this) * rhs.inv();
   }
@@ -226,7 +226,7 @@ struct ff_t
   //
   // Taken from
   // https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L153-L181
-  constexpr ff_t operator^(const size_t n) const
+  inline constexpr ff_t operator^(const size_t n) const
   {
     ff_t base = *this;
 
@@ -247,13 +247,13 @@ struct ff_t
 
   // Checks whether two prime field elements are holding same canonical value,
   // returning boolean result
-  constexpr bool operator==(const ff_t& rhs) const
+  inline constexpr bool operator==(const ff_t& rhs) const
   {
     return !static_cast<bool>(this->v ^ rhs.v);
   }
 
   // Generate a random prime field element a | a ∈ [0, Q)
-  static ff_t random()
+  static inline ff_t random()
   {
     std::random_device rd;
     std::mt19937_64 gen(rd());
@@ -263,26 +263,13 @@ struct ff_t
   }
 
   // Writes field element into output stream, used for debugging purposes
-  friend std::ostream& operator<<(std::ostream& os, const ff_t& elm);
+  friend inline std::ostream& operator<<(std::ostream& os, const ff_t& elm);
 };
 
-std::ostream&
+inline std::ostream&
 operator<<(std::ostream& os, const ff_t& elm)
 {
   return os << "ff_q(" << elm.v << ", " << Q << ")";
-}
-
-// Computes root of unity of order `2 ^ n`, such that n > 0 && n <= TWO_ADICITY
-//
-// Taken from
-// https://github.com/itzmeanjan/falcon/blob/45b0593215c3f2ec550860128299b123885b3a42/include/ff.hpp#L183-L191
-static inline const ff_t
-nth_root_of_unity(const uint8_t n)
-{
-  constexpr ff_t v{ TWO_ADIC_ROOT_OF_UNITY };
-  const size_t exp = 1ul << (TWO_ADICITY - n);
-
-  return v ^ exp;
 }
 
 }

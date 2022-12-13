@@ -177,15 +177,15 @@ decrypt(benchmark::State& state)
     benchmark::DoNotOptimize(dec);
     benchmark::ClobberMemory();
 
+    for (size_t i = 0; i < mlen; i++) {
+      assert(!static_cast<bool>(txt[i] ^ dec[i]));
+    }
+
     const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
     const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
 
     state.SetIterationTime(sdur.count());
     durations.push_back(nsdur.count());
-  }
-
-  for (size_t i = 0; i < mlen; i++) {
-    assert(!static_cast<bool>(txt[i] ^ dec[i]));
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));

@@ -1,9 +1,9 @@
 #pragma once
+#include "bench_common.hpp"
 #include "decryption.hpp"
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
 #include "utils.hpp"
-#include <benchmark/benchmark.h>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
 namespace bench_kyber {
@@ -21,20 +21,42 @@ pke_keygen(benchmark::State& state)
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
 
-  std::memset(pkey, 0, pklen);
-  std::memset(skey, 0, sklen);
-  kyber_utils::random_data<uint8_t>(seed, slen);
+  std::vector<uint64_t> durations;
 
   for (auto _ : state) {
+    kyber_utils::random_data<uint8_t>(seed, slen);
+
+    const auto t0 = std::chrono::high_resolution_clock::now();
     cpapke::keygen<k, eta1>(seed, pkey, skey);
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(seed);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(skey);
     benchmark::ClobberMemory();
+
+    const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
+    const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
+
+    state.SetIterationTime(sdur.count());
+    durations.push_back(nsdur.count());
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+  const auto min_idx = std::min_element(durations.begin(), durations.end());
+  const auto min = durations.at(std::distance(durations.begin(), min_idx));
+  state.counters["min_exec_time (ns)"] = static_cast<double>(min);
+
+  const auto max_idx = std::max_element(durations.begin(), durations.end());
+  const auto max = durations.at(std::distance(durations.begin(), max_idx));
+  state.counters["max_exec_time (ns)"] = static_cast<double>(max);
+
+  const auto lenby2 = durations.size() / 2;
+  const auto mid_idx = durations.begin() + lenby2;
+  std::nth_element(durations.begin(), mid_idx, durations.end());
+  const auto mid = durations[lenby2];
+  state.counters["median_exec_time (ns)"] = static_cast<double>(mid);
 
   std::free(seed);
   std::free(pkey);
@@ -63,27 +85,47 @@ encrypt(benchmark::State& state)
   uint8_t* txt = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(enclen));
 
-  std::memset(pkey, 0, pklen);
-  std::memset(skey, 0, sklen);
-  std::memset(enc, 0, enclen);
-
-  kyber_utils::random_data<uint8_t>(seed, slen);
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
-
-  cpapke::keygen<k, eta1>(seed, pkey, skey);
+  std::vector<uint64_t> durations;
 
   for (auto _ : state) {
+    kyber_utils::random_data<uint8_t>(seed, slen);
+    cpapke::keygen<k, eta1>(seed, pkey, skey);
+
+    kyber_utils::random_data<uint8_t>(txt, mlen);
+    kyber_utils::random_data<uint8_t>(rcoin, mlen);
+
+    const auto t0 = std::chrono::high_resolution_clock::now();
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(txt);
     benchmark::DoNotOptimize(rcoin);
     benchmark::DoNotOptimize(enc);
     benchmark::ClobberMemory();
+
+    const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
+    const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
+
+    state.SetIterationTime(sdur.count());
+    durations.push_back(nsdur.count());
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+  const auto min_idx = std::min_element(durations.begin(), durations.end());
+  const auto min = durations.at(std::distance(durations.begin(), min_idx));
+  state.counters["min_exec_time (ns)"] = static_cast<double>(min);
+
+  const auto max_idx = std::max_element(durations.begin(), durations.end());
+  const auto max = durations.at(std::distance(durations.begin(), max_idx));
+  state.counters["max_exec_time (ns)"] = static_cast<double>(max);
+
+  const auto lenby2 = durations.size() / 2;
+  const auto mid_idx = durations.begin() + lenby2;
+  std::nth_element(durations.begin(), mid_idx, durations.end());
+  const auto mid = durations[lenby2];
+  state.counters["median_exec_time (ns)"] = static_cast<double>(mid);
 
   std::free(seed);
   std::free(pkey);
@@ -116,25 +158,30 @@ decrypt(benchmark::State& state)
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(enclen));
   uint8_t* dec = static_cast<uint8_t*>(std::malloc(mlen));
 
-  std::memset(pkey, 0, pklen);
-  std::memset(skey, 0, sklen);
-  std::memset(enc, 0, enclen);
-  std::memset(dec, 0, mlen);
-
-  kyber_utils::random_data<uint8_t>(seed, slen);
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
-
-  cpapke::keygen<k, eta1>(seed, pkey, skey);
-  cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+  std::vector<uint64_t> durations;
 
   for (auto _ : state) {
+    kyber_utils::random_data<uint8_t>(seed, slen);
+    cpapke::keygen<k, eta1>(seed, pkey, skey);
+
+    kyber_utils::random_data<uint8_t>(txt, mlen);
+    kyber_utils::random_data<uint8_t>(rcoin, mlen);
+    cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
+
+    const auto t0 = std::chrono::high_resolution_clock::now();
     cpapke::decrypt<k, du, dv>(skey, enc, dec);
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(enc);
     benchmark::DoNotOptimize(dec);
     benchmark::ClobberMemory();
+
+    const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
+    const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
+
+    state.SetIterationTime(sdur.count());
+    durations.push_back(nsdur.count());
   }
 
   for (size_t i = 0; i < mlen; i++) {
@@ -142,6 +189,20 @@ decrypt(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+
+  const auto min_idx = std::min_element(durations.begin(), durations.end());
+  const auto min = durations.at(std::distance(durations.begin(), min_idx));
+  state.counters["min_exec_time (ns)"] = static_cast<double>(min);
+
+  const auto max_idx = std::max_element(durations.begin(), durations.end());
+  const auto max = durations.at(std::distance(durations.begin(), max_idx));
+  state.counters["max_exec_time (ns)"] = static_cast<double>(max);
+
+  const auto lenby2 = durations.size() / 2;
+  const auto mid_idx = durations.begin() + lenby2;
+  std::nth_element(durations.begin(), mid_idx, durations.end());
+  const auto mid = durations[lenby2];
+  state.counters["median_exec_time (ns)"] = static_cast<double>(mid);
 
   std::free(seed);
   std::free(pkey);

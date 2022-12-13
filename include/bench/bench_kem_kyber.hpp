@@ -14,8 +14,8 @@ void
 kem_keygen(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
+  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
 
   uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
@@ -77,9 +77,9 @@ void
 encapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
-  constexpr size_t ctlen = k * du * 32 + dv * 32;
+  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
+  constexpr size_t ctlen = kyber_utils::get_ccakem_cipher_len<k, du, dv>();
   constexpr size_t klen = 32;
 
   uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
@@ -152,9 +152,9 @@ void
 decapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
-  constexpr size_t ctlen = k * du * 32 + dv * 32;
+  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
+  constexpr size_t ctlen = kyber_utils::get_ccakem_cipher_len<k, du, dv>();
   constexpr size_t klen = 32;
 
   uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));

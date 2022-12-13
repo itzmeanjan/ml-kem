@@ -14,8 +14,8 @@ void
 pke_keygen(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32;
+  constexpr size_t pklen = kyber_utils::get_cpapke_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_cpapke_secret_key_len<k>();
 
   uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
@@ -73,10 +73,10 @@ void
 encrypt(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32;
+  constexpr size_t pklen = kyber_utils::get_cpapke_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_cpapke_secret_key_len<k>();
   constexpr size_t mlen = 32;
-  constexpr size_t enclen = k * du * 32 + dv * 32;
+  constexpr size_t enclen = kyber_utils::get_cpapke_cipher_len<k, du, dv>();
 
   uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
@@ -145,10 +145,10 @@ void
 decrypt(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32;
+  constexpr size_t pklen = kyber_utils::get_cpapke_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_cpapke_secret_key_len<k>();
   constexpr size_t mlen = 32;
-  constexpr size_t enclen = k * du * 32 + dv * 32;
+  constexpr size_t enclen = kyber_utils::get_cpapke_cipher_len<k, du, dv>();
 
   uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));

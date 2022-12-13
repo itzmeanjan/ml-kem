@@ -27,13 +27,15 @@ pke_keygen(benchmark::State& state)
     kyber_utils::random_data<uint8_t>(seed, slen);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     cpapke::keygen<k, eta1>(seed, pkey, skey);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(seed);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(skey);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
     const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
@@ -95,14 +97,16 @@ encrypt(benchmark::State& state)
     kyber_utils::random_data<uint8_t>(rcoin, mlen);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(txt);
     benchmark::DoNotOptimize(rcoin);
     benchmark::DoNotOptimize(enc);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
     const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
@@ -169,13 +173,15 @@ decrypt(benchmark::State& state)
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     cpapke::decrypt<k, du, dv>(skey, enc, dec);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(enc);
     benchmark::DoNotOptimize(dec);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     for (size_t i = 0; i < mlen; i++) {
       assert(!static_cast<bool>(txt[i] ^ dec[i]));

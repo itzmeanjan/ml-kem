@@ -29,14 +29,16 @@ kem_keygen(benchmark::State& state)
     kyber_utils::random_data<uint8_t>(z, slen);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     ccakem::keygen<k, eta1>(d, z, pkey, skey);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(d);
     benchmark::DoNotOptimize(z);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(skey);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
     const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
@@ -100,15 +102,17 @@ encapsulate(benchmark::State& state)
     kyber_utils::random_data<uint8_t>(m, slen);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
     skdf.read(sender_key, klen);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(m);
     benchmark::DoNotOptimize(pkey);
     benchmark::DoNotOptimize(cipher);
     benchmark::DoNotOptimize(sender_key);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     const auto sdur = std::chrono::duration_cast<seconds_t>(t1 - t0);
     const auto nsdur = std::chrono::duration_cast<nano_t>(t1 - t0);
@@ -178,14 +182,16 @@ decapsulate(benchmark::State& state)
     skdf.read(sender_key, klen);
 
     const auto t0 = std::chrono::high_resolution_clock::now();
+
     auto rkdf = ccakem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
     rkdf.read(receiver_key, klen);
-    const auto t1 = std::chrono::high_resolution_clock::now();
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(cipher);
     benchmark::DoNotOptimize(receiver_key);
     benchmark::ClobberMemory();
+
+    const auto t1 = std::chrono::high_resolution_clock::now();
 
     for (size_t i = 0; i < klen; i++) {
       assert(!static_cast<bool>(sender_key[i] ^ receiver_key[i]));

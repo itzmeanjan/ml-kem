@@ -6,9 +6,19 @@ For benchmarking this Kyber PKE & KEM implementation on CPU systems, you need to
 make benchmark
 ```
 
+> **Note**
+
+> Benchmarking expects presence of `google-benchmark` library in global namespace ( so that it can be found by the compiler ).
+
 > **Warning**
 
 > Because most of the CPUs employ dynamic frequency boosting technique, when benchmarking routines, you may want to disable CPU frequency scaling by following [this](https://github.com/google/benchmark/blob/60b16f1/docs/user_guide.md#disabling-cpu-frequency-scaling) guide.
+
+> **Note**
+
+> You might have trouble interpreting following benchmark results. If so, see below annotated screen capture.
+
+![how_to_interpret_benchmark?](./how_to_interpret_benchmark%3F.png)
 
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( compiled with Clang )
 

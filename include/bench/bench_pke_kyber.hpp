@@ -4,6 +4,7 @@
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
 #include "utils.hpp"
+#include <cassert>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
 namespace bench_kyber {
@@ -45,6 +46,7 @@ pke_keygen(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));
@@ -116,6 +118,7 @@ encrypt(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));
@@ -195,6 +198,7 @@ decrypt(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));

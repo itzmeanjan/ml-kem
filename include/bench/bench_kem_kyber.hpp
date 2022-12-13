@@ -48,6 +48,7 @@ kem_keygen(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));
@@ -122,6 +123,7 @@ encapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));
@@ -205,6 +207,7 @@ decapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(static_cast<int64_t>(state.iterations()));
+  assert(durations.size() == static_cast<size_t>(state.iterations()));
 
   const auto min_idx = std::min_element(durations.begin(), durations.end());
   const auto min = durations.at(std::distance(durations.begin(), min_idx));

@@ -1,3 +1,5 @@
+> **Warning** **This implementation is not yet audited. If you consider using it in production, be careful !**
+
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
 

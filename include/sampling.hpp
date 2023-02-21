@@ -17,31 +17,34 @@ namespace kyber_utils {
 //
 // See algorithm 1, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-static void
+static inline void
 parse(shake128::shake128<false>* const __restrict hasher, // Squeezes bytes
       ff::ff_t* const __restrict poly // Degree 255 polynomial
 )
 {
-  size_t i = 0;
-  uint8_t buf[3]{};
+  constexpr size_t n = ntt::N;
 
-  while (i < ntt::N) {
-    hasher->read(buf, 3);
+  size_t coeff_idx = 0;
+  uint8_t buf[shake128::rate / 8];
 
-    const uint16_t d1 = (static_cast<uint16_t>(buf[1] & 0b1111) << 8) |
-                        (static_cast<uint16_t>(buf[0]) << 0);
-    const uint16_t d2 = (static_cast<uint16_t>(buf[2]) << 4) |
-                        (static_cast<uint16_t>(buf[1] >> 4));
+  while (coeff_idx < ntt::N) {
+    hasher->read(buf, sizeof(buf));
 
-    const bool flg0 = d1 < ff::Q;
-    const ff::ff_t br0[]{ poly[i], ff::ff_t{ d1 } };
-    poly[i] = br0[flg0];
-    i += 1 * flg0;
+    for (size_t off = 0; (off < sizeof(buf)) && (coeff_idx < n); off += 3) {
+      const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) |
+                          (static_cast<uint16_t>(buf[off + 0]) << 0);
+      const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) |
+                          (static_cast<uint16_t>(buf[off + 1] >> 4));
 
-    const bool flg1 = (d2 < ff::Q) & (i < ntt::N);
-    const ff::ff_t br1[]{ poly[i], ff::ff_t{ d2 } };
-    poly[i] = br1[flg1];
-    i += 1 * flg1;
+      const bool flg = d1 < ff::Q;
+      poly[coeff_idx].v = flg * d1;
+      coeff_idx = coeff_idx + 1 * flg;
+
+      if ((d2 < ff::Q) && (coeff_idx < n)) {
+        poly[coeff_idx].v = d2;
+        coeff_idx++;
+      }
+    }
   }
 }
 

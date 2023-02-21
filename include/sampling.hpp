@@ -55,7 +55,7 @@ parse(shake128::shake128<false>* const __restrict hasher, // Squeezes bytes
 // See step (4-8) of algorithm 4/ 5, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const bool transpose>
-static void
+static inline void
 generate_matrix(ff::ff_t* const __restrict mat,
                 const uint8_t* const __restrict rho)
 {
@@ -85,7 +85,7 @@ generate_matrix(ff::ff_t* const __restrict mat,
 // Compile time check to ensure that η ( read eta ) is either 2 or 3, as defined
 // in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-inline static constexpr bool
+static inline constexpr bool
 check_eta(const size_t eta)
 {
   return (eta == 2) || (eta == 3);
@@ -99,13 +99,15 @@ check_eta(const size_t eta)
 // See algorithm 2, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t eta>
-static void
+static inline void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
     ff::ff_t* const __restrict poly      // Degree 255 polynomial
     )
   requires(check_eta(eta))
 {
   if constexpr (eta == 2) {
+    static_assert(eta == 2, "η must be 2 !");
+
     constexpr size_t till = 64 * eta;
     constexpr uint8_t mask8 = 0b01010101;
     constexpr uint8_t mask2 = 0b11;
@@ -123,7 +125,9 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
       poly[poff + 1] = ff::ff_t{ static_cast<uint16_t>((t2 >> 4) & mask2) } -
                        ff::ff_t{ static_cast<uint16_t>((t2 >> 6) & mask2) };
     }
-  } else if constexpr (eta == 3) {
+  } else {
+    static_assert(eta == 3, "η must be 3 !");
+
     constexpr size_t till = 64;
     constexpr uint32_t mask24 = 0b001001001001001001001001u;
     constexpr uint32_t mask3 = 0b111u;
@@ -150,31 +154,6 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
       poly[poff + 3] = ff::ff_t{ static_cast<uint16_t>((t3 >> 18) & mask3) } -
                        ff::ff_t{ static_cast<uint16_t>((t3 >> 21) & mask3) };
     }
-  } else {
-    for (size_t i = 0; i < ntt::N; i++) {
-      uint16_t a = 0;
-      for (size_t j = 0; j < eta; j++) {
-        const size_t off = 2 * i * eta + j;
-
-        const size_t byte_off = off >> 3;
-        const size_t bit_off = off & 7ul;
-
-        a += (prf[byte_off] >> bit_off) & 0b1;
-      }
-
-      uint16_t b = 0;
-      for (size_t j = 0; j < eta; j++) {
-        const size_t off = 2 * i * eta + eta + j;
-
-        const size_t byte_off = off >> 3;
-        const size_t bit_off = off & 7ul;
-
-        b += (prf[byte_off] >> bit_off) & 0b1;
-      }
-
-      const ff::ff_t coeff = ff::ff_t{ a } - ff::ff_t{ b };
-      poly[i] = coeff;
-    }
   }
 }
 
@@ -182,7 +161,7 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 // defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta>
-static void
+static inline void
 generate_vector(ff::ff_t* const __restrict vec,
                 const uint8_t* const __restrict sigma,
                 const uint8_t nonce)

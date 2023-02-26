@@ -18,8 +18,6 @@ make benchmark
 
 > You might have trouble interpreting following benchmark results. If so, see below annotated screen capture.
 
-![how_to_interpret_benchmark?](./how_to_interpret_benchmark%3F.png)
-
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( compiled with Clang )
 
 ```bash

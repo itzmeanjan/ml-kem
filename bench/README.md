@@ -12,16 +12,12 @@ make benchmark
 
 > **Warning**
 
-> Because most of the CPUs employ dynamic frequency boosting technique, when benchmarking routines, you must disable CPU frequency scaling by following [this](https://github.com/google/benchmark/blob/60b16f1/docs/user_guide.md#disabling-cpu-frequency-scaling) guide.
-
-> **Note**
-
-> You might have trouble interpreting following benchmark results. If so, see below annotated screen capture.
+> When benchmarking ensure that you've disabled CPU frequency scaling by following [this](https://github.com/google/benchmark/blob/3b19d722/docs/user_guide.md#disabling-cpu-frequency-scaling) guide.
 
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( compiled with Clang )
 
 ```bash
-2023-02-21T18:40:08+04:00
+2023-02-26T22:58:42+04:00
 Running ./bench/a.out
 Run on (8 X 2400 MHz CPU s)
 CPU Caches:
@@ -29,34 +25,124 @@ CPU Caches:
   L1 Instruction 32 KiB
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB
-Load Average: 2.04, 1.92, 1.90
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Benchmark                                                     Time             CPU   Iterations items_per_second max_exec_time (ns) median_exec_time (ns) min_exec_time (ns)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bench_kyber::pke_keygen<2, 3>/manual_time                  19.6 us         31.3 us        36107       50.9676k/s           170.065k               19.178k             18.72k
-bench_kyber::encrypt<2, 3, 2, 10, 4>/manual_time           20.9 us         74.7 us        33475       47.7954k/s           177.248k               20.538k            19.934k
-bench_kyber::decrypt<2, 3, 2, 10, 4>/manual_time           5.72 us         80.9 us       122738       174.727k/s           137.063k                5.598k             5.386k
-bench_kyber::pke_keygen<3, 2>/manual_time                  33.0 us         44.8 us        21163       30.2941k/s           193.999k               32.405k            31.579k
-bench_kyber::encrypt<3, 2, 2, 10, 4>/manual_time           35.7 us          104 us        19637       28.0286k/s           198.138k               34.924k            34.113k
-bench_kyber::decrypt<3, 2, 2, 10, 4>/manual_time           8.17 us          113 us        86007       122.374k/s           121.164k                8.007k             7.704k
-bench_kyber::pke_keygen<4, 2>/manual_time                  52.6 us         64.6 us        13076       18.9943k/s           240.811k               51.633k            50.635k
-bench_kyber::encrypt<4, 2, 2, 11, 5>/manual_time           54.6 us          142 us        12730       18.3249k/s           231.804k               53.635k            52.487k
-bench_kyber::decrypt<4, 2, 2, 11, 5>/manual_time           10.2 us          153 us        68868        97.978k/s           102.045k                9.989k             9.631k
-bench_kyber::kem_keygen<2, 3>/manual_time                  21.5 us         43.9 us        31900       46.4792k/s            163.36k               21.246k             20.73k
-bench_kyber::encapsulate<2, 3, 2, 10, 4>/manual_time       26.2 us         82.2 us        26662       38.2139k/s           133.525k               25.707k             25.13k
-bench_kyber::decapsulate<2, 3, 2, 10, 4>/manual_time       29.0 us          113 us        24403       34.4999k/s           176.871k               28.161k            27.524k
-bench_kyber::kem_keygen<3, 2>/manual_time                  36.8 us         60.0 us        18908       27.1549k/s           173.685k               35.556k            34.735k
-bench_kyber::encapsulate<3, 2, 2, 10, 4>/manual_time       43.0 us          114 us        16094       23.2718k/s           192.226k               42.038k            41.276k
-bench_kyber::decapsulate<3, 2, 2, 10, 4>/manual_time       46.3 us          161 us        14990       21.5803k/s           188.068k               45.543k            44.592k
-bench_kyber::kem_keygen<4, 2>/manual_time                  56.9 us         79.9 us        11912       17.5669k/s           200.653k                55.73k             54.74k
-bench_kyber::encapsulate<4, 2, 2, 11, 5>/manual_time       64.0 us          156 us        10866       15.6161k/s           199.608k               62.796k            61.613k
-bench_kyber::decapsulate<4, 2, 2, 11, 5>/manual_time       68.5 us          226 us        10175       14.6014k/s           217.885k               67.106k            65.633k
+Load Average: 2.06, 2.03, 2.05
+------------------------------------------------------------------------------------------
+Benchmark                                                Time             CPU   Iterations
+------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>_mean                    18.2 us         18.2 us            8
+bench_kyber::pke_keygen<2, 3>_median                  18.2 us         18.1 us            8
+bench_kyber::pke_keygen<2, 3>_stddev                 0.151 us        0.151 us            8
+bench_kyber::pke_keygen<2, 3>_cv                      0.83 %          0.83 %             8
+bench_kyber::pke_keygen<2, 3>_min                     18.0 us         18.0 us            8
+bench_kyber::pke_keygen<2, 3>_max                     18.5 us         18.5 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_mean             20.4 us         20.1 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_median           20.0 us         20.0 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_stddev          0.919 us        0.371 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_cv               4.51 %          1.85 %             8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_min              19.7 us         19.7 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_max              22.3 us         20.7 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_mean             5.60 us         5.59 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_median           5.59 us         5.59 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_stddev          0.029 us        0.029 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_cv               0.52 %          0.51 %             8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_min              5.56 us         5.56 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_max              5.66 us         5.65 us            8
+bench_kyber::pke_keygen<3, 2>_mean                    30.8 us         30.7 us            8
+bench_kyber::pke_keygen<3, 2>_median                  30.7 us         30.7 us            8
+bench_kyber::pke_keygen<3, 2>_stddev                 0.275 us        0.213 us            8
+bench_kyber::pke_keygen<3, 2>_cv                      0.89 %          0.69 %             8
+bench_kyber::pke_keygen<3, 2>_min                     30.5 us         30.4 us            8
+bench_kyber::pke_keygen<3, 2>_max                     31.3 us         31.1 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_mean             33.4 us         33.3 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_median           33.3 us         33.3 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_stddev          0.221 us        0.214 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_cv               0.66 %          0.64 %             8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_min              33.2 us         33.2 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_max              33.9 us         33.8 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_mean             7.67 us         7.66 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_median           7.66 us         7.65 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_stddev          0.054 us        0.037 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_cv               0.70 %          0.48 %             8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_min              7.64 us         7.63 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_max              7.80 us         7.75 us            8
+bench_kyber::pke_keygen<4, 2>_mean                    49.0 us         48.9 us            8
+bench_kyber::pke_keygen<4, 2>_median                  48.9 us         48.8 us            8
+bench_kyber::pke_keygen<4, 2>_stddev                 0.224 us        0.222 us            8
+bench_kyber::pke_keygen<4, 2>_cv                      0.46 %          0.45 %             8
+bench_kyber::pke_keygen<4, 2>_min                     48.7 us         48.7 us            8
+bench_kyber::pke_keygen<4, 2>_max                     49.3 us         49.2 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_mean             51.3 us         51.2 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_median           51.2 us         51.2 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_stddev          0.486 us        0.349 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_cv               0.95 %          0.68 %             8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_min              50.9 us         50.8 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_max              52.4 us         51.9 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_mean             10.0 us         10.0 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_median           10.0 us         10.0 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_stddev          0.030 us        0.029 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_cv               0.30 %          0.29 %             8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_min             10.00 us         9.99 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_max              10.1 us         10.1 us            8
+bench_kyber::kem_keygen<2, 3>_mean                    20.3 us         20.3 us            8
+bench_kyber::kem_keygen<2, 3>_median                  20.2 us         20.2 us            8
+bench_kyber::kem_keygen<2, 3>_stddev                 0.162 us        0.143 us            8
+bench_kyber::kem_keygen<2, 3>_cv                      0.80 %          0.71 %             8
+bench_kyber::kem_keygen<2, 3>_min                     20.1 us         20.1 us            8
+bench_kyber::kem_keygen<2, 3>_max                     20.6 us         20.5 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_mean         24.9 us         24.9 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_median       24.9 us         24.9 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_stddev      0.072 us        0.068 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_cv           0.29 %          0.27 %             8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_min          24.8 us         24.8 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_max          25.0 us         25.0 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_mean         28.3 us         28.2 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_median       28.2 us         28.2 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_stddev      0.217 us        0.150 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_cv           0.77 %          0.53 %             8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_min          28.1 us         28.1 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_max          28.7 us         28.5 us            8
+bench_kyber::kem_keygen<3, 2>_mean                    33.9 us         33.7 us            8
+bench_kyber::kem_keygen<3, 2>_median                  33.6 us         33.6 us            8
+bench_kyber::kem_keygen<3, 2>_stddev                 0.799 us        0.127 us            8
+bench_kyber::kem_keygen<3, 2>_cv                      2.35 %          0.38 %             8
+bench_kyber::kem_keygen<3, 2>_min                     33.6 us         33.5 us            8
+bench_kyber::kem_keygen<3, 2>_max                     35.9 us         33.9 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_mean         40.5 us         40.5 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_median       40.5 us         40.5 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_stddev      0.151 us        0.155 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_cv           0.37 %          0.38 %             8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_min          40.4 us         40.3 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_max          40.9 us         40.8 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_mean         44.9 us         44.8 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_median       44.8 us         44.8 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_stddev      0.168 us        0.164 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_cv           0.37 %          0.37 %             8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_min          44.7 us         44.6 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_max          45.2 us         45.1 us            8
+bench_kyber::kem_keygen<4, 2>_mean                    53.0 us         52.9 us            8
+bench_kyber::kem_keygen<4, 2>_median                  52.9 us         52.8 us            8
+bench_kyber::kem_keygen<4, 2>_stddev                 0.355 us        0.348 us            8
+bench_kyber::kem_keygen<4, 2>_cv                      0.67 %          0.66 %             8
+bench_kyber::kem_keygen<4, 2>_min                     52.7 us         52.7 us            8
+bench_kyber::kem_keygen<4, 2>_max                     53.8 us         53.8 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_mean         60.7 us         60.6 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_median       60.6 us         60.5 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_stddev      0.589 us        0.433 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_cv           0.97 %          0.72 %             8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_min          60.2 us         60.1 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_max          62.1 us         61.6 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_mean         66.5 us         66.4 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_median       66.4 us         66.3 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_stddev      0.418 us        0.270 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_cv           0.63 %          0.41 %             8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_min          66.1 us         66.1 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_max          67.4 us         66.9 us            8
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with GCC )
 
 ```bash
-2023-02-21T14:52:55+00:00
+2023-02-26T19:02:58+00:00
 Running ./bench/a.out
 Run on (4 X 2300.08 MHz CPU s)
 CPU Caches:
@@ -64,34 +150,124 @@ CPU Caches:
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.42, 0.21, 0.08
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Benchmark                                                     Time             CPU   Iterations items_per_second max_exec_time (ns) median_exec_time (ns) min_exec_time (ns)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bench_kyber::pke_keygen<2, 3>/manual_time                  36.8 us         41.1 us        19013       27.2037k/s           240.459k               36.618k            36.177k
-bench_kyber::encrypt<2, 3, 2, 10, 4>/manual_time           46.0 us         93.6 us        15204       21.7336k/s            207.87k               45.855k            45.375k
-bench_kyber::decrypt<2, 3, 2, 10, 4>/manual_time           14.6 us          108 us        47851       68.2936k/s           223.029k               14.589k            14.446k
-bench_kyber::pke_keygen<3, 2>/manual_time                  61.7 us         66.0 us        11360       16.2031k/s           304.261k               61.254k             60.59k
-bench_kyber::encrypt<3, 2, 2, 10, 4>/manual_time           75.0 us          148 us         9319       13.3298k/s           273.869k               74.654k            73.933k
-bench_kyber::decrypt<3, 2, 2, 10, 4>/manual_time           18.9 us          166 us        37026       52.8914k/s           269.356k               18.827k            18.725k
-bench_kyber::pke_keygen<4, 2>/manual_time                  97.5 us          102 us         7163       10.2542k/s           399.628k               97.058k            96.107k
-bench_kyber::encrypt<4, 2, 2, 11, 5>/manual_time            114 us          222 us         6152        8.8056k/s           348.481k              113.144k           112.097k
-bench_kyber::decrypt<4, 2, 2, 11, 5>/manual_time           23.6 us          245 us        29594       42.2898k/s           207.225k               23.536k            23.382k
-bench_kyber::kem_keygen<2, 3>/manual_time                  40.6 us         48.1 us        17260       24.6549k/s            93.625k               40.408k            39.924k
-bench_kyber::encapsulate<2, 3, 2, 10, 4>/manual_time       56.1 us          108 us        12469       17.8266k/s           226.146k               55.861k             55.39k
-bench_kyber::decapsulate<2, 3, 2, 10, 4>/manual_time       65.4 us          172 us        10711       15.2888k/s           235.517k               65.127k            64.806k
-bench_kyber::kem_keygen<3, 2>/manual_time                  67.3 us         74.8 us        10423        14.861k/s             238.7k                66.98k            66.316k
-bench_kyber::encapsulate<3, 2, 2, 10, 4>/manual_time       88.3 us          167 us         7939       11.3231k/s           309.082k               87.909k            87.236k
-bench_kyber::decapsulate<3, 2, 2, 10, 4>/manual_time        101 us          267 us         6961       9.93932k/s           238.364k              100.169k            99.571k
-bench_kyber::kem_keygen<4, 2>/manual_time                   105 us          113 us         6646       9.51768k/s           346.317k              104.591k            103.69k
-bench_kyber::encapsulate<4, 2, 2, 11, 5>/manual_time        131 us          247 us         5351       7.65319k/s             333.4k              130.115k           129.245k
-bench_kyber::decapsulate<4, 2, 2, 11, 5>/manual_time        146 us          393 us         4795       6.85041k/s             185.4k              145.448k           144.458k
+Load Average: 0.08, 0.02, 0.01
+------------------------------------------------------------------------------------------
+Benchmark                                                Time             CPU   Iterations
+------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>_mean                    34.9 us         34.9 us            8
+bench_kyber::pke_keygen<2, 3>_median                  34.9 us         34.9 us            8
+bench_kyber::pke_keygen<2, 3>_stddev                 0.091 us        0.091 us            8
+bench_kyber::pke_keygen<2, 3>_cv                      0.26 %          0.26 %             8
+bench_kyber::pke_keygen<2, 3>_min                     34.7 us         34.7 us            8
+bench_kyber::pke_keygen<2, 3>_max                     35.0 us         35.0 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_mean             44.5 us         44.5 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_median           44.5 us         44.5 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_stddev          0.053 us        0.052 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_cv               0.12 %          0.12 %             8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_min              44.5 us         44.5 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_max              44.6 us         44.6 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_mean             13.8 us         13.8 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_median           13.8 us         13.8 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_stddev          0.003 us        0.003 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_cv               0.02 %          0.02 %             8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_min              13.8 us         13.8 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_max              13.8 us         13.8 us            8
+bench_kyber::pke_keygen<3, 2>_mean                    58.1 us         58.1 us            8
+bench_kyber::pke_keygen<3, 2>_median                  58.1 us         58.1 us            8
+bench_kyber::pke_keygen<3, 2>_stddev                 0.063 us        0.065 us            8
+bench_kyber::pke_keygen<3, 2>_cv                      0.11 %          0.11 %             8
+bench_kyber::pke_keygen<3, 2>_min                     58.0 us         58.0 us            8
+bench_kyber::pke_keygen<3, 2>_max                     58.2 us         58.2 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_mean             72.4 us         72.4 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_median           72.4 us         72.4 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_stddev          0.061 us        0.061 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_cv               0.08 %          0.08 %             8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_min              72.2 us         72.2 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_max              72.4 us         72.4 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_mean             18.2 us         18.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_median           18.2 us         18.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_stddev          0.005 us        0.004 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_cv               0.03 %          0.02 %             8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_min              18.2 us         18.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_max              18.2 us         18.2 us            8
+bench_kyber::pke_keygen<4, 2>_mean                    92.1 us         92.1 us            8
+bench_kyber::pke_keygen<4, 2>_median                  92.0 us         92.0 us            8
+bench_kyber::pke_keygen<4, 2>_stddev                 0.238 us        0.239 us            8
+bench_kyber::pke_keygen<4, 2>_cv                      0.26 %          0.26 %             8
+bench_kyber::pke_keygen<4, 2>_min                     91.9 us         91.9 us            8
+bench_kyber::pke_keygen<4, 2>_max                     92.7 us         92.7 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_mean              109 us          109 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_median            109 us          109 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_stddev          0.082 us        0.082 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_cv               0.08 %          0.07 %             8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_min               109 us          109 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_max               109 us          109 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_mean             22.8 us         22.8 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_median           22.8 us         22.8 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_stddev          0.024 us        0.024 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_cv               0.11 %          0.11 %             8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_min              22.7 us         22.7 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_max              22.8 us         22.8 us            8
+bench_kyber::kem_keygen<2, 3>_mean                    38.6 us         38.6 us            8
+bench_kyber::kem_keygen<2, 3>_median                  38.6 us         38.6 us            8
+bench_kyber::kem_keygen<2, 3>_stddev                 0.226 us        0.226 us            8
+bench_kyber::kem_keygen<2, 3>_cv                      0.58 %          0.59 %             8
+bench_kyber::kem_keygen<2, 3>_min                     38.5 us         38.5 us            8
+bench_kyber::kem_keygen<2, 3>_max                     39.2 us         39.2 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_mean         54.7 us         54.7 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_median       54.7 us         54.7 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_stddev      0.194 us        0.195 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_cv           0.35 %          0.36 %             8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_min          54.6 us         54.6 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_max          55.2 us         55.2 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_mean         65.2 us         65.2 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_median       65.2 us         65.2 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_stddev      0.032 us        0.033 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_cv           0.05 %          0.05 %             8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_min          65.2 us         65.1 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_max          65.2 us         65.2 us            8
+bench_kyber::kem_keygen<3, 2>_mean                    63.8 us         63.8 us            8
+bench_kyber::kem_keygen<3, 2>_median                  63.8 us         63.8 us            8
+bench_kyber::kem_keygen<3, 2>_stddev                 0.191 us        0.191 us            8
+bench_kyber::kem_keygen<3, 2>_cv                      0.30 %          0.30 %             8
+bench_kyber::kem_keygen<3, 2>_min                     63.7 us         63.7 us            8
+bench_kyber::kem_keygen<3, 2>_max                     64.3 us         64.3 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_mean         86.1 us         86.1 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_median       86.1 us         86.1 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_stddev      0.030 us        0.029 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_cv           0.04 %          0.03 %             8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_min          86.1 us         86.1 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_max          86.2 us         86.2 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_mean         99.1 us         99.1 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_median       99.1 us         99.1 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_stddev      0.087 us        0.087 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_cv           0.09 %          0.09 %             8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_min          99.0 us         99.0 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_max          99.3 us         99.3 us            8
+bench_kyber::kem_keygen<4, 2>_mean                    99.6 us         99.6 us            8
+bench_kyber::kem_keygen<4, 2>_median                  99.6 us         99.6 us            8
+bench_kyber::kem_keygen<4, 2>_stddev                 0.102 us        0.103 us            8
+bench_kyber::kem_keygen<4, 2>_cv                      0.10 %          0.10 %             8
+bench_kyber::kem_keygen<4, 2>_min                     99.4 us         99.4 us            8
+bench_kyber::kem_keygen<4, 2>_max                     99.7 us         99.7 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_mean          127 us          127 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_median        127 us          127 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_stddev      0.146 us        0.148 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_cv           0.12 %          0.12 %             8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_min           126 us          126 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_max           127 us          127 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_mean          144 us          144 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_median        144 us          144 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_stddev      0.364 us        0.366 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_cv           0.25 %          0.25 %             8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_min           143 us          143 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_max           144 us          144 us            8
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with Clang )
 
 ```bash
-2023-02-21T14:55:15+00:00
+2023-02-26T19:05:52+00:00
 Running ./bench/a.out
 Run on (4 X 2300.08 MHz CPU s)
 CPU Caches:
@@ -99,26 +275,116 @@ CPU Caches:
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.30, 0.27, 0.12
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-Benchmark                                                     Time             CPU   Iterations items_per_second max_exec_time (ns) median_exec_time (ns) min_exec_time (ns)
-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-bench_kyber::pke_keygen<2, 3>/manual_time                  31.4 us         35.9 us        22373       31.8152k/s           254.211k                31.19k             30.67k
-bench_kyber::encrypt<2, 3, 2, 10, 4>/manual_time           33.6 us         76.1 us        20807       29.7349k/s           256.891k               33.456k            32.946k
-bench_kyber::decrypt<2, 3, 2, 10, 4>/manual_time           10.5 us         85.9 us        66784       95.5557k/s            151.46k               10.431k            10.362k
-bench_kyber::pke_keygen<3, 2>/manual_time                  52.8 us         57.3 us        13233       18.9482k/s           236.556k               52.539k            51.858k
-bench_kyber::encrypt<3, 2, 2, 10, 4>/manual_time           56.5 us          120 us        12362       17.7128k/s           201.361k               56.206k            55.413k
-bench_kyber::decrypt<3, 2, 2, 10, 4>/manual_time           13.9 us          134 us        50238       71.7506k/s           260.588k               13.871k            13.784k
-bench_kyber::pke_keygen<4, 2>/manual_time                  83.3 us         87.8 us         8411       12.0117k/s           225.236k               82.899k            81.986k
-bench_kyber::encrypt<4, 2, 2, 11, 5>/manual_time           87.0 us          182 us         8068       11.4937k/s            246.76k               86.432k            85.525k
-bench_kyber::decrypt<4, 2, 2, 11, 5>/manual_time           17.6 us          198 us        39842       56.9174k/s           182.393k               17.485k            17.397k
-bench_kyber::kem_keygen<2, 3>/manual_time                  34.6 us         42.6 us        20241       28.9343k/s           196.188k               34.431k                34k
-bench_kyber::encapsulate<2, 3, 2, 10, 4>/manual_time       41.7 us         87.5 us        16766       23.9753k/s            222.39k               41.524k            41.055k
-bench_kyber::decapsulate<2, 3, 2, 10, 4>/manual_time       47.2 us          134 us        14819       21.1927k/s           239.251k               46.979k            46.569k
-bench_kyber::kem_keygen<3, 2>/manual_time                  57.6 us         65.7 us        12125       17.3614k/s           202.788k               57.387k            56.706k
-bench_kyber::encapsulate<3, 2, 2, 10, 4>/manual_time       67.7 us          137 us        10347        14.766k/s           211.393k               67.379k            66.637k
-bench_kyber::decapsulate<3, 2, 2, 10, 4>/manual_time       74.8 us          211 us         9367       13.3641k/s           261.883k               74.502k            73.716k
-bench_kyber::kem_keygen<4, 2>/manual_time                  89.7 us         97.8 us         7795       11.1515k/s           279.784k               89.314k            88.371k
-bench_kyber::encapsulate<4, 2, 2, 11, 5>/manual_time        102 us          203 us         6881       9.82798k/s           149.101k              101.368k           100.298k
-bench_kyber::decapsulate<4, 2, 2, 11, 5>/manual_time        110 us          313 us         6371       9.10282k/s           329.752k              109.402k           108.221k
+Load Average: 0.48, 0.29, 0.12
+------------------------------------------------------------------------------------------
+Benchmark                                                Time             CPU   Iterations
+------------------------------------------------------------------------------------------
+bench_kyber::pke_keygen<2, 3>_mean                    29.3 us         29.3 us            8
+bench_kyber::pke_keygen<2, 3>_median                  29.3 us         29.3 us            8
+bench_kyber::pke_keygen<2, 3>_stddev                 0.054 us        0.054 us            8
+bench_kyber::pke_keygen<2, 3>_cv                      0.18 %          0.18 %             8
+bench_kyber::pke_keygen<2, 3>_min                     29.2 us         29.2 us            8
+bench_kyber::pke_keygen<2, 3>_max                     29.4 us         29.4 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_mean             31.7 us         31.7 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_median           31.6 us         31.6 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_stddev          0.186 us        0.186 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_cv               0.59 %          0.59 %             8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_min              31.6 us         31.6 us            8
+bench_kyber::encrypt<2, 3, 2, 10, 4>_max              32.1 us         32.1 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_mean             9.79 us         9.79 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_median           9.79 us         9.79 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_stddev          0.002 us        0.002 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_cv               0.03 %          0.02 %             8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_min              9.78 us         9.78 us            8
+bench_kyber::decrypt<2, 3, 2, 10, 4>_max              9.79 us         9.79 us            8
+bench_kyber::pke_keygen<3, 2>_mean                    48.9 us         48.9 us            8
+bench_kyber::pke_keygen<3, 2>_median                  48.9 us         48.9 us            8
+bench_kyber::pke_keygen<3, 2>_stddev                 0.194 us        0.194 us            8
+bench_kyber::pke_keygen<3, 2>_cv                      0.40 %          0.40 %             8
+bench_kyber::pke_keygen<3, 2>_min                     48.8 us         48.8 us            8
+bench_kyber::pke_keygen<3, 2>_max                     49.4 us         49.4 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_mean             52.7 us         52.7 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_median           52.7 us         52.6 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_stddev          0.053 us        0.053 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_cv               0.10 %          0.10 %             8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_min              52.6 us         52.5 us            8
+bench_kyber::encrypt<3, 2, 2, 10, 4>_max              52.7 us         52.7 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_mean             13.2 us         13.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_median           13.2 us         13.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_stddev          0.007 us        0.007 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_cv               0.05 %          0.05 %             8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_min              13.2 us         13.2 us            8
+bench_kyber::decrypt<3, 2, 2, 10, 4>_max              13.2 us         13.2 us            8
+bench_kyber::pke_keygen<4, 2>_mean                    76.9 us         76.9 us            8
+bench_kyber::pke_keygen<4, 2>_median                  76.9 us         76.9 us            8
+bench_kyber::pke_keygen<4, 2>_stddev                 0.088 us        0.089 us            8
+bench_kyber::pke_keygen<4, 2>_cv                      0.12 %          0.12 %             8
+bench_kyber::pke_keygen<4, 2>_min                     76.8 us         76.8 us            8
+bench_kyber::pke_keygen<4, 2>_max                     77.0 us         77.0 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_mean             80.9 us         80.9 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_median           80.9 us         80.9 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_stddev          0.063 us        0.064 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_cv               0.08 %          0.08 %             8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_min              80.8 us         80.8 us            8
+bench_kyber::encrypt<4, 2, 2, 11, 5>_max              81.0 us         81.0 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_mean             16.8 us         16.8 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_median           16.8 us         16.8 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_stddev          0.003 us        0.003 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_cv               0.02 %          0.02 %             8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_min              16.8 us         16.8 us            8
+bench_kyber::decrypt<4, 2, 2, 11, 5>_max              16.8 us         16.8 us            8
+bench_kyber::kem_keygen<2, 3>_mean                    32.4 us         32.4 us            8
+bench_kyber::kem_keygen<2, 3>_median                  32.4 us         32.4 us            8
+bench_kyber::kem_keygen<2, 3>_stddev                 0.018 us        0.018 us            8
+bench_kyber::kem_keygen<2, 3>_cv                      0.06 %          0.06 %             8
+bench_kyber::kem_keygen<2, 3>_min                     32.3 us         32.3 us            8
+bench_kyber::kem_keygen<2, 3>_max                     32.4 us         32.4 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_mean         39.4 us         39.4 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_median       39.4 us         39.4 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_stddev      0.017 us        0.016 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_cv           0.04 %          0.04 %             8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_min          39.4 us         39.4 us            8
+bench_kyber::encapsulate<2, 3, 2, 10, 4>_max          39.4 us         39.4 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_mean         45.7 us         45.7 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_median       45.7 us         45.7 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_stddev      0.180 us        0.180 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_cv           0.39 %          0.39 %             8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_min          45.6 us         45.6 us            8
+bench_kyber::decapsulate<2, 3, 2, 10, 4>_max          46.2 us         46.2 us            8
+bench_kyber::kem_keygen<3, 2>_mean                    53.6 us         53.6 us            8
+bench_kyber::kem_keygen<3, 2>_median                  53.6 us         53.6 us            8
+bench_kyber::kem_keygen<3, 2>_stddev                 0.047 us        0.047 us            8
+bench_kyber::kem_keygen<3, 2>_cv                      0.09 %          0.09 %             8
+bench_kyber::kem_keygen<3, 2>_min                     53.6 us         53.6 us            8
+bench_kyber::kem_keygen<3, 2>_max                     53.7 us         53.7 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_mean         63.8 us         63.8 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_median       63.7 us         63.7 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_stddev      0.198 us        0.198 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_cv           0.31 %          0.31 %             8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_min          63.6 us         63.6 us            8
+bench_kyber::encapsulate<3, 2, 2, 10, 4>_max          64.2 us         64.2 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_mean         72.0 us         72.0 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_median       72.0 us         72.0 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_stddev      0.034 us        0.034 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_cv           0.05 %          0.05 %             8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_min          71.9 us         71.9 us            8
+bench_kyber::decapsulate<3, 2, 2, 10, 4>_max          72.0 us         72.0 us            8
+bench_kyber::kem_keygen<4, 2>_mean                    83.3 us         83.3 us            8
+bench_kyber::kem_keygen<4, 2>_median                  83.2 us         83.2 us            8
+bench_kyber::kem_keygen<4, 2>_stddev                 0.257 us        0.254 us            8
+bench_kyber::kem_keygen<4, 2>_cv                      0.31 %          0.31 %             8
+bench_kyber::kem_keygen<4, 2>_min                     83.0 us         83.0 us            8
+bench_kyber::kem_keygen<4, 2>_max                     83.7 us         83.7 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_mean         95.3 us         95.3 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_median       95.2 us         95.2 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_stddev      0.279 us        0.279 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_cv           0.29 %          0.29 %             8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_min          95.1 us         95.1 us            8
+bench_kyber::encapsulate<4, 2, 2, 11, 5>_max          95.8 us         95.8 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_mean          106 us          106 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_median        105 us          105 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_stddev      0.269 us        0.268 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_cv           0.26 %          0.25 %             8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_min           105 us          105 us            8
+bench_kyber::decapsulate<4, 2, 2, 11, 5>_max           106 us          106 us            8
 ```

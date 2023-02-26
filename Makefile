@@ -28,7 +28,7 @@ format:
 
 bench/a.out: bench/main.cpp include/*.hpp sha3/include/*.hpp
 	# make sure you've google-benchmark globally installed;
-	# see https://github.com/google/benchmark/tree/60b16f1#installation
+	# see https://github.com/google/benchmark/tree/3b19d722#installation
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out

@@ -15,13 +15,14 @@ namespace test_kyber {
 // This test is executed a few times on some random Z_q elements, for some
 // specified `d`.
 template<const size_t d>
-static void
+void
 test_compression()
 {
   constexpr size_t cnt = 1024;
+  prng::prng_t prng;
 
   for (size_t i = 0; i < cnt; i++) {
-    const auto a = ff::ff_t::random();
+    const auto a = ff::ff_t::random(prng);
 
     const auto b = kyber_utils::compress<d>(a);
     const auto c = kyber_utils::decompress<d>(b);

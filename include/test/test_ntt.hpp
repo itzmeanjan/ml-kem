@@ -13,7 +13,7 @@ namespace test_kyber {
 // f'' = intt(f')
 //
 // assert(f == f'')
-static void
+void
 test_ntt_intt()
 {
   constexpr size_t poly_len = sizeof(ff::ff_t) * ntt::N;
@@ -21,8 +21,10 @@ test_ntt_intt()
   ff::ff_t* poly_a = static_cast<ff::ff_t*>(std::malloc(poly_len));
   ff::ff_t* poly_b = static_cast<ff::ff_t*>(std::malloc(poly_len));
 
+  prng::prng_t prng;
+
   for (size_t i = 0; i < ntt::N; i++) {
-    poly_a[i] = ff::ff_t::random();
+    poly_a[i] = ff::ff_t::random(prng);
   }
 
   std::memcpy(poly_b, poly_a, poly_len);

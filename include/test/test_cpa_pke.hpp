@@ -21,7 +21,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static void
+void
 test_kyber_cpa_pke()
 {
   constexpr size_t slen = 32;
@@ -43,9 +43,10 @@ test_kyber_cpa_pke()
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
-  kyber_utils::random_data<uint8_t>(seed, slen);
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
+  prng::prng_t prng;
+  prng.read(seed, slen);
+  prng.read(txt, mlen);
+  prng.read(rcoin, mlen);
 
   cpapke::keygen<k, eta1>(seed, pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);

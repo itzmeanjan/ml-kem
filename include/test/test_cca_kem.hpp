@@ -2,7 +2,6 @@
 #include "decapsulation.hpp"
 #include "encapsulation.hpp"
 #include "kem_keygen.hpp"
-#include "utils.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation
@@ -27,7 +26,7 @@ template<const size_t k,
          const size_t du,
          const size_t dv,
          const size_t klen>
-static void
+void
 test_kyber_cca_kem()
 {
   constexpr size_t slen = 32;
@@ -48,9 +47,10 @@ test_kyber_cca_kem()
   std::memset(skey, 0, sklen);
   std::memset(cipher, 0, ctlen);
 
-  kyber_utils::random_data<uint8_t>(d, slen);
-  kyber_utils::random_data<uint8_t>(z, slen);
-  kyber_utils::random_data<uint8_t>(m, slen);
+  prng::prng_t prng;
+  prng.read(d, slen);
+  prng.read(z, slen);
+  prng.read(m, slen);
 
   ccakem::keygen<k, eta1>(d, z, pkey, skey);
   auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);

@@ -62,7 +62,9 @@ struct ff_t
   // Value of field element | v ∈ [0, Q)
   uint16_t v = 0;
 
-  inline constexpr ff_t(const uint16_t a = 0) { v = a % Q; }
+  inline constexpr ff_t() = default;
+
+  inline constexpr ff_t(const uint16_t a) { v = a % Q; }
 
   // Generate field element having canonical value 0
   static inline ff_t zero() { return ff_t{ 0 }; }

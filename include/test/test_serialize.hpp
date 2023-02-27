@@ -12,7 +12,7 @@ namespace test_kyber {
 // l denotes significant bit width ( from LSB side ) for each coefficient of
 // polynomial.
 template<const size_t l>
-static void
+void
 test_serialization()
 {
   constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;

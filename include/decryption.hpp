@@ -17,7 +17,10 @@ decrypt(
   const uint8_t* const __restrict seckey, // (k * 12 * 32) -bytes secret key
   const uint8_t* const __restrict enc,    // (k * du * 32 + dv * 32) -bytes
   uint8_t* const __restrict dec           // 32 -bytes plain text
-)
+  )
+  requires(((k == 2) && (du == 10) && (dv == 4)) ||
+           (((k == 3) && (du == 10) && (dv == 4))) ||
+           (((k == 4) && (du == 11) && (dv == 5))))
 {
   // step 1
   ff::ff_t u[k * ntt::N]{};

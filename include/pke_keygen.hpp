@@ -26,7 +26,9 @@ inline static void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
-)
+       )
+  requires(((k == 2) && (eta1 == 3)) || ((k == 3) && (eta1 == 2)) ||
+           ((k == 4) && (eta1 == 2)))
 {
   constexpr size_t dlen = 32;
 

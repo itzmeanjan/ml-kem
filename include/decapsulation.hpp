@@ -26,11 +26,14 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256<false>
+static inline shake256::shake256<false>
 decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
   const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes
-)
+  )
+  requires(((k == 2) && (du == 10) && (dv == 4)) ||
+           (((k == 3) && (du == 10) && (dv == 4))) ||
+           (((k == 4) && (du == 11) && (dv == 5))))
 {
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t pklen = k * 12 * 32 + 32;

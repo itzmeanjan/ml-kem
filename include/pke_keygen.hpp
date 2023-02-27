@@ -22,7 +22,7 @@ namespace cpapke {
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying PKE's key generation implementation.
 template<const size_t k, const size_t eta1>
-inline static void
+static inline void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key

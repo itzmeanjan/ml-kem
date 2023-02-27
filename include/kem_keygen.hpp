@@ -21,12 +21,14 @@ namespace ccakem {
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's key generation implementation.
 template<const size_t k, const size_t eta1>
-inline static void
+static inline void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
        const uint8_t* const __restrict z, // 32 -bytes seed ( used in CCA-KEM )
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // (k * 24 * 32 + 96) -bytes secret key
-)
+       )
+  requires(((k == 2) && (eta1 == 3)) || ((k == 3) && (eta1 == 2)) ||
+           ((k == 4) && (eta1 == 2)))
 {
   constexpr size_t zlen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;

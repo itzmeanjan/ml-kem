@@ -31,12 +31,16 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256<false>
+static inline shake256::shake256<false>
 encapsulate(
   const uint8_t* const __restrict m,      // 32 -bytes seed for encapsulation
   const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   uint8_t* const __restrict cipher        // (k * du * 32 + dv * 32) -bytes
-)
+  )
+  requires(
+    ((k == 2) && (eta1 == 3) && (eta2 == 2) && (du == 10) && (dv == 4)) ||
+    (((k == 3) && (eta1 == 2) && (eta2 == 2) && (du == 10) && (dv == 4))) ||
+    (((k == 4) && (eta1 == 2) && (eta2 == 2) && (du == 11) && (dv == 5))))
 {
   constexpr size_t mlen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;

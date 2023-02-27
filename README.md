@@ -92,7 +92,7 @@ Python 3.10.8
 $ python3 -m pip install -r wrapper/python/requirements.txt --user
 ```
 
-- For benchmarking Kyber implementation on CPU systems, you'll need to have `google-benchmark` globally installed. You may want to follow [this](https://github.com/google/benchmark/tree/60b16f1#installation) guide.
+- For benchmarking Kyber implementation on CPU systems, you'll need to have `google-benchmark` globally installed. You may want to follow [this](https://github.com/google/benchmark/tree/3b19d722#installation) guide.
 
 - For importing `sha3` dependency, initialize & update git submodule after cloning this repository
 

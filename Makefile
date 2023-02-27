@@ -32,4 +32,5 @@ bench/a.out: bench/main.cpp include/*.hpp sha3/include/*.hpp include/bench/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out
+	./$< --benchmark_time_unit=us
 	./$< --benchmark_time_unit=us --benchmark_repetitions=8 --benchmark_display_aggregates_only=true

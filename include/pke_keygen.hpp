@@ -62,7 +62,6 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};
-  std::memset(t_prime, 0, sizeof(t_prime));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
   kyber_utils::poly_vec_add_to<k>(e, t_prime);

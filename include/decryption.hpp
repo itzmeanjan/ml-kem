@@ -42,7 +42,6 @@ decrypt(
   kyber_utils::poly_vec_ntt<k>(u);
 
   ff::ff_t t[ntt::N]{};
-  std::memset(t, 0, sizeof(t));
 
   kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
   kyber_utils::poly_vec_intt<1>(t);

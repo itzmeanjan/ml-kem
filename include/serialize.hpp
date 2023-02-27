@@ -160,8 +160,6 @@ decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
        )
   requires(kyber_params::check_l(l))
 {
-  std::memset(poly, 0, ntt::N * sizeof(ff::ff_t));
-
   if constexpr (l == 1) {
     constexpr size_t itr_cnt = ntt::N >> 3;
     constexpr uint8_t one = 0b1;

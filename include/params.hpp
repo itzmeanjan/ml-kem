@@ -2,8 +2,8 @@
 #include <cstddef>
 #include <cstdint>
 
-// Holds compile-time executable functions, ensuring that routines are invoked with
-// proper arguments.
+// Holds compile-time executable functions, ensuring that routines are invoked
+// with proper arguments.
 namespace kyber_params {
 
 // Compile-time check to ensure that number of bits ( read `d` ) to consider

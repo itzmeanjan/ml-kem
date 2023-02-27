@@ -61,7 +61,6 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   // step 19
   ff::ff_t u[k * ntt::N]{};
-  std::memset(u, 0, sizeof(u));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
   kyber_utils::poly_vec_intt<k>(u);
@@ -69,7 +68,6 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   // step 20
   ff::ff_t v[ntt::N]{};
-  std::memset(v, 0, sizeof(v));
 
   kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   kyber_utils::poly_vec_intt<1>(v);

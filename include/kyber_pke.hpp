@@ -2,7 +2,7 @@
 #include "decryption.hpp"
 #include "encryption.hpp"
 #include "pke_keygen.hpp"
-#include "utils.hpp"
+#include "prng.hpp"
 
 // Kyber Public Key Encryption (PKE)
 namespace kyber_pke {
@@ -24,13 +24,15 @@ namespace kyber_pke {
 // See algorithm 4 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta1>
-inline static void
+static inline void
 keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
 )
 {
-  uint8_t d[32]{};
-  kyber_utils::random_data<uint8_t>(d, sizeof(d));
+  uint8_t d[32];
+
+  prng::prng_t prng;
+  prng.read(d, sizeof(d));
 
   cpapke::keygen<k, eta1>(d, pubkey, seckey);
 }
@@ -52,7 +54,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline static void
+static inline void
 encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict msg,    // 32 -bytes message
         const uint8_t* const __restrict rcoin,  // 32 -bytes random coin
@@ -73,7 +75,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 // See algorithm 6 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t du, const size_t dv>
-inline static void
+static inline void
 decrypt(
   const uint8_t* const __restrict seckey, // (k * 12 * 32) -bytes secret key
   const uint8_t* const __restrict enc,    // (k * du * 32 + dv * 32) -bytes

@@ -2,7 +2,7 @@
 #include "decapsulation.hpp"
 #include "encapsulation.hpp"
 #include "kem_keygen.hpp"
-#include "utils.hpp"
+#include "prng.hpp"
 
 // Kyber Key Encapsulation Mechanism (KEM)
 namespace kyber_kem {
@@ -24,16 +24,17 @@ namespace kyber_kem {
 // See algorithm 7 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta1>
-inline static void
+static inline void
 keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // (k * 24 * 32 + 96) -bytes secret key
 )
 {
-  uint8_t d[32]{};
-  uint8_t z[32]{};
+  uint8_t d[32];
+  uint8_t z[32];
 
-  kyber_utils::random_data<uint8_t>(d, sizeof(d));
-  kyber_utils::random_data<uint8_t>(z, sizeof(z));
+  prng::prng_t prng;
+  prng.read(d, sizeof(d));
+  prng.read(z, sizeof(z));
 
   ccakem::keygen<k, eta1>(d, z, pubkey, seckey);
 }
@@ -66,13 +67,15 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256<false>
+static inline shake256::shake256<false>
 encapsulate(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
             uint8_t* const __restrict cipher // (k * du * 32 + dv * 32) -bytes
 )
 {
-  uint8_t m[32]{};
-  kyber_utils::random_data<uint8_t>(m, sizeof(m));
+  uint8_t m[32];
+
+  prng::prng_t prng;
+  prng.read(m, sizeof(m));
 
   return ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pubkey, cipher);
 }
@@ -99,7 +102,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256<false>
+static inline shake256::shake256<false>
 decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
   const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes

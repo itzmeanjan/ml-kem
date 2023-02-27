@@ -2,6 +2,8 @@
 #include <cstddef>
 #include <cstdint>
 
+// Holds compile-time executable functions, ensuring that routines are invoked with
+// proper arguments.
 namespace kyber_params {
 
 // Compile-time check to ensure that number of bits ( read `d` ) to consider
@@ -115,11 +117,7 @@ check_encap_params(const size_t k,
                    const size_t du,
                    const size_t dv)
 {
-  bool flg0 = (k == 2) && (η1 == 3) && (η2 == 2) && (du == 10) && (dv == 4);
-  bool flg1 = (k == 3) && (η1 == 2) && (η2 == 2) && (du == 10) && (dv == 4);
-  bool flg2 = (k == 4) && (η1 == 2) && (η2 == 2) && (du == 11) && (dv == 5);
-
-  return flg0 || flg1 || flg2;
+  return check_encrypt_params(k, η1, η2, du, dv);
 }
 
 // Compile-time check to ensure that Kyber KEM's encapsulation routine is
@@ -134,11 +132,7 @@ check_decap_params(const size_t k,
                    const size_t du,
                    const size_t dv)
 {
-  bool flg0 = (k == 2) && (η1 == 3) && (η2 == 2) && (du == 10) && (dv == 4);
-  bool flg1 = (k == 3) && (η1 == 2) && (η2 == 2) && (du == 10) && (dv == 4);
-  bool flg2 = (k == 4) && (η1 == 2) && (η2 == 2) && (du == 11) && (dv == 5);
-
-  return flg0 || flg1 || flg2;
+  return check_encap_params(k, η1, η2, du, dv);
 }
 
 }

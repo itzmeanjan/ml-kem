@@ -1,4 +1,5 @@
 #pragma once
+#include "prng.hpp"
 #include <array>
 #include <bit>
 #include <cstdint>
@@ -223,6 +224,25 @@ struct ff_t
   inline constexpr bool operator==(const ff_t& rhs) const
   {
     return !static_cast<bool>(this->v ^ rhs.v);
+  }
+
+  // Generate a random field element ∈ Z_q
+  static inline ff_t random()
+  {
+    prng::prng_t prng;
+    uint16_t res = 0;
+
+    for (size_t i = 0; i < (1ul << 10); i++) {
+      uint16_t v;
+      prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
+
+      if (v < ff::Q) {
+        res = v;
+        break;
+      }
+    }
+
+    return ff_t{ res };
   }
 };
 

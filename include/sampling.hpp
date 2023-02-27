@@ -1,6 +1,7 @@
 #pragma once
 #include "ff.hpp"
 #include "ntt.hpp"
+#include "params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <cstdint>
@@ -58,7 +59,7 @@ template<const size_t k, const bool transpose>
 static inline void
 generate_matrix(ff::ff_t* const __restrict mat,
                 const uint8_t* const __restrict rho)
-  requires((k == 2) || (k == 3) || (k == 4))
+  requires(kyber_params::check_k(k))
 {
   uint8_t xof_in[32 + 2]{};
   std::memcpy(xof_in, rho, 32);
@@ -95,7 +96,7 @@ static inline void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
     ff::ff_t* const __restrict poly      // Degree 255 polynomial
     )
-  requires((eta == 2) || (eta == 3))
+  requires(kyber_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
     static_assert(eta == 2, "η must be 2 !");
@@ -157,7 +158,7 @@ static inline void
 generate_vector(ff::ff_t* const __restrict vec,
                 const uint8_t* const __restrict sigma,
                 const uint8_t nonce)
-  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
+  requires((k == 1) || kyber_params::check_k(k))
 {
   uint8_t prf_out[64 * eta]{};
   uint8_t prf_in[32 + 1]{};

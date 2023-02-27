@@ -1,6 +1,7 @@
 #pragma once
 #include "decryption.hpp"
 #include "encryption.hpp"
+#include "params.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 
@@ -31,9 +32,7 @@ decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
   const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes
   )
-  requires(((k == 2) && (du == 10) && (dv == 4)) ||
-           (((k == 3) && (du == 10) && (dv == 4))) ||
-           (((k == 4) && (du == 11) && (dv == 5))))
+  requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t pklen = k * 12 * 32 + 32;

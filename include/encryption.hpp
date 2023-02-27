@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 #include "poly_vec.hpp"
 #include "sampling.hpp"
 
@@ -24,10 +25,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict rcoin,  // 32 -bytes random coin
         uint8_t* const __restrict enc           // k * du * 32 + dv * 32 -bytes
         )
-  requires(
-    ((k == 2) && (eta1 == 3) && (eta2 == 2) && (du == 10) && (dv == 4)) ||
-    (((k == 3) && (eta1 == 2) && (eta2 == 2) && (du == 10) && (dv == 4))) ||
-    (((k == 4) && (eta1 == 2) && (eta2 == 2) && (du == 11) && (dv == 5))))
+  requires(kyber_params::check_encrypt_params(k, eta1, eta2, du, dv))
 {
   // step 2
   ff::ff_t t_prime[k * ntt::N]{};

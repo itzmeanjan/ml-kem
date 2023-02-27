@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 #include "poly_vec.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
@@ -18,9 +19,7 @@ decrypt(
   const uint8_t* const __restrict enc,    // (k * du * 32 + dv * 32) -bytes
   uint8_t* const __restrict dec           // 32 -bytes plain text
   )
-  requires(((k == 2) && (du == 10) && (dv == 4)) ||
-           (((k == 3) && (du == 10) && (dv == 4))) ||
-           (((k == 4) && (du == 11) && (dv == 5))))
+  requires(kyber_params::check_decrypt_params(k, du, dv))
 {
   // step 1
   ff::ff_t u[k * ntt::N]{};

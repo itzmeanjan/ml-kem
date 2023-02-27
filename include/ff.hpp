@@ -232,7 +232,7 @@ struct ff_t
     uint16_t res = 0;
 
     for (size_t i = 0; i < (1ul << 10); i++) {
-      uint16_t v;
+      uint16_t v = 0;
       prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
 
       if (v < ff::Q) {

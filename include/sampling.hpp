@@ -157,7 +157,7 @@ static inline void
 generate_vector(ff::ff_t* const __restrict vec,
                 const uint8_t* const __restrict sigma,
                 const uint8_t nonce)
-  requires((k == 2) || (k == 3) || (k == 4))
+  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
 {
   uint8_t prf_out[64 * eta]{};
   uint8_t prf_in[32 + 1]{};

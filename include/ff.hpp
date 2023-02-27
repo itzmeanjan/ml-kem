@@ -227,9 +227,8 @@ struct ff_t
   }
 
   // Generate a random field element ∈ Z_q
-  static inline ff_t random()
+  static inline ff_t random(prng::prng_t& prng)
   {
-    prng::prng_t prng;
     uint16_t res = 0;
 
     for (size_t i = 0; i < (1ul << 10); i++) {

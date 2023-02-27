@@ -7,7 +7,7 @@ namespace kyber_utils {
 
 // Compile-time check to ensure that operand matrices are having compatible
 // dimension for matrix multiplication
-static inline constexpr bool
+constexpr bool
 check_matrix_dim(const size_t a_cols, const size_t b_rows)
 {
   return !static_cast<bool>(a_cols ^ b_rows);
@@ -20,7 +20,7 @@ template<const size_t a_rows,
          const size_t a_cols,
          const size_t b_rows,
          const size_t b_cols>
-static void
+static inline void
 matrix_multiply(const ff::ff_t* const __restrict a,
                 const ff::ff_t* const __restrict b,
                 ff::ff_t* const __restrict c)
@@ -52,6 +52,7 @@ matrix_multiply(const ff::ff_t* const __restrict a,
 template<const size_t k>
 inline static void
 poly_vec_ntt(ff::ff_t* const __restrict vec)
+  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -66,6 +67,7 @@ poly_vec_ntt(ff::ff_t* const __restrict vec)
 template<const size_t k>
 inline static void
 poly_vec_intt(ff::ff_t* const __restrict vec)
+  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -79,6 +81,7 @@ template<const size_t k>
 inline static void
 poly_vec_add_to(const ff::ff_t* const __restrict src,
                 ff::ff_t* const __restrict dst)
+  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -95,6 +98,7 @@ template<const size_t k>
 inline static void
 poly_vec_sub_from(const ff::ff_t* const __restrict src,
                   ff::ff_t* const __restrict dst)
+  requires((k == 1) || (k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -112,6 +116,7 @@ template<const size_t k, const size_t l>
 inline static void
 poly_vec_encode(const ff::ff_t* const __restrict src,
                 uint8_t* const __restrict dst)
+  requires((k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * ntt::N;
@@ -128,6 +133,7 @@ template<const size_t k, const size_t l>
 inline static void
 poly_vec_decode(const uint8_t* const __restrict src,
                 ff::ff_t* const __restrict dst)
+  requires((k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * l * 32;
@@ -142,6 +148,7 @@ poly_vec_decode(const uint8_t* const __restrict src,
 template<const size_t k, const size_t d>
 inline static void
 poly_vec_compress(ff::ff_t* const __restrict vec)
+  requires((k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -154,6 +161,7 @@ poly_vec_compress(ff::ff_t* const __restrict vec)
 template<const size_t k, const size_t d>
 inline static void
 poly_vec_decompress(ff::ff_t* const __restrict vec)
+  requires((k == 2) || (k == 3) || (k == 4))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;

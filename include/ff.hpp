@@ -2,8 +2,6 @@
 #include <array>
 #include <bit>
 #include <cstdint>
-#include <ostream>
-#include <random>
 
 // Prime field arithmetic over F_q, for Kyber PQC Algorithm s.t. q = 3329
 namespace ff {
@@ -20,31 +18,6 @@ constexpr uint16_t Q = (1 << 8) * 13 + 1;
 //
 // See https://www.nayuki.io/page/barrett-reduction-algorithm for more.
 constexpr uint16_t R = 5039;
-
-// Primitive Element of Prime field
-//
-// $ python3
-// >>> import galois as gl
-// >>> gf = gl.GF(3329)
-// >>> gf.primitive_element
-// GF(3, order=3329)
-constexpr uint16_t GENERATOR = 3;
-
-// Two Adicity of Prime Field
-//
-// $ python3
-// >>> assert is_odd((Q - 1) >> k) | k = 8
-constexpr uint16_t TWO_ADICITY = 8;
-
-// Two adic root of unity
-//
-// $ python3
-// >>> import galois as gl
-// >>> gf = gl.GF(3329)
-// >>> k = (gf.order - 1) >> 8
-// >>> gf.primitive_element ** k
-// GF(3061, order=3329)
-constexpr uint16_t TWO_ADIC_ROOT_OF_UNITY = 3061;
 
 // Extended GCD algorithm for computing inverse of prime ( = Q ) field element
 //
@@ -251,25 +224,6 @@ struct ff_t
   {
     return !static_cast<bool>(this->v ^ rhs.v);
   }
-
-  // Generate a random prime field element a | a ∈ [0, Q)
-  static inline ff_t random()
-  {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint16_t> dis{ 0, Q - 1 };
-
-    return ff_t{ dis(gen) };
-  }
-
-  // Writes field element into output stream, used for debugging purposes
-  friend inline std::ostream& operator<<(std::ostream& os, const ff_t& elm);
 };
-
-inline std::ostream&
-operator<<(std::ostream& os, const ff_t& elm)
-{
-  return os << "ff_q(" << elm.v << ", " << Q << ")";
-}
 
 }

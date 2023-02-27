@@ -43,7 +43,7 @@ matrix_multiply(const ff::ff_t* const __restrict a,
 // polynomial coefficients are in non-NTT form ), this routine applies in-place
 // polynomial NTT over k polynomials
 template<const size_t k>
-inline static void
+static inline void
 poly_vec_ntt(ff::ff_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
@@ -58,7 +58,7 @@ poly_vec_ntt(ff::ff_t* const __restrict vec)
 // order ), this routine applies in-place polynomial iNTT over those k
 // polynomials
 template<const size_t k>
-inline static void
+static inline void
 poly_vec_intt(ff::ff_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
@@ -71,34 +71,30 @@ poly_vec_intt(ff::ff_t* const __restrict vec)
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine adds it to another polynomial vector of same dimension
 template<const size_t k>
-inline static void
+static inline void
 poly_vec_add_to(const ff::ff_t* const __restrict src,
                 ff::ff_t* const __restrict dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
+  constexpr size_t cnt = k * ntt::N;
 
-    for (size_t l = 0; l < ntt::N; l++) {
-      dst[off + l] += src[off + l];
-    }
+  for (size_t i = 0; i < cnt; i++) {
+    dst[i] += src[i];
   }
 }
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine subtracts it to another polynomial vector of same dimension
 template<const size_t k>
-inline static void
+static inline void
 poly_vec_sub_from(const ff::ff_t* const __restrict src,
                   ff::ff_t* const __restrict dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
-  for (size_t i = 0; i < k; i++) {
-    const size_t off = i * ntt::N;
+  constexpr size_t cnt = k * ntt::N;
 
-    for (size_t l = 0; l < ntt::N; l++) {
-      dst[off + l] -= src[off + l];
-    }
+  for (size_t i = 0; i < cnt; i++) {
+    dst[i] -= src[i];
   }
 }
 
@@ -106,7 +102,7 @@ poly_vec_sub_from(const ff::ff_t* const __restrict src,
 // encodes each of those polynomials into 32 x l -bytes, writing to a
 // (k x 32 x l) -bytes destination array
 template<const size_t k, const size_t l>
-inline static void
+static inline void
 poly_vec_encode(const ff::ff_t* const __restrict src,
                 uint8_t* const __restrict dst)
   requires(kyber_params::check_k(k))
@@ -123,7 +119,7 @@ poly_vec_encode(const ff::ff_t* const __restrict src,
 // into k degree-255 polynomials, writing them to a column vector of dimension
 // k x 1
 template<const size_t k, const size_t l>
-inline static void
+static inline void
 poly_vec_decode(const uint8_t* const __restrict src,
                 ff::ff_t* const __restrict dst)
   requires(kyber_params::check_k(k))
@@ -139,7 +135,7 @@ poly_vec_decode(const uint8_t* const __restrict src,
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are compressed, while mutating input
 template<const size_t k, const size_t d>
-inline static void
+static inline void
 poly_vec_compress(ff::ff_t* const __restrict vec)
   requires(kyber_params::check_k(k))
 {
@@ -152,7 +148,7 @@ poly_vec_compress(ff::ff_t* const __restrict vec)
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are decompressed, while mutating input
 template<const size_t k, const size_t d>
-inline static void
+static inline void
 poly_vec_decompress(ff::ff_t* const __restrict vec)
   requires(kyber_params::check_k(k))
 {

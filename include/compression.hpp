@@ -13,7 +13,7 @@ namespace kyber_utils {
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static ff::ff_t
+static inline ff::ff_t
 compress(const ff::ff_t x)
   requires(kyber_params::check_d(d))
 {
@@ -37,7 +37,7 @@ compress(const ff::ff_t x)
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static ff::ff_t
+static inline ff::ff_t
 decompress(const ff::ff_t x)
   requires(kyber_params::check_d(d))
 {
@@ -60,7 +60,7 @@ decompress(const ff::ff_t x)
 // See eq. 2 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static size_t
+static inline size_t
 compute_error()
 {
   constexpr double t0 = static_cast<double>(ff::Q);
@@ -73,7 +73,7 @@ compute_error()
 // Utility function to compress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
-inline static void
+static inline void
 poly_compress(ff::ff_t* const __restrict poly)
   requires(kyber_params::check_d(d))
 {
@@ -85,7 +85,7 @@ poly_compress(ff::ff_t* const __restrict poly)
 // Utility function to decompress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
-inline static void
+static inline void
 poly_decompress(ff::ff_t* const __restrict poly)
   requires(kyber_params::check_d(d))
 {

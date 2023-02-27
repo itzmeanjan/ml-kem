@@ -19,7 +19,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline static void
+static inline void
 encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict msg,    // 32 -bytes message
         const uint8_t* const __restrict rcoin,  // 32 -bytes random coin

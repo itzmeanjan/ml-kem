@@ -22,8 +22,9 @@ kem_keygen(benchmark::State& state)
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
 
-  kyber_utils::random_data<uint8_t>(d, slen);
-  kyber_utils::random_data<uint8_t>(z, slen);
+  prng::prng_t prng;
+  prng.read(d, slen);
+  prng.read(z, slen);
 
   for (auto _ : state) {
     ccakem::keygen<k, eta1>(d, z, pkey, skey);
@@ -64,11 +65,13 @@ encapsulate(benchmark::State& state)
   uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
   uint8_t* sender_key = static_cast<uint8_t*>(std::malloc(klen));
 
-  kyber_utils::random_data<uint8_t>(d, slen);
-  kyber_utils::random_data<uint8_t>(z, slen);
+  prng::prng_t prng;
+  prng.read(d, slen);
+  prng.read(z, slen);
+
   ccakem::keygen<k, eta1>(d, z, pkey, skey);
 
-  kyber_utils::random_data<uint8_t>(m, slen);
+  prng.read(m, slen);
 
   for (auto _ : state) {
     auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
@@ -115,11 +118,14 @@ decapsulate(benchmark::State& state)
   uint8_t* sender_key = static_cast<uint8_t*>(std::malloc(klen));
   uint8_t* receiver_key = static_cast<uint8_t*>(std::malloc(klen));
 
-  kyber_utils::random_data<uint8_t>(d, slen);
-  kyber_utils::random_data<uint8_t>(z, slen);
+  prng::prng_t prng;
+  prng.read(d, slen);
+  prng.read(z, slen);
+
   ccakem::keygen<k, eta1>(d, z, pkey, skey);
 
-  kyber_utils::random_data<uint8_t>(m, slen);
+  prng.read(m, slen);
+
   auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
   skdf.read(sender_key, klen);
 

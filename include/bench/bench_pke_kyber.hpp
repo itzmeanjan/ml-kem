@@ -21,7 +21,8 @@ pke_keygen(benchmark::State& state)
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
 
-  kyber_utils::random_data<uint8_t>(seed, slen);
+  prng::prng_t prng;
+  prng.read(seed, slen);
 
   for (auto _ : state) {
     cpapke::keygen<k, eta1>(seed, pkey, skey);
@@ -59,11 +60,13 @@ encrypt(benchmark::State& state)
   uint8_t* txt = static_cast<uint8_t*>(std::malloc(mlen));
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(enclen));
 
-  kyber_utils::random_data<uint8_t>(seed, slen);
+  prng::prng_t prng;
+  prng.read(seed, slen);
+
   cpapke::keygen<k, eta1>(seed, pkey, skey);
 
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
+  prng.read(txt, mlen);
+  prng.read(rcoin, mlen);
 
   for (auto _ : state) {
     cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
@@ -106,11 +109,14 @@ decrypt(benchmark::State& state)
   uint8_t* enc = static_cast<uint8_t*>(std::malloc(enclen));
   uint8_t* dec = static_cast<uint8_t*>(std::malloc(mlen));
 
-  kyber_utils::random_data<uint8_t>(seed, slen);
+  prng::prng_t prng;
+  prng.read(seed, slen);
+
   cpapke::keygen<k, eta1>(seed, pkey, skey);
 
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
+  prng.read(txt, mlen);
+  prng.read(rcoin, mlen);
+
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);
 
   for (auto _ : state) {

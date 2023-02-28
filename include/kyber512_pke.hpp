@@ -1,11 +1,33 @@
 #pragma once
 #include "kyber_pke.hpp"
+#include "utils.hpp"
 
 // Kyber Public Key Encryption (PKE) instantiated with Kyber512 parameter set.
 //
 // See table 1 of specification @
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 namespace kyber512_pke {
+
+// Compile-time compute Kyber512 PKE public key byte length
+constexpr size_t
+pub_key_len()
+{
+  return kyber_utils::get_cpapke_public_key_len<2>();
+}
+
+// Compile-time compute Kyber512 PKE secret key byte length
+constexpr size_t
+sec_key_len()
+{
+  return kyber_utils::get_cpapke_secret_key_len<2>();
+}
+
+// Compile-time compute Kyber512 PKE cipher text byte length
+constexpr size_t
+cipher_text_len()
+{
+  return kyber_utils::get_cpapke_cipher_len<2, 10, 4>();
+}
 
 // Computes a new Kyber512 PKE keypair s.t. public key is 800 -bytes and secret
 // key is 768 -bytes.

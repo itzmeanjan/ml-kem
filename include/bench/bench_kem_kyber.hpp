@@ -1,7 +1,5 @@
 #pragma once
-#include "decapsulation.hpp"
-#include "encapsulation.hpp"
-#include "kem_keygen.hpp"
+#include "kyber_kem.hpp"
 #include "utils.hpp"
 #include <benchmark/benchmark.h>
 

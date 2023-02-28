@@ -1,7 +1,5 @@
 #pragma once
-#include "decryption.hpp"
-#include "encryption.hpp"
-#include "pke_keygen.hpp"
+#include "kyber_pke.hpp"
 #include "utils.hpp"
 #include <benchmark/benchmark.h>
 

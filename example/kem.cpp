@@ -1,10 +1,12 @@
 #include "kyber_kem.hpp"
+#include "utils.hpp"
 #include <cassert>
 #include <iostream>
 
 // Compile it with
 //
-// g++ -std=c++20 -Wall -O3 -I ./include -I ./sha3/include example/kem.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include
+// example/kem.cpp
 int
 main()
 {

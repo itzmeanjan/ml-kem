@@ -1,10 +1,12 @@
 #include "kyber_pke.hpp"
+#include "utils.hpp"
 #include <cassert>
 #include <iostream>
 
 // Compile it with
 //
-// g++ -std=c++20 -Wall -O3 -I ./include -I ./sha3/include example/pke.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include
+// example/pke.cpp
 int
 main()
 {
@@ -38,10 +40,11 @@ main()
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
+  prng::prng_t prng;
   // generate 32 -bytes random plain text to be encrypted
-  kyber_utils::random_data<uint8_t>(msg, mlen);
+  prng.read(msg, mlen);
   // generate 32 -bytes random coin used during PKE
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
+  prng.read(rcoin, mlen);
 
   // CPA-secure PKE key generation
   kyber_pke::keygen<k, eta1>(pubkey, seckey);

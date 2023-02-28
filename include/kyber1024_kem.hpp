@@ -1,5 +1,6 @@
 #pragma once
 #include "kyber_kem.hpp"
+#include "utils.hpp"
 
 // Kyber Key Encapsulation Mechanism (KEM) instantiated with Kyber1024
 // parameters
@@ -7,6 +8,27 @@
 // See table 1 of specification @
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 namespace kyber1024_kem {
+
+// Compile-time compute Kyber1024 KEM public key byte length
+constexpr size_t
+pub_key_len()
+{
+  return kyber_utils::get_ccakem_public_key_len<4>();
+}
+
+// Compile-time compute Kyber1024 KEM secret key byte length
+constexpr size_t
+sec_key_len()
+{
+  return kyber_utils::get_ccakem_secret_key_len<4>();
+}
+
+// Compile-time compute Kyber1024 KEM cipher text byte length
+constexpr size_t
+cipher_text_len()
+{
+  return kyber_utils::get_ccakem_cipher_len<4, 11, 5>();
+}
 
 // Computes a new Kyber1024 KEM keypair s.t. public key is 1568 -bytes and
 // secret key is 3168 -bytes.

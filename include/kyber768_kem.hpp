@@ -1,11 +1,33 @@
 #pragma once
 #include "kyber_kem.hpp"
+#include "utils.hpp"
 
 // Kyber Key Encapsulation Mechanism (KEM) instantiated with Kyber768 parameters
 //
 // See table 1 of specification @
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 namespace kyber768_kem {
+
+// Compile-time compute Kyber768 KEM public key byte length
+constexpr size_t
+pub_key_len()
+{
+  return kyber_utils::get_ccakem_public_key_len<3>();
+}
+
+// Compile-time compute Kyber768 KEM secret key byte length
+constexpr size_t
+sec_key_len()
+{
+  return kyber_utils::get_ccakem_secret_key_len<3>();
+}
+
+// Compile-time compute Kyber768 KEM cipher text byte length
+constexpr size_t
+cipher_text_len()
+{
+  return kyber_utils::get_ccakem_cipher_len<3, 10, 4>();
+}
 
 // Computes a new Kyber768 KEM keypair s.t. public key is 1184 -bytes and secret
 // key is 2400 -bytes.

@@ -8,4 +8,3 @@
 #include "kyber512_pke.hpp"
 #include "kyber768_kem.hpp"
 #include "kyber768_pke.hpp"
-#include "utils.hpp"

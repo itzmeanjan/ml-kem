@@ -8,8 +8,8 @@
 namespace kyber_pke {
 
 // Kyber IND-CPA-secure PKE key generation algorithm, which takes two parameters
-// `k` & `η1` and generates byte serialized public key and secret key of
-// following length
+// `k` & `η1` along with a pseudo random number generator and generates byte
+// serialized public key and secret key of following length
 //
 // public key: (k * 12 * 32 + 32) -bytes wide
 // secret key: (k * 12 * 32) -bytes wide
@@ -17,21 +17,16 @@ namespace kyber_pke {
 // Possible values of parameters like `k` & `η1`, can be found from table 1 of
 // specification ( linked below ).
 //
-// Note, required randomness of 32 -bytes ( i.e. seed ) is sampled from system
-// non-deterministic randomness ( if available, so do read
-// https://en.cppreference.com/w/cpp/numeric/random/random_device ) source.
-//
 // See algorithm 4 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta1>
 static inline void
-keygen(uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
+keygen(prng::prng_t& prng,
+       uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
 )
 {
   uint8_t d[32];
-
-  prng::prng_t prng;
   prng.read(d, sizeof(d));
 
   cpapke::keygen<k, eta1>(d, pubkey, seckey);

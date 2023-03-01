@@ -30,11 +30,13 @@ cipher_text_len()
 }
 
 // Computes a new Kyber512 PKE keypair s.t. public key is 800 -bytes and secret
-// key is 768 -bytes.
+// key is 768 -bytes, given a pseudo random number generator.
 inline void
-keygen(uint8_t* const __restrict pubkey, uint8_t* const __restrict seckey)
+keygen(prng::prng_t& prng,
+       uint8_t* const __restrict pubkey,
+       uint8_t* const __restrict seckey)
 {
-  kyber_pke::keygen<2, 3>(pubkey, seckey);
+  kyber_pke::keygen<2, 3>(prng, pubkey, seckey);
 }
 
 // Given a Kyber512 PKE public key ( of 800 -bytes ), a message of 32 -bytes and

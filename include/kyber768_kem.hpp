@@ -30,24 +30,28 @@ cipher_text_len()
 }
 
 // Computes a new Kyber768 KEM keypair s.t. public key is 1184 -bytes and secret
-// key is 2400 -bytes.
+// key is 2400 -bytes, given a pseudo random number generator.
 inline void
-keygen(uint8_t* const __restrict pubkey, uint8_t* const __restrict seckey)
+keygen(prng::prng_t& prng,
+       uint8_t* const __restrict pubkey,
+       uint8_t* const __restrict seckey)
 {
-  kyber_kem::keygen<3, 2>(pubkey, seckey);
+  kyber_kem::keygen<3, 2>(prng, pubkey, seckey);
 }
 
-// Given a Kyber768 KEM public key ( of 1184 -bytes ), this routine computes a
-// SHAKE256 XOF backed KDF (key derivation function) and 1088 -bytes of cipher
-// text, which can only be decrypted by corresponding Kyber768 KEM secret key,
-// for arriving at same SHAKE256 XOF backed KDF.
+// Given a Kyber768 KEM public key ( of 1184 -bytes ) and a pseudo random number
+// generator, this routine computes a SHAKE256 XOF backed KDF (key derivation
+// function) and 1088 -bytes of cipher text, which can only be decrypted by
+// corresponding Kyber768 KEM secret key, for arriving at same SHAKE256 XOF
+// backed KDF.
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
 inline shake256::shake256<false>
-encapsulate(const uint8_t* const __restrict pubkey,
+encapsulate(prng::prng_t& prng,
+            const uint8_t* const __restrict pubkey,
             uint8_t* const __restrict cipher)
 {
-  return kyber_kem::encapsulate<3, 2, 2, 10, 4>(pubkey, cipher);
+  return kyber_kem::encapsulate<3, 2, 2, 10, 4>(prng, pubkey, cipher);
 }
 
 // Given a Kyber768 KEM secret key ( of 2400 -bytes ) and a cipher text of 1088

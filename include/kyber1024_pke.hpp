@@ -30,11 +30,13 @@ cipher_text_len()
 }
 
 // Computes a new Kyber1024 PKE keypair s.t. public key is 1568 -bytes and
-// secret key is 1536 -bytes.
+// secret key is 1536 -bytes, given a pseudo random number generator.
 inline void
-keygen(uint8_t* const __restrict pubkey, uint8_t* const __restrict seckey)
+keygen(prng::prng_t& prng,
+       uint8_t* const __restrict pubkey,
+       uint8_t* const __restrict seckey)
 {
-  kyber_pke::keygen<4, 2>(pubkey, seckey);
+  kyber_pke::keygen<4, 2>(prng, pubkey, seckey);
 }
 
 // Given a Kyber1024 PKE public key ( of 1568 -bytes ), a message of 32 -bytes

@@ -1,9 +1,8 @@
 #pragma once
+#include "prng.hpp"
 #include <array>
 #include <bit>
 #include <cstdint>
-#include <ostream>
-#include <random>
 
 // Prime field arithmetic over F_q, for Kyber PQC Algorithm s.t. q = 3329
 namespace ff {
@@ -20,31 +19,6 @@ constexpr uint16_t Q = (1 << 8) * 13 + 1;
 //
 // See https://www.nayuki.io/page/barrett-reduction-algorithm for more.
 constexpr uint16_t R = 5039;
-
-// Primitive Element of Prime field
-//
-// $ python3
-// >>> import galois as gl
-// >>> gf = gl.GF(3329)
-// >>> gf.primitive_element
-// GF(3, order=3329)
-constexpr uint16_t GENERATOR = 3;
-
-// Two Adicity of Prime Field
-//
-// $ python3
-// >>> assert is_odd((Q - 1) >> k) | k = 8
-constexpr uint16_t TWO_ADICITY = 8;
-
-// Two adic root of unity
-//
-// $ python3
-// >>> import galois as gl
-// >>> gf = gl.GF(3329)
-// >>> k = (gf.order - 1) >> 8
-// >>> gf.primitive_element ** k
-// GF(3061, order=3329)
-constexpr uint16_t TWO_ADIC_ROOT_OF_UNITY = 3061;
 
 // Extended GCD algorithm for computing inverse of prime ( = Q ) field element
 //
@@ -88,7 +62,9 @@ struct ff_t
   // Value of field element | v ∈ [0, Q)
   uint16_t v = 0;
 
-  inline constexpr ff_t(const uint16_t a = 0) { v = a % Q; }
+  inline constexpr ff_t() = default;
+
+  inline constexpr ff_t(const uint16_t a) { v = a % Q; }
 
   // Generate field element having canonical value 0
   static inline ff_t zero() { return ff_t{ 0 }; }
@@ -252,24 +228,23 @@ struct ff_t
     return !static_cast<bool>(this->v ^ rhs.v);
   }
 
-  // Generate a random prime field element a | a ∈ [0, Q)
-  static inline ff_t random()
+  // Generate a random field element ∈ Z_q
+  static inline ff_t random(prng::prng_t& prng)
   {
-    std::random_device rd;
-    std::mt19937_64 gen(rd());
-    std::uniform_int_distribution<uint16_t> dis{ 0, Q - 1 };
+    uint16_t res = 0;
 
-    return ff_t{ dis(gen) };
+    for (size_t i = 0; i < (1ul << 10); i++) {
+      uint16_t v = 0;
+      prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
+
+      if (v < ff::Q) {
+        res = v;
+        break;
+      }
+    }
+
+    return ff_t{ res };
   }
-
-  // Writes field element into output stream, used for debugging purposes
-  friend inline std::ostream& operator<<(std::ostream& os, const ff_t& elm);
 };
-
-inline std::ostream&
-operator<<(std::ostream& os, const ff_t& elm)
-{
-  return os << "ff_q(" << elm.v << ", " << Q << ")";
-}
 
 }

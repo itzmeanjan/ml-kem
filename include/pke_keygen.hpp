@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 #include "poly_vec.hpp"
 #include "sampling.hpp"
 #include "sha3_512.hpp"
@@ -22,11 +23,12 @@ namespace cpapke {
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying PKE's key generation implementation.
 template<const size_t k, const size_t eta1>
-inline static void
+static inline void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
        uint8_t* const __restrict seckey  // k * 12 * 32 -bytes secret key
-)
+       )
+  requires(kyber_params::check_keygen_params(k, eta1))
 {
   constexpr size_t dlen = 32;
 
@@ -60,7 +62,6 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
 
   // step 19
   ff::ff_t t_prime[k * ntt::N]{};
-  std::memset(t_prime, 0, sizeof(t_prime));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
   kyber_utils::poly_vec_add_to<k>(e, t_prime);

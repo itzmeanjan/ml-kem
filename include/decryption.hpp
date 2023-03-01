@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 #include "poly_vec.hpp"
 
 // IND-CPA-secure Public Key Encryption Scheme
@@ -12,12 +13,13 @@ namespace cpapke {
 // See algorithm 6 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t du, const size_t dv>
-inline static void
+static inline void
 decrypt(
   const uint8_t* const __restrict seckey, // (k * 12 * 32) -bytes secret key
   const uint8_t* const __restrict enc,    // (k * du * 32 + dv * 32) -bytes
   uint8_t* const __restrict dec           // 32 -bytes plain text
-)
+  )
+  requires(kyber_params::check_decrypt_params(k, du, dv))
 {
   // step 1
   ff::ff_t u[k * ntt::N]{};
@@ -40,7 +42,6 @@ decrypt(
   kyber_utils::poly_vec_ntt<k>(u);
 
   ff::ff_t t[ntt::N]{};
-  std::memset(t, 0, sizeof(t));
 
   kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
   kyber_utils::poly_vec_intt<1>(t);

@@ -1,7 +1,5 @@
 #pragma once
-#include "decapsulation.hpp"
-#include "encapsulation.hpp"
-#include "kem_keygen.hpp"
+#include "kyber_kem.hpp"
 #include "utils.hpp"
 #include <cassert>
 
@@ -27,13 +25,13 @@ template<const size_t k,
          const size_t du,
          const size_t dv,
          const size_t klen>
-static void
+void
 test_kyber_cca_kem()
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32 + pklen + 32 + 32;
-  constexpr size_t ctlen = k * du * 32 + dv * 32;
+  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
+  constexpr size_t ctlen = kyber_utils::get_ccakem_cipher_len<k, du, dv>();
 
   uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
@@ -48,9 +46,10 @@ test_kyber_cca_kem()
   std::memset(skey, 0, sklen);
   std::memset(cipher, 0, ctlen);
 
-  kyber_utils::random_data<uint8_t>(d, slen);
-  kyber_utils::random_data<uint8_t>(z, slen);
-  kyber_utils::random_data<uint8_t>(m, slen);
+  prng::prng_t prng;
+  prng.read(d, slen);
+  prng.read(z, slen);
+  prng.read(m, slen);
 
   ccakem::keygen<k, eta1>(d, z, pkey, skey);
   auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);

@@ -1,27 +1,11 @@
 #pragma once
 #include "ff.hpp"
 #include "ntt.hpp"
+#include "params.hpp"
 #include <cmath>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
-
-// Compile-time check to ensure that number of bits ( read `d` ) to consider
-// during polynomial coefficient compression/ decompression is within tolerable
-// bounds.
-//
-// See page 5 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-constexpr bool
-check_d(const size_t d)
-{
-  // $ python3
-  // >>> import math
-  // >>> a = math.log2(3329) # == 11.700873155140263
-  // >>> math.round(a) # == 12
-  constexpr size_t log2d = 12ul;
-  return d < log2d;
-}
 
 // Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding
 // some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q))
@@ -29,9 +13,9 @@ check_d(const size_t d)
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static ff::ff_t
+static inline ff::ff_t
 compress(const ff::ff_t x)
-  requires(check_d(d))
+  requires(kyber_params::check_d(d))
 {
   constexpr uint16_t t0 = 1u << d;
   constexpr uint32_t t1 = static_cast<uint32_t>(ff::Q >> 1);
@@ -53,9 +37,9 @@ compress(const ff::ff_t x)
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static ff::ff_t
+static inline ff::ff_t
 decompress(const ff::ff_t x)
-  requires(check_d(d))
+  requires(kyber_params::check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
   constexpr uint32_t t1 = t0 >> 1;
@@ -76,7 +60,7 @@ decompress(const ff::ff_t x)
 // See eq. 2 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-inline static size_t
+static inline size_t
 compute_error()
 {
   constexpr double t0 = static_cast<double>(ff::Q);
@@ -89,9 +73,9 @@ compute_error()
 // Utility function to compress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
-inline static void
+static inline void
 poly_compress(ff::ff_t* const __restrict poly)
-  requires(check_d(d))
+  requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {
     poly[i] = compress<d>(poly[i]);
@@ -101,9 +85,9 @@ poly_compress(ff::ff_t* const __restrict poly)
 // Utility function to decompress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
-inline static void
+static inline void
 poly_decompress(ff::ff_t* const __restrict poly)
-  requires(check_d(d))
+  requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {
     poly[i] = decompress<d>(poly[i]);

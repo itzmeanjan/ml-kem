@@ -1,5 +1,6 @@
 #pragma once
 #include "encryption.hpp"
+#include "params.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 
@@ -31,12 +32,13 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline shake256::shake256<false>
+static inline shake256::shake256<false>
 encapsulate(
   const uint8_t* const __restrict m,      // 32 -bytes seed for encapsulation
   const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   uint8_t* const __restrict cipher        // (k * du * 32 + dv * 32) -bytes
-)
+  )
+  requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t mlen = 32;
   constexpr size_t pklen = k * 12 * 32 + 32;

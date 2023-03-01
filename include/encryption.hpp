@@ -1,4 +1,5 @@
 #pragma once
+#include "params.hpp"
 #include "poly_vec.hpp"
 #include "sampling.hpp"
 
@@ -18,12 +19,13 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-inline static void
+static inline void
 encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict msg,    // 32 -bytes message
         const uint8_t* const __restrict rcoin,  // 32 -bytes random coin
         uint8_t* const __restrict enc           // k * du * 32 + dv * 32 -bytes
-)
+        )
+  requires(kyber_params::check_encrypt_params(k, eta1, eta2, du, dv))
 {
   // step 2
   ff::ff_t t_prime[k * ntt::N]{};
@@ -59,7 +61,6 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   // step 19
   ff::ff_t u[k * ntt::N]{};
-  std::memset(u, 0, sizeof(u));
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
   kyber_utils::poly_vec_intt<k>(u);
@@ -67,7 +68,6 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 
   // step 20
   ff::ff_t v[ntt::N]{};
-  std::memset(v, 0, sizeof(v));
 
   kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   kyber_utils::poly_vec_intt<1>(v);

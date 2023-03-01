@@ -1,7 +1,5 @@
 #pragma once
-#include "decryption.hpp"
-#include "encryption.hpp"
-#include "pke_keygen.hpp"
+#include "kyber_pke.hpp"
 #include "utils.hpp"
 #include <cassert>
 
@@ -21,14 +19,14 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static void
+void
 test_kyber_cpa_pke()
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t sklen = k * 12 * 32;
+  constexpr size_t pklen = kyber_utils::get_cpapke_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_cpapke_secret_key_len<k>();
   constexpr size_t mlen = 32;
-  constexpr size_t enclen = k * du * 32 + dv * 32;
+  constexpr size_t enclen = kyber_utils::get_cpapke_cipher_len<k, du, dv>();
 
   uint8_t* seed = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
@@ -43,9 +41,10 @@ test_kyber_cpa_pke()
   std::memset(enc, 0, enclen);
   std::memset(dec, 0, mlen);
 
-  kyber_utils::random_data<uint8_t>(seed, slen);
-  kyber_utils::random_data<uint8_t>(txt, mlen);
-  kyber_utils::random_data<uint8_t>(rcoin, mlen);
+  prng::prng_t prng;
+  prng.read(seed, slen);
+  prng.read(txt, mlen);
+  prng.read(rcoin, mlen);
 
   cpapke::keygen<k, eta1>(seed, pkey, skey);
   cpapke::encrypt<k, eta1, eta2, du, dv>(pkey, txt, rcoin, enc);

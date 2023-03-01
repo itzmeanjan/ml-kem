@@ -12,7 +12,7 @@ namespace test_kyber {
 // l denotes significant bit width ( from LSB side ) for each coefficient of
 // polynomial.
 template<const size_t l>
-static void
+void
 test_serialization()
 {
   constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;
@@ -23,8 +23,10 @@ test_serialization()
   uint8_t* arr = static_cast<uint8_t*>(std::malloc(blen));
   ff::ff_t* dst = static_cast<ff::ff_t*>(std::malloc(plen));
 
+  prng::prng_t prng;
+
   for (size_t i = 0; i < ntt::N; i++) {
-    src[i] = ff::ff_t::random();
+    src[i] = ff::ff_t::random(prng);
   }
 
   kyber_utils::encode<l>(src, arr);

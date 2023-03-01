@@ -79,7 +79,7 @@ constexpr ff::ff_t POLY_MUL_ζ_EXP[]{
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38
 // for source of inspiration
 template<const size_t mbw>
-size_t
+static inline constexpr size_t
 bit_rev(const size_t v)
 {
   size_t v_rev = 0ul;
@@ -100,8 +100,8 @@ bit_rev(const size_t v)
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
-static void
-ntt(ff::ff_t* const __restrict poly)
+static inline void
+ntt(ff::ff_t* const poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
@@ -137,8 +137,8 @@ ntt(ff::ff_t* const __restrict poly)
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
-static void
-intt(ff::ff_t* const __restrict poly)
+static inline void
+intt(ff::ff_t* const poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
@@ -182,7 +182,7 @@ intt(ff::ff_t* const __restrict poly)
 //
 // See page 6 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-static void
+static inline void
 basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
         const ff::ff_t* const __restrict g, // degree-1 polynomial
         ff::ff_t* const __restrict h,       // degree-1 polynomial
@@ -216,7 +216,7 @@ basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
 // g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)
 //
 // h = f ◦ g
-static void
+static inline void
 polymul(const ff::ff_t* const __restrict f, // degree-255 polynomial
         const ff::ff_t* const __restrict g, // degree-255 polynomial
         ff::ff_t* const __restrict h        // degree-255 polynomial

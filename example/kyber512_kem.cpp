@@ -1,33 +1,21 @@
-#include "kyber_kem.hpp"
-#include "utils.hpp"
+#include "kyber512_kem.hpp"
 #include <cassert>
 #include <iostream>
 
 // Compile it with
 //
 // g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include
-// example/kem.cpp
+// example/kyber512_kem.cpp
 int
 main()
 {
-  // Kyber-512 Key Encapsulation Mechanism (KEM) parameters
-  //
-  // See table 1 of Kyber specification for all suggested parameters
-  // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-  constexpr size_t k = 2;
-  constexpr size_t eta1 = 3;
-  constexpr size_t eta2 = 2;
-  constexpr size_t du = 10;
-  constexpr size_t dv = 4;
-
-  // compile time compute byte length of Kyber-512 KEM public key, secret key
+  // Compile-time compute byte length of Kyber-512 KEM public key, secret key
   // and cipher text
-  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
-  constexpr size_t ctlen = kyber_utils::get_ccakem_cipher_len<k, du, dv>();
+  constexpr size_t pklen = kyber512_kem::pub_key_len();
+  constexpr size_t sklen = kyber512_kem::sec_key_len();
+  constexpr size_t ctlen = kyber512_kem::cipher_text_len();
   constexpr size_t klen = 32;
 
-  // dynamic allocation request of memory resources
   uint8_t* pubkey = static_cast<uint8_t*>(std::malloc(pklen));
   uint8_t* seckey = static_cast<uint8_t*>(std::malloc(sklen));
   uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
@@ -38,12 +26,11 @@ main()
   std::memset(seckey, 0, sklen);
   std::memset(cipher, 0, ctlen);
 
-  // CCA-secure KEM key generation
-  kyber_kem::keygen<k, eta1>(pubkey, seckey);
-  // CCA-secure key encapsulation using public key, producing KDF
-  auto skdf = kyber_kem::encapsulate<k, eta1, eta2, du, dv>(pubkey, cipher);
-  // CCA-secure key decapsulation using secret key, producing KDF
-  auto rkdf = kyber_kem::decapsulate<k, eta1, eta2, du, dv>(seckey, cipher);
+  prng::prng_t prng;
+
+  kyber512_kem::keygen(prng, pubkey, seckey);
+  auto skdf = kyber512_kem::encapsulate(prng, pubkey, cipher);
+  auto rkdf = kyber512_kem::decapsulate(seckey, cipher);
 
   // key encapsulator ( who had public key ), derives 32 -bytes key from its KDF
   skdf.read(shrd_key0, klen);
@@ -51,8 +38,8 @@ main()
   rkdf.read(shrd_key1, klen);
 
   // check that both parties who intended to share a secret key ( can be used
-  // with symmetric key primitives ) over insecure public channel did that and
-  // arrived at same 32 -bytes value.
+  // with symmetric key primitives ) over insecure public channel, arrived at
+  // same 32 -bytes value.
   bool flg = false;
   for (size_t i = 0; i < klen; i++) {
     flg |= static_cast<bool>(shrd_key0[i] ^ shrd_key1[i]);

@@ -129,6 +129,13 @@ public:
     return res;
   }
 
+  // Multiplicative inverse of Zq element ( in Montgomery Form ). Note, if Zq
+  // element is 0, we can't compute multiplicative inverse, so 0 is returned.
+  inline constexpr zq_t inv() const
+  {
+    return *this ^ static_cast<size_t>((Q - 2));
+  }
+
 private:
   // Underlying value held in this type
   uint32_t v = 0;

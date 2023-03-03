@@ -64,7 +64,12 @@ public:
   inline constexpr zq_t(const uint32_t a) { v = mont_mul(a, R2); }
 
   // Given integer in Montgomery Form, converts it to canonical form.
-  inline constexpr uint32_t to_canonical() const { return mont_mul(v, 1u); }
+  inline constexpr uint32_t to_canonical() const
+  {
+    const uint32_t t0 = mont_mul(v, 1u);
+    const uint32_t mask = -static_cast<uint32_t>(t0 >= Q);
+    return t0 - (Q & mask);
+  }
 
   // Given integer in Montgomery Form, returns zq_t, holding that value
   static inline constexpr zq_t from_montgomery(const uint32_t a)

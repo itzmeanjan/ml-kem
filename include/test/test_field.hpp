@@ -6,8 +6,8 @@
 namespace test_kyber {
 
 // Test functional correctness of Kyber prime field operations, by running
-// through multiple rounds ( = ITR ) of execution of field operations on
-// randomly generated field element
+// through multiple rounds of execution of field operations on randomly
+// sampled field elements
 inline void
 test_field_ops()
 {

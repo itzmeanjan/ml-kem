@@ -152,7 +152,7 @@ public:
   // Compare two Zq elements, returning truth value in case they are same
   inline constexpr bool operator==(const zq_t& rhs) const
   {
-    return !static_cast<bool>(v ^ rhs.v);
+    return this->to_canonical() == rhs.to_canonical();
   }
 
   // Samples a random Zq element, using pseudo random number generator.
@@ -163,6 +163,7 @@ public:
     for (size_t i = 0; i < (1ul << 10); i++) {
       uint32_t v = 0;
       prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
+      v = (v >> 16) ^ (v & 0xffffu);
 
       if (v < Q) {
         res = v;

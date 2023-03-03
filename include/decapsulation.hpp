@@ -4,6 +4,7 @@
 #include "params.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
+#include "subtle.hpp"
 
 // IND-CCA2-secure Key Encapsulation Mechanism
 namespace ccakem {
@@ -57,16 +58,19 @@ decapsulate(
 
   cpapke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, c_prime);
 
-  bool flg = false;
+  // line 7-11 of algorithm 9, in constant-time
+  uint32_t flg = -1u;
   for (size_t i = 0; i < ctlen; i++) {
-    flg |= static_cast<bool>(cipher[i] ^ c_prime[i]);
+    flg &= subtle::ct_eq<uint8_t, uint32_t>(cipher[i], c_prime[i]);
   }
 
-  std::memcpy(kdf_in, g_out, 32 * !flg);
-  std::memcpy(kdf_in, z, 32 * flg);
-  sha3_256::hash(c_prime, ctlen, kdf_in + 32);
+  for (size_t i = 0; i < 32; i++) {
+    kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
+  }
 
-  shake256::shake256 hasher{};
+  sha3_256::hash(cipher, ctlen, kdf_in + 32);
+
+  shake256::shake256 hasher;
   hasher.hash(kdf_in, sizeof(kdf_in));
   return hasher;
 }

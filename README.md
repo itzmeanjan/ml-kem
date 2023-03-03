@@ -1,4 +1,4 @@
-> **Warning** **This implementation is not yet audited. If you consider using it in production, be careful !**
+> **Warning** **This Kyber implementation is conformant with Kyber [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) and I also *try* to make it constant-time but be informed that it is not yet audited. If you consider using it in production, be careful !**
 
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
@@ -40,11 +40,10 @@ Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
 
 Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber PKE and KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. 
 
-Only dependency is `sha3`, which itself is a zero-dependency, header-only C++ library that I decided to write to modularize a common PQC dependency i.e. SHA3 hash functions and extendable output functions are fairly common symmetric key primitives used in post-quantum cryptographic constructions such as Kyber, Dilithium, Falcon and SPHINCS+ etc..
+Only dependency is `sha3` and `subtle` - both of them are zero-dependency, header-only C++ libraries themselves. I decided to write `sha3` so that I can modularize a fairly common PQC dependency because SHA3 hash functions and extendable output functions are pretty common symmetric key primitives used in post-quantum cryptographic constructions such as Kyber, Dilithium, Falcon and SPHINCS+ etc.. While `subtle` is a pretty light-weight library which helps achieving constant-timeness in cryptographic libraries. Here it's used for performing constant-time byte comparison and conditional selection without using booleans - only relying on integer addition, subtration and bit-wise operations.
 
-- `sha3` is pinned to specific commit, using git submodule, in `kyber`
+- Both `sha3` and `subtle` are pinned to specific commit, using git submodule.
 - See [usage](#usage) section below for git submodule set up guide.
-- Find more about `sha3` [here](https://github.com/itzmeanjan/sha3.git)
 
 > **Note**
 
@@ -94,7 +93,7 @@ $ python3 -m pip install -r wrapper/python/requirements.txt --user
 
 - For benchmarking Kyber implementation on CPU systems, you'll need to have `google-benchmark` header and library globally installed. You may want to follow [this](https://github.com/google/benchmark/tree/3b19d722#installation) guide.
 
-- For importing `sha3` dependency, initialize & update git submodule after cloning this repository
+- For importing `sha3` and `subtle`, initialize & update git submodule after cloning this repository
 
 ```bash
 git clone https://github.com/itzmeanjan/kyber.git
@@ -159,7 +158,7 @@ cd
 git clone https://github.com/itzmeanjan/kyber.git
 ```
 
-- Initialize and update git submodule, so that `sha3` dependency is available inside `kyber` source tree
+- Initialize and update git submodule, so that `sha3` and `subtle` are available inside `kyber` source tree
 
 ```bash
 cd kyber

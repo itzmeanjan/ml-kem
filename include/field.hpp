@@ -72,7 +72,7 @@ public:
   // Returns 1 as zq_t ( in Montgomery Form )
   static inline constexpr zq_t one() { return zq_t(1u); }
 
-  // Modulo Addition of two Zq elements ( in Montgomery Form )
+  // Modulo addition of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator+(const zq_t& rhs) const
   {
     const uint32_t r = v + rhs.v;
@@ -84,6 +84,17 @@ public:
 
     auto ret = zq_t();
     ret.v = c;
+
+    return ret;
+  }
+
+  // Modulo negation of Zq element ( in Montgomery Form )
+  inline constexpr zq_t operator-() const
+  {
+    const uint32_t r = Q - v;
+
+    auto ret = zq_t();
+    ret.v = r;
 
     return ret;
   }

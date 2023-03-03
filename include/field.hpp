@@ -107,10 +107,26 @@ public:
     return *this + (-rhs);
   }
 
-  // Modulo Multiplication of two Zq elements ( in Montgomery Form )
+  // Modulo multiplication of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator*(const zq_t& rhs) const
   {
     return zq_t::from_montgomery(mont_mul(v, rhs.v));
+  }
+
+  // Modulo exponentiation of Zq element ( in Montgomery Form )
+  inline constexpr zq_t operator^(const size_t exp) const
+  {
+    auto res = zq_t::one();
+    const size_t bw = std::bit_width(exp);
+
+    for (int64_t i = bw - 1; i >= 0; i--) {
+      res = res * res;
+      if ((exp >> i) & 1ul) {
+        res = res * *this;
+      }
+    }
+
+    return res;
   }
 
 private:

@@ -13,7 +13,7 @@ namespace test_kyber {
 // f'' = intt(f')
 //
 // assert(f == f'')
-void
+inline void
 test_ntt_intt()
 {
   constexpr size_t poly_len = sizeof(ff::ff_t) * ntt::N;

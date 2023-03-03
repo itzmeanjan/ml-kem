@@ -1,5 +1,5 @@
 #pragma once
-#include "ff.hpp"
+#include "field.hpp"
 #include <cassert>
 
 // Test functional correctness of Kyber PQC suite implementation

@@ -1,5 +1,5 @@
 #pragma once
-#include "ff.hpp"
+#include "field.hpp"
 #include <cstring>
 
 // (inverse) Number Theoretic Transform for degree 255 polynomial, over Kyber

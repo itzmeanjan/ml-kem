@@ -61,16 +61,32 @@ public:
   inline constexpr zq_t() = default;
 
   // Given a 32 -bit unsigned integer, converts it to Montgomery Form
-  inline constexpr zq_t(uint32_t a) { v = mont_mul(a, R2); }
+  inline constexpr zq_t(const uint32_t a) { v = mont_mul(a, R2); }
 
   // Given integer in Montgomery Form, converts it to canonical form.
-  inline constexpr uint32_t to_canonical() { return mont_mul(v, 1u); }
+  inline constexpr uint32_t to_canonical() const { return mont_mul(v, 1u); }
 
   // Makes underlying value ( in Montgomery Form ) available.
-  inline constexpr uint32_t in_mont_form() { return v; }
+  inline constexpr uint32_t in_mont_form() const { return v; }
 
   // Returns 1 as zq_t ( in Montgomery Form )
   static inline constexpr zq_t one() { return zq_t(1u); }
+
+  // Modulo Addition of two Zq elements ( in Montgomery Form )
+  inline constexpr zq_t operator+(const zq_t& rhs) const
+  {
+    const uint32_t r = v + rhs.v;
+    constexpr uint32_t ONE = R; // = field::zq_t::one().in_mont_form()
+
+    const uint32_t carry = r >> 12;
+    uint32_t c = r & MASK;
+    c = carry * ONE + c;
+
+    auto ret = zq_t();
+    ret.v = c;
+
+    return ret;
+  }
 
 private:
   // Underlying value held in this type
@@ -89,7 +105,7 @@ private:
     const uint32_t q = static_cast<uint32_t>(t & static_cast<uint64_t>(MASK));
 
     const uint32_t d = (c + (q * Q)) >> 12;
-    constexpr uint32_t ONE = 767; // = field::zq_t::one().in_mont_form()
+    constexpr uint32_t ONE = R; // = field::zq_t::one().in_mont_form()
 
     uint32_t carry = d >> 12;
     uint32_t e = d & MASK;

@@ -76,7 +76,7 @@ public:
   }
 
   // Makes underlying value ( in Montgomery Form ) available.
-  inline constexpr uint32_t in_mont_form() const { return v; }
+  inline constexpr uint32_t to_montgomery() const { return v; }
 
   // Returns 1 as zq_t ( in Montgomery Form )
   static inline constexpr zq_t one() { return zq_t(1u); }
@@ -85,7 +85,7 @@ public:
   inline constexpr zq_t operator+(const zq_t& rhs) const
   {
     const uint32_t r = v + rhs.v;
-    constexpr uint32_t ONE = R; // = field::zq_t::one().in_mont_form()
+    constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
 
     const uint32_t carry = r >> 12;
     uint32_t c = r & MASK;
@@ -107,6 +107,12 @@ public:
     return *this + (-rhs);
   }
 
+  // Modulo Multiplication of two Zq elements ( in Montgomery Form )
+  inline constexpr zq_t operator*(const zq_t& rhs) const
+  {
+    return zq_t::from_montgomery(mont_mul(v, rhs.v));
+  }
+
 private:
   // Underlying value held in this type
   uint32_t v = 0;
@@ -124,7 +130,7 @@ private:
     const uint32_t q = static_cast<uint32_t>(t & static_cast<uint64_t>(MASK));
 
     const uint32_t d = (c + (q * Q)) >> 12;
-    constexpr uint32_t ONE = R; // = field::zq_t::one().in_mont_form()
+    constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
 
     uint32_t carry = d >> 12;
     uint32_t e = d & MASK;

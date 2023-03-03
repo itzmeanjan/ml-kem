@@ -66,6 +66,15 @@ public:
   // Given integer in Montgomery Form, converts it to canonical form.
   inline constexpr uint32_t to_canonical() const { return mont_mul(v, 1u); }
 
+  // Given integer in Montgomery Form, returns zq_t, holding that value
+  static inline constexpr zq_t from_montgomery(const uint32_t a)
+  {
+    auto res = zq_t();
+    res.v = a;
+
+    return res;
+  }
+
   // Makes underlying value ( in Montgomery Form ) available.
   inline constexpr uint32_t in_mont_form() const { return v; }
 
@@ -82,21 +91,14 @@ public:
     uint32_t c = r & MASK;
     c = carry * ONE + c;
 
-    auto ret = zq_t();
-    ret.v = c;
-
-    return ret;
+    return zq_t::from_montgomery(c);
   }
 
   // Modulo negation of Zq element ( in Montgomery Form )
   inline constexpr zq_t operator-() const
   {
     const uint32_t r = Q - v;
-
-    auto ret = zq_t();
-    ret.v = r;
-
-    return ret;
+    return zq_t::from_montgomery(r);
   }
 
 private:

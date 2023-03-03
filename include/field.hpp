@@ -4,6 +4,109 @@
 #include <bit>
 #include <cstdint>
 
+// Prime field arithmetic over Zq, for Kyber PQC Algorithm s.t. q = 3329
+//
+// For Montgomery Arithmetic it collects motivation from https://ia.cr/2017/1057
+// and
+// https://github.com/itzmeanjan/secp256k1/blob/37b339db/field/base_field.py
+namespace field {
+
+// Kyber Prime Field Modulus ( = 3329 )
+constexpr uint32_t Q = (1u << 8) * 13 + 1;
+
+// Bit width of Kyber Prime Field Modulus ( = 12 )
+constexpr size_t RADIX_BIT_WIDTH = std::bit_width(Q);
+
+// = 2 ** RADIX_BIT_WIDTH = 2 ** 12 = 4096
+constexpr uint32_t RADIX = 1u << RADIX_BIT_WIDTH;
+
+// = 0x0FFF = 4095
+constexpr uint32_t MASK = RADIX - 1u;
+
+// Montgomery form of prime field element 1 ( = 767 )
+constexpr uint32_t R = RADIX % Q;
+
+// Required for converting an integer to its Montgomery Form ( = 2385 )
+constexpr uint32_t R2 = (R * R) % Q;
+
+// Compile-time computable constant μ, required for division less Montgomery
+// Multiplication ( with modulo reduction ), follows algo 3 of ia.cr/2017/1057
+constexpr uint32_t
+compute_mu()
+{
+  uint32_t y = 1u;
+
+  for (size_t i = 2; i < RADIX_BIT_WIDTH + 1; i++) {
+    const uint32_t t0 = Q * y;
+    const uint32_t t1 = t0 & ((1u << i) - 1u);
+    if (t1 != 1u) {
+      y = y + (1u << (i - 1));
+    }
+  }
+
+  return RADIX - y;
+}
+
+// Montgomery Constant μ ( = 3327 )
+constexpr uint32_t MU = compute_mu();
+
+// Prime field Zq | q = 3329, with arithmetic operations defined over it
+//
+// Note, this implementation makes use of Montgomery technique for modulo
+// arithmetic.
+struct zq_t
+{
+public:
+  // Default constructor s.t. value held is 0
+  inline constexpr zq_t() = default;
+
+  // Given a 32 -bit unsigned integer, converts it to Montgomery Form
+  inline constexpr zq_t(uint32_t a) { v = mont_mul(a, R2); }
+
+  // Given integer in Montgomery Form, converts it to canonical form.
+  inline constexpr uint32_t to_canonical() { return mont_mul(v, 1u); }
+
+  // Makes underlying value ( in Montgomery Form ) available.
+  inline constexpr uint32_t in_mont_form() { return v; }
+
+  // Returns 1 as zq_t ( in Montgomery Form )
+  static inline constexpr zq_t one() { return zq_t(1u); }
+
+private:
+  // Underlying value held in this type
+  uint32_t v = 0;
+
+  // Given two 32 -bit unsigned integers ( in Montgomery Form ) this routine
+  // performs Montgomery Multiplication ( with modulo reduction ).
+  //
+  // This routine can be used for converting an integer ( in canonical form ) to
+  // its Montgomery form and also for getting it back to canonical form.
+  static inline constexpr uint32_t mont_mul(const uint32_t a, const uint32_t b)
+  {
+    const uint32_t c = a * b;
+
+    const uint64_t t = static_cast<uint64_t>(MU) * static_cast<uint64_t>(c);
+    const uint32_t q = static_cast<uint32_t>(t & static_cast<uint64_t>(MASK));
+
+    const uint32_t d = (c + (q * Q)) >> 12;
+    constexpr uint32_t ONE = 767; // = field::zq_t::one().in_mont_form()
+
+    uint32_t carry = d >> 12;
+    uint32_t e = d & MASK;
+
+    while (carry > 0) {
+      e = carry * ONE + e;
+
+      carry = e >> 12;
+      e = e & MASK;
+    }
+
+    return e;
+  }
+};
+
+}
+
 // Prime field arithmetic over F_q, for Kyber PQC Algorithm s.t. q = 3329
 namespace ff {
 

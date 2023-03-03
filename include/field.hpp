@@ -136,6 +136,14 @@ public:
     return *this ^ static_cast<size_t>((Q - 2));
   }
 
+  // Modulo division of two Zq elements ( in Montgomery Form ). Note, if
+  // denominator is 0, returned result is 0 too, becaue we can't compute
+  // multiplicative inverse of it.
+  inline constexpr zq_t operator/(const zq_t& rhs) const
+  {
+    return *this * rhs.inv();
+  }
+
 private:
   // Underlying value held in this type
   uint32_t v = 0;

@@ -101,6 +101,12 @@ public:
     return zq_t::from_montgomery(r);
   }
 
+  // Modulo subtraction of two Zq elements ( in Montgomery Form )
+  inline constexpr zq_t operator-(const zq_t& rhs) const
+  {
+    return *this + (-rhs);
+  }
+
 private:
   // Underlying value held in this type
   uint32_t v = 0;

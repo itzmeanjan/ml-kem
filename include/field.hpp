@@ -144,6 +144,12 @@ public:
     return *this * rhs.inv();
   }
 
+  // Compare two Zq elements, returning truth value in case they are same
+  inline constexpr bool operator==(const zq_t& rhs) const
+  {
+    return !static_cast<bool>(v ^ rhs.v);
+  }
+
   // Samples a random Zq element, using pseudo random number generator.
   static inline zq_t random(prng::prng_t& prng)
   {

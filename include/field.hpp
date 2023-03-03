@@ -144,6 +144,24 @@ public:
     return *this * rhs.inv();
   }
 
+  // Samples a random Zq element, using pseudo random number generator.
+  static inline zq_t random(prng::prng_t& prng)
+  {
+    uint32_t res = 0;
+
+    for (size_t i = 0; i < (1ul << 10); i++) {
+      uint32_t v = 0;
+      prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
+
+      if (v < Q) {
+        res = v;
+        break;
+      }
+    }
+
+    return zq_t(res);
+  }
+
 private:
   // Underlying value held in this type
   uint32_t v = 0;

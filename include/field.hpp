@@ -57,28 +57,23 @@ constexpr uint32_t MU = compute_mu();
 struct zq_t
 {
 public:
-  // Default constructor s.t. value held is 0
-  inline constexpr zq_t() = default;
+  // Given an integer in Montgomery form, constructs a Zq object.
+  //
+  // Note, a must be <= RADIX !
+  inline constexpr zq_t(const uint32_t a = 0u) { v = a; }
 
-  // Given a 16 -bit unsigned integer in canonical form, converts it to
-  // Montgomery Form
-  inline constexpr zq_t(const uint16_t a) { v = mont_mul(a, R2); }
+  // Given an integer in canonical form, converts it to Montgormery form.
+  static inline constexpr zq_t from_canonical(const uint16_t a)
+  {
+    return zq_t(mont_mul(a, R2));
+  }
 
-  // Given integer in Montgomery Form, converts it to canonical form.
+  // Given an integer in Montgomery Form, converts it to canonical form.
   inline constexpr uint32_t to_canonical() const
   {
     const uint32_t t0 = mont_mul(v, 1u);
     const uint32_t mask = -static_cast<uint32_t>(t0 >= Q);
     return t0 - (Q & mask);
-  }
-
-  // Given integer in Montgomery Form, returns zq_t, holding that value
-  static inline constexpr zq_t from_montgomery(const uint32_t a)
-  {
-    auto res = zq_t();
-    res.v = a;
-
-    return res;
   }
 
   // Makes underlying value ( in Montgomery Form ) available.
@@ -97,15 +92,11 @@ public:
     uint32_t c = r & MASK;
     c = carry * ONE + c;
 
-    return zq_t::from_montgomery(c);
+    return zq_t(c);
   }
 
   // Modulo negation of Zq element ( in Montgomery Form )
-  inline constexpr zq_t operator-() const
-  {
-    const uint32_t r = Q - v;
-    return zq_t::from_montgomery(r);
-  }
+  inline constexpr zq_t operator-() const { return zq_t(Q - v); }
 
   // Modulo subtraction of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator-(const zq_t& rhs) const
@@ -116,7 +107,7 @@ public:
   // Modulo multiplication of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator*(const zq_t& rhs) const
   {
-    return zq_t::from_montgomery(mont_mul(v, rhs.v));
+    return zq_t(mont_mul(v, rhs.v));
   }
 
   // Modulo exponentiation of Zq element ( in Montgomery Form )
@@ -168,11 +159,14 @@ private:
   // Underlying value held in this type
   uint32_t v = 0;
 
-  // Given two 32 -bit unsigned integers ( in Montgomery Form ) this routine
-  // performs Montgomery Multiplication ( with modulo reduction ).
+  // Given two integers ( in Montgomery Form ) performs Montgomery
+  // multiplication ( with modulo reduction ).
   //
   // This routine can be used for converting an integer ( in canonical form ) to
   // its Montgomery form and also for getting it back to canonical form.
+  //
+  // Ensure atleast one of a, b is < 2**12, while other operand must be < 2**16
+  // Returned value will be < 2**12
   static inline constexpr uint32_t mont_mul(const uint32_t a, const uint32_t b)
   {
     constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
@@ -182,21 +176,12 @@ private:
     const uint32_t q = static_cast<uint32_t>(t & static_cast<uint64_t>(MASK));
 
     uint32_t d = (c + (q * Q)) >> 12;
-    uint32_t carry = 0;
 
-    carry = d >> 12;
-    d = d & MASK;
-    d = carry * ONE + d;
+    d = (d >> 12) * ONE + (d & MASK);
+    d = (d >> 12) * ONE + (d & MASK);
+    d = (d >> 12) * ONE + (d & MASK);
 
-    carry = d >> 12;
-    d = d & MASK;
-    d = carry * ONE + d;
-
-    carry = d >> 12;
-    d = d & MASK;
-    d = carry * ONE + d;
-
-    // d must be <= RADIX now !
+    // now d must be <= RADIX now !
     return d;
   }
 };

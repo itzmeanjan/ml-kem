@@ -59,7 +59,10 @@ struct zq_t
 public:
   // Given an integer in Montgomery form, constructs a Zq object.
   //
-  // Note, a must be <= RADIX !
+  // Note, argument value must be <= RADIX !
+  //
+  // If you want to get a Zq object from an integer in canonical form, consider
+  // using `from_canonical()` routine.
   inline constexpr zq_t(const uint32_t a = 0u) { v = a; }
 
   // Given an integer in canonical form, converts it to Montgormery form.
@@ -80,19 +83,17 @@ public:
   inline constexpr uint32_t to_montgomery() const { return v; }
 
   // Returns 1 as zq_t ( in Montgomery Form )
-  static inline constexpr zq_t one() { return zq_t(1u); }
+  static inline constexpr zq_t one() { return zq_t::from_canonical(1u); }
 
   // Modulo addition of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator+(const zq_t& rhs) const
   {
-    const uint32_t r = v + rhs.v;
     constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
 
-    const uint32_t carry = r >> 12;
-    uint32_t c = r & MASK;
-    c = carry * ONE + c;
+    uint32_t r = v + rhs.v;
+    r = (r >> RADIX_BIT_WIDTH) * ONE + (r & MASK);
 
-    return zq_t(c);
+    return zq_t(r);
   }
 
   // Modulo negation of Zq element ( in Montgomery Form )
@@ -152,7 +153,7 @@ public:
   {
     uint16_t res = 0;
     prng.read(reinterpret_cast<uint8_t*>(&res), sizeof(res));
-    return zq_t(res);
+    return zq_t::from_canonical(res);
   }
 
 private:
@@ -177,9 +178,9 @@ private:
 
     uint32_t d = (c + (q * Q)) >> 12;
 
-    d = (d >> 12) * ONE + (d & MASK);
-    d = (d >> 12) * ONE + (d & MASK);
-    d = (d >> 12) * ONE + (d & MASK);
+    d = (d >> RADIX_BIT_WIDTH) * ONE + (d & MASK);
+    d = (d >> RADIX_BIT_WIDTH) * ONE + (d & MASK);
+    d = (d >> RADIX_BIT_WIDTH) * ONE + (d & MASK);
 
     // now d must be <= RADIX now !
     return d;

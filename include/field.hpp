@@ -60,8 +60,9 @@ public:
   // Default constructor s.t. value held is 0
   inline constexpr zq_t() = default;
 
-  // Given a 32 -bit unsigned integer, converts it to Montgomery Form
-  inline constexpr zq_t(const uint32_t a) { v = mont_mul(a, R2); }
+  // Given a 16 -bit unsigned integer in canonical form, converts it to
+  // Montgomery Form
+  inline constexpr zq_t(const uint16_t a) { v = mont_mul(a, R2); }
 
   // Given integer in Montgomery Form, converts it to canonical form.
   inline constexpr uint32_t to_canonical() const
@@ -158,19 +159,8 @@ public:
   // Samples a random Zq element, using pseudo random number generator.
   static inline zq_t random(prng::prng_t& prng)
   {
-    uint32_t res = 0;
-
-    for (size_t i = 0; i < (1ul << 10); i++) {
-      uint32_t v = 0;
-      prng.read(reinterpret_cast<uint8_t*>(&v), sizeof(res));
-      v = (v >> 16) ^ (v & 0xffffu);
-
-      if (v < Q) {
-        res = v;
-        break;
-      }
-    }
-
+    uint16_t res = 0;
+    prng.read(reinterpret_cast<uint8_t*>(&res), sizeof(res));
     return zq_t(res);
   }
 
@@ -185,25 +175,29 @@ private:
   // its Montgomery form and also for getting it back to canonical form.
   static inline constexpr uint32_t mont_mul(const uint32_t a, const uint32_t b)
   {
+    constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
     const uint32_t c = a * b;
 
     const uint64_t t = static_cast<uint64_t>(MU) * static_cast<uint64_t>(c);
     const uint32_t q = static_cast<uint32_t>(t & static_cast<uint64_t>(MASK));
 
-    const uint32_t d = (c + (q * Q)) >> 12;
-    constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
+    uint32_t d = (c + (q * Q)) >> 12;
+    uint32_t carry = 0;
 
-    uint32_t carry = d >> 12;
-    uint32_t e = d & MASK;
+    carry = d >> 12;
+    d = d & MASK;
+    d = carry * ONE + d;
 
-    while (carry > 0) {
-      e = carry * ONE + e;
+    carry = d >> 12;
+    d = d & MASK;
+    d = carry * ONE + d;
 
-      carry = e >> 12;
-      e = e & MASK;
-    }
+    carry = d >> 12;
+    d = d & MASK;
+    d = carry * ONE + d;
 
-    return e;
+    // d must be <= RADIX now !
+    return d;
   }
 };
 

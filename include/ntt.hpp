@@ -3,8 +3,8 @@
 #include <array>
 #include <cstring>
 
-// (inverse) Number Theoretic Transform for degree 255 polynomial, over Kyber
-// Prime Field F_q | q = 3329
+// (inverse) Number Theoretic Transform for degree-255 polynomial, over Kyber
+// Prime Field Zq | q = 3329
 namespace ntt {
 
 constexpr size_t LOG2N = 8;
@@ -13,10 +13,12 @@ constexpr size_t N = 1 << LOG2N;
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-constexpr ff::ff_t ζ{ 17 };
+constexpr auto ζ = field::zq_t::from_canonical(17);
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
-constexpr auto INV_N = ff::ff_t{ N >> 1 }.inv();
+//
+// Meaning (N/ 2) * 3303 = 1 mod q
+constexpr auto INV_N = field::zq_t::from_canonical(N / 2).inv();
 
 // Given a 64 -bit unsigned integer, this routine extracts specified many
 // contiguous bits from ( least significant bits ) LSB side & reverses their bit
@@ -40,10 +42,10 @@ bit_rev(const size_t v)
 }
 
 // Compile-time compute powers of ζ, used for polynomial evaluation ( NTT )
-consteval std::array<ff::ff_t, N / 2>
+consteval std::array<field::zq_t, N / 2>
 compute_ntt_ζ()
 {
-  std::array<ff::ff_t, N / 2> res;
+  std::array<field::zq_t, N / 2> res;
 
   for (size_t i = 0; i < N / 2; i++) {
     res[i] = ζ ^ bit_rev<LOG2N - 1>(i);
@@ -54,14 +56,14 @@ compute_ntt_ζ()
 
 // Precomputed constants ( powers of ζ ), used for computing NTT form of
 // degree-255 polynomial
-constexpr std::array<ff::ff_t, N / 2> NTT_ζ_EXP = compute_ntt_ζ();
+constexpr std::array<field::zq_t, N / 2> NTT_ζ_EXP = compute_ntt_ζ();
 
 // Compile-time compute negated powers of ζ, used for polynomial interpolation (
 // iNTT )
-consteval std::array<ff::ff_t, N / 2>
+consteval std::array<field::zq_t, N / 2>
 compute_intt_ζ()
 {
-  std::array<ff::ff_t, N / 2> res;
+  std::array<field::zq_t, N / 2> res;
 
   for (size_t i = 0; i < N / 2; i++) {
     res[i] = -NTT_ζ_EXP[i];
@@ -72,14 +74,14 @@ compute_intt_ζ()
 
 // Precomputed constants ( negated powers of ζ ), used for computing coefficient
 // form of degree-255 polynomial using inverse NTT
-constexpr std::array<ff::ff_t, N / 2> INTT_ζ_EXP = compute_intt_ζ();
+constexpr std::array<field::zq_t, N / 2> INTT_ζ_EXP = compute_intt_ζ();
 
 // Compile-time compute powers of ζ, used for multiplication of two degree-255
 // polynomials in NTT representation.
-consteval std::array<ff::ff_t, N / 2>
+consteval std::array<field::zq_t, N / 2>
 compute_mul_ζ()
 {
-  std::array<ff::ff_t, N / 2> res;
+  std::array<field::zq_t, N / 2> res;
 
   for (size_t i = 0; i < N / 2; i++) {
     res[i] = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
@@ -90,7 +92,7 @@ compute_mul_ζ()
 
 // Precomputed constants ( powers of ζ ), used when multiplying two degree-255
 // polynomials in NTT domain.
-constexpr std::array<ff::ff_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
+constexpr std::array<field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 
 // Given a polynomial f with 256 coefficients over F_q | q = 3329, this routine
 // computes number theoretic transform using cooley-tukey algorithm, producing
@@ -101,7 +103,7 @@ constexpr std::array<ff::ff_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
 static inline void
-ntt(ff::ff_t* const poly)
+ntt(field::zq_t* const poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
@@ -115,7 +117,7 @@ ntt(ff::ff_t* const poly)
       // ζ ^ bit_rev<LOG2N - 1>(k_now)
       //
       // This is how these constants are generated !
-      const ff::ff_t ζ_exp = NTT_ζ_EXP[k_now];
+      const field::zq_t ζ_exp = NTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
         auto tmp = ζ_exp;
@@ -138,7 +140,7 @@ ntt(ff::ff_t* const poly)
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
 static inline void
-intt(ff::ff_t* const poly)
+intt(field::zq_t* const poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
@@ -154,7 +156,7 @@ intt(ff::ff_t* const poly)
       // Or simpler
       //
       // -NTT_ζ_EXP[k_now]
-      const ff::ff_t neg_ζ_exp = INTT_ζ_EXP[k_now];
+      const field::zq_t neg_ζ_exp = INTT_ζ_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
         const auto tmp = poly[i];
@@ -183,14 +185,14 @@ intt(ff::ff_t* const poly)
 // See page 6 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static inline void
-basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
-        const ff::ff_t* const __restrict g, // degree-1 polynomial
-        ff::ff_t* const __restrict h,       // degree-1 polynomial
-        const ff::ff_t ζ                    // zeta
+basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
+        const field::zq_t* const __restrict g, // degree-1 polynomial
+        field::zq_t* const __restrict h,       // degree-1 polynomial
+        const field::zq_t ζ                    // zeta
 )
 {
-  ff::ff_t f0 = f[0];
-  ff::ff_t f1 = f[1];
+  field::zq_t f0 = f[0];
+  field::zq_t f1 = f[1];
 
   f0 *= g[0];
   f1 *= g[1];
@@ -199,8 +201,8 @@ basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
 
   h[0] = f1;
 
-  ff::ff_t g0 = g[0];
-  ff::ff_t g1 = g[1];
+  field::zq_t g0 = g[0];
+  field::zq_t g1 = g[1];
 
   g1 *= f[0];
   g0 *= f[1];
@@ -217,9 +219,9 @@ basemul(const ff::ff_t* const __restrict f, // degree-1 polynomial
 //
 // h = f ◦ g
 static inline void
-polymul(const ff::ff_t* const __restrict f, // degree-255 polynomial
-        const ff::ff_t* const __restrict g, // degree-255 polynomial
-        ff::ff_t* const __restrict h        // degree-255 polynomial
+polymul(const field::zq_t* const __restrict f, // degree-255 polynomial
+        const field::zq_t* const __restrict g, // degree-255 polynomial
+        field::zq_t* const __restrict h        // degree-255 polynomial
 )
 {
   constexpr size_t cnt = N >> 1;

@@ -5,7 +5,6 @@ int
 main()
 {
   test_kyber::test_field_ops();
-  test_kyber::test_mont_field_ops();
   std::cout << "[test] Kyber prime field operations" << std::endl;
 
   test_kyber::test_ntt_intt();

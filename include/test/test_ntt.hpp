@@ -16,15 +16,15 @@ namespace test_kyber {
 inline void
 test_ntt_intt()
 {
-  constexpr size_t poly_len = sizeof(ff::ff_t) * ntt::N;
+  constexpr size_t poly_len = sizeof(field::zq_t) * ntt::N;
 
-  ff::ff_t* poly_a = static_cast<ff::ff_t*>(std::malloc(poly_len));
-  ff::ff_t* poly_b = static_cast<ff::ff_t*>(std::malloc(poly_len));
+  field::zq_t* poly_a = static_cast<field::zq_t*>(std::malloc(poly_len));
+  field::zq_t* poly_b = static_cast<field::zq_t*>(std::malloc(poly_len));
 
   prng::prng_t prng;
 
   for (size_t i = 0; i < ntt::N; i++) {
-    poly_a[i] = ff::ff_t::random(prng);
+    poly_a[i] = field::zq_t::random(prng);
   }
 
   std::memcpy(poly_b, poly_a, poly_len);

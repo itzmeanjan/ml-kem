@@ -15,25 +15,25 @@ template<const size_t l>
 void
 test_serialization()
 {
-  constexpr size_t plen = sizeof(ff::ff_t) * ntt::N;
+  constexpr size_t plen = sizeof(field::zq_t) * ntt::N;
   constexpr size_t blen = 32 * l;
-  constexpr uint16_t mask = (1u << l) - 1u;
+  constexpr uint32_t mask = (1u << l) - 1u;
 
-  ff::ff_t* src = static_cast<ff::ff_t*>(std::malloc(plen));
+  field::zq_t* src = static_cast<field::zq_t*>(std::malloc(plen));
   uint8_t* arr = static_cast<uint8_t*>(std::malloc(blen));
-  ff::ff_t* dst = static_cast<ff::ff_t*>(std::malloc(plen));
+  field::zq_t* dst = static_cast<field::zq_t*>(std::malloc(plen));
 
   prng::prng_t prng;
 
   for (size_t i = 0; i < ntt::N; i++) {
-    src[i] = ff::ff_t::random(prng);
+    src[i] = field::zq_t::random(prng);
   }
 
   kyber_utils::encode<l>(src, arr);
   kyber_utils::decode<l>(arr, dst);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    assert((src[i].v & mask) == (dst[i].v & mask));
+    assert((src[i].to_canonical() & mask) == (dst[i].to_canonical() & mask));
   }
 
   std::free(src);

@@ -22,17 +22,20 @@ test_compression()
   prng::prng_t prng;
 
   for (size_t i = 0; i < cnt; i++) {
-    const auto a = ff::ff_t::random(prng);
+    const auto a = field::zq_t::random(prng);
 
     const auto b = kyber_utils::compress<d>(a);
     const auto c = kyber_utils::decompress<d>(b);
 
-    const uint16_t br0[]{ static_cast<uint16_t>(ff::Q - c.v), c.v };
-    const bool flg0 = c.v <= (ff::Q >> 1);
+    const auto a_canon = a.to_canonical();
+    const auto c_canon = c.to_canonical();
+
+    const uint32_t br0[]{ static_cast<uint16_t>(field::Q - c_canon), c_canon };
+    const bool flg0 = c_canon <= (field::Q >> 1);
     const auto c_prime = static_cast<int32_t>(br0[flg0]);
 
-    const uint16_t br1[]{ static_cast<uint16_t>(ff::Q - a.v), a.v };
-    const bool flg1 = a.v <= (ff::Q >> 1);
+    const uint32_t br1[]{ static_cast<uint16_t>(field::Q - a_canon), a_canon };
+    const bool flg1 = a_canon <= (field::Q >> 1);
     const auto a_prime = static_cast<int32_t>(br1[flg1]);
 
     const size_t err = static_cast<size_t>(std::abs(c_prime - a_prime));

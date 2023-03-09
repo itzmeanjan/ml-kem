@@ -28,7 +28,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   requires(kyber_params::check_encrypt_params(k, eta1, eta2, du, dv))
 {
   // step 2
-  ff::ff_t t_prime[k * ntt::N]{};
+  field::zq_t t_prime[k * ntt::N]{};
   kyber_utils::poly_vec_decode<k, 12>(pubkey, t_prime);
 
   // step 3
@@ -36,44 +36,44 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
   const uint8_t* const rho = pubkey + pkoff;
 
   // step 4, 5, 6, 7, 8
-  ff::ff_t A_prime[k * k * ntt::N]{};
+  field::zq_t A_prime[k * k * ntt::N]{};
   kyber_utils::generate_matrix<k, true>(A_prime, rho);
 
   // step 1
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
-  ff::ff_t r[k * ntt::N]{};
+  field::zq_t r[k * ntt::N]{};
   kyber_utils::generate_vector<k, eta1>(r, rcoin, N);
   N += k;
 
   // step 13, 14, 15, 16
-  ff::ff_t e1[k * ntt::N]{};
+  field::zq_t e1[k * ntt::N]{};
   kyber_utils::generate_vector<k, eta2>(e1, rcoin, N);
   N += k;
 
   // step 17
-  ff::ff_t e2[ntt::N]{};
+  field::zq_t e2[ntt::N]{};
   kyber_utils::generate_vector<1, eta2>(e2, rcoin, N);
 
   // step 18
   kyber_utils::poly_vec_ntt<k>(r);
 
   // step 19
-  ff::ff_t u[k * ntt::N]{};
+  field::zq_t u[k * ntt::N]{};
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
   kyber_utils::poly_vec_intt<k>(u);
   kyber_utils::poly_vec_add_to<k>(e1, u);
 
   // step 20
-  ff::ff_t v[ntt::N]{};
+  field::zq_t v[ntt::N]{};
 
   kyber_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   kyber_utils::poly_vec_intt<1>(v);
   kyber_utils::poly_vec_add_to<1>(e2, v);
 
-  ff::ff_t m[ntt::N]{};
+  field::zq_t m[ntt::N]{};
   kyber_utils::decode<1>(msg, m);
   kyber_utils::poly_decompress<1>(m);
   kyber_utils::poly_vec_add_to<1>(m, v);

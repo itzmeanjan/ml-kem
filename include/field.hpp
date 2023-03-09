@@ -1,6 +1,5 @@
 #pragma once
 #include "prng.hpp"
-#include <array>
 #include <bit>
 #include <cstdint>
 

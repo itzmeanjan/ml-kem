@@ -13,19 +13,19 @@ namespace kyber_utils {
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-static inline ff::ff_t
-compress(const ff::ff_t x)
+static inline field::zq_t
+compress(const field::zq_t x)
   requires(kyber_params::check_d(d))
 {
   constexpr uint16_t t0 = 1u << d;
-  constexpr uint32_t t1 = static_cast<uint32_t>(ff::Q >> 1);
+  constexpr uint32_t t1 = static_cast<uint32_t>(field::Q >> 1);
 
-  const uint32_t t2 = static_cast<uint32_t>(x.v) << d;
+  const uint32_t t2 = x.to_canonical() << d;
   const uint32_t t3 = t2 + t1;
-  const uint16_t t4 = static_cast<uint16_t>(t3 / ff::Q);
+  const uint16_t t4 = static_cast<uint16_t>(t3 / field::Q);
   const uint16_t t5 = t4 & (t0 - 1);
 
-  return ff::ff_t{ t5 };
+  return field::zq_t::from_canonical(t5);
 }
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses
@@ -37,18 +37,18 @@ compress(const ff::ff_t x)
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t d>
-static inline ff::ff_t
-decompress(const ff::ff_t x)
+static inline field::zq_t
+decompress(const field::zq_t x)
   requires(kyber_params::check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
   constexpr uint32_t t1 = t0 >> 1;
 
-  const uint32_t t2 = static_cast<uint32_t>(ff::Q * x.v);
+  const uint32_t t2 = static_cast<uint32_t>(field::Q * x.to_canonical());
   const uint32_t t3 = t2 + t1;
   const uint16_t t4 = static_cast<uint16_t>(t3 >> d);
 
-  return ff::ff_t{ t4 };
+  return field::zq_t::from_canonical(t4);
 }
 
 // Decompression error that can happen for some given `d` s.t.
@@ -63,7 +63,7 @@ template<const size_t d>
 static inline size_t
 compute_error()
 {
-  constexpr double t0 = static_cast<double>(ff::Q);
+  constexpr double t0 = static_cast<double>(field::Q);
   constexpr double t1 = static_cast<double>(1ul << (d + 1));
 
   const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
@@ -74,7 +74,7 @@ compute_error()
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
 static inline void
-poly_compress(ff::ff_t* const __restrict poly)
+poly_compress(field::zq_t* const __restrict poly)
   requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {
@@ -86,7 +86,7 @@ poly_compress(ff::ff_t* const __restrict poly)
 // polynomial s.t. input polynomial is mutated.
 template<const size_t d>
 static inline void
-poly_decompress(ff::ff_t* const __restrict poly)
+poly_decompress(field::zq_t* const __restrict poly)
   requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < ntt::N; i++) {

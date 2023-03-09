@@ -90,6 +90,8 @@ public:
     constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
 
     uint32_t r = v + rhs.v;
+
+    r = (r >> RADIX_BIT_WIDTH) * ONE + (r & MASK);
     r = (r >> RADIX_BIT_WIDTH) * ONE + (r & MASK);
 
     return zq_t(r);
@@ -99,7 +101,15 @@ public:
   inline constexpr void operator+=(const zq_t& rhs) { *this = *this + rhs; }
 
   // Modulo negation of Zq element ( in Montgomery Form )
-  inline constexpr zq_t operator-() const { return zq_t(Q - v); }
+  inline constexpr zq_t operator-() const
+  {
+    constexpr uint32_t ONE = R; // = field::zq_t::one().to_montgomery()
+
+    uint32_t r = Q - v;
+    r = (r & MASK) - ((r >> RADIX_BIT_WIDTH) & ONE);
+
+    return zq_t(r);
+  }
 
   // Modulo subtraction of two Zq elements ( in Montgomery Form )
   inline constexpr zq_t operator-(const zq_t& rhs) const

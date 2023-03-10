@@ -14,12 +14,12 @@ template<const size_t a_rows,
          const size_t b_rows,
          const size_t b_cols>
 static inline void
-matrix_multiply(const ff::ff_t* const __restrict a,
-                const ff::ff_t* const __restrict b,
-                ff::ff_t* const __restrict c)
+matrix_multiply(const field::zq_t* const __restrict a,
+                const field::zq_t* const __restrict b,
+                field::zq_t* const __restrict c)
   requires(kyber_params::check_matrix_dim(a_cols, b_rows))
 {
-  ff::ff_t tmp[ntt::N]{};
+  field::zq_t tmp[ntt::N]{};
 
   for (size_t i = 0; i < a_rows; i++) {
     for (size_t j = 0; j < b_cols; j++) {
@@ -44,7 +44,7 @@ matrix_multiply(const ff::ff_t* const __restrict a,
 // polynomial NTT over k polynomials
 template<const size_t k>
 static inline void
-poly_vec_ntt(ff::ff_t* const __restrict vec)
+poly_vec_ntt(field::zq_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
@@ -59,7 +59,7 @@ poly_vec_ntt(ff::ff_t* const __restrict vec)
 // polynomials
 template<const size_t k>
 static inline void
-poly_vec_intt(ff::ff_t* const __restrict vec)
+poly_vec_intt(field::zq_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
@@ -72,8 +72,8 @@ poly_vec_intt(ff::ff_t* const __restrict vec)
 // routine adds it to another polynomial vector of same dimension
 template<const size_t k>
 static inline void
-poly_vec_add_to(const ff::ff_t* const __restrict src,
-                ff::ff_t* const __restrict dst)
+poly_vec_add_to(const field::zq_t* const __restrict src,
+                field::zq_t* const __restrict dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -87,8 +87,8 @@ poly_vec_add_to(const ff::ff_t* const __restrict src,
 // routine subtracts it to another polynomial vector of same dimension
 template<const size_t k>
 static inline void
-poly_vec_sub_from(const ff::ff_t* const __restrict src,
-                  ff::ff_t* const __restrict dst)
+poly_vec_sub_from(const field::zq_t* const __restrict src,
+                  field::zq_t* const __restrict dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -103,7 +103,7 @@ poly_vec_sub_from(const ff::ff_t* const __restrict src,
 // (k x 32 x l) -bytes destination array
 template<const size_t k, const size_t l>
 static inline void
-poly_vec_encode(const ff::ff_t* const __restrict src,
+poly_vec_encode(const field::zq_t* const __restrict src,
                 uint8_t* const __restrict dst)
   requires(kyber_params::check_k(k))
 {
@@ -121,7 +121,7 @@ poly_vec_encode(const ff::ff_t* const __restrict src,
 template<const size_t k, const size_t l>
 static inline void
 poly_vec_decode(const uint8_t* const __restrict src,
-                ff::ff_t* const __restrict dst)
+                field::zq_t* const __restrict dst)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
@@ -136,7 +136,7 @@ poly_vec_decode(const uint8_t* const __restrict src,
 // k * 256 coefficients are compressed, while mutating input
 template<const size_t k, const size_t d>
 static inline void
-poly_vec_compress(ff::ff_t* const __restrict vec)
+poly_vec_compress(field::zq_t* const __restrict vec)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
@@ -149,7 +149,7 @@ poly_vec_compress(ff::ff_t* const __restrict vec)
 // k * 256 coefficients are decompressed, while mutating input
 template<const size_t k, const size_t d>
 static inline void
-poly_vec_decompress(ff::ff_t* const __restrict vec)
+poly_vec_decompress(field::zq_t* const __restrict vec)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {

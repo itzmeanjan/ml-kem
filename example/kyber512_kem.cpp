@@ -4,8 +4,8 @@
 
 // Compile it with
 //
-// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include
-// example/kyber512_kem.cpp
+// g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include -I
+// ./subtle/include/ example/kyber512_kem.cpp
 int
 main()
 {

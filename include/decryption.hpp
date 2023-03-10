@@ -22,26 +22,26 @@ decrypt(
   requires(kyber_params::check_decrypt_params(k, du, dv))
 {
   // step 1
-  ff::ff_t u[k * ntt::N]{};
+  field::zq_t u[k * ntt::N]{};
 
   kyber_utils::poly_vec_decode<k, du>(enc, u);
   kyber_utils::poly_vec_decompress<k, du>(u);
 
   // step 2
-  ff::ff_t v[ntt::N]{};
+  field::zq_t v[ntt::N]{};
 
   constexpr size_t encoff = k * du * 32;
   kyber_utils::decode<dv>(enc + encoff, v);
   kyber_utils::poly_decompress<dv>(v);
 
   // step 3
-  ff::ff_t s_prime[k * ntt::N]{};
+  field::zq_t s_prime[k * ntt::N]{};
   kyber_utils::poly_vec_decode<k, 12>(seckey, s_prime);
 
   // step 4
   kyber_utils::poly_vec_ntt<k>(u);
 
-  ff::ff_t t[ntt::N]{};
+  field::zq_t t[ntt::N]{};
 
   kyber_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
   kyber_utils::poly_vec_intt<1>(t);

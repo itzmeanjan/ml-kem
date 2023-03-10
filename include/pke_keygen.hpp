@@ -40,19 +40,19 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
   const uint8_t* sigma = g_out + 32;
 
   // step 4, 5, 6, 7, 8
-  ff::ff_t A_prime[k * k * ntt::N]{};
+  field::zq_t A_prime[k * k * ntt::N]{};
   kyber_utils::generate_matrix<k, false>(A_prime, rho);
 
   // step 3
   uint8_t N = 0;
 
   // step 9, 10, 11, 12
-  ff::ff_t s[k * ntt::N]{};
+  field::zq_t s[k * ntt::N]{};
   kyber_utils::generate_vector<k, eta1>(s, sigma, N);
   N += k;
 
   // step 13, 14, 15, 16
-  ff::ff_t e[k * ntt::N]{};
+  field::zq_t e[k * ntt::N]{};
   kyber_utils::generate_vector<k, eta1>(e, sigma, N);
   N += k;
 
@@ -61,7 +61,7 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
   kyber_utils::poly_vec_ntt<k>(e);
 
   // step 19
-  ff::ff_t t_prime[k * ntt::N]{};
+  field::zq_t t_prime[k * ntt::N]{};
 
   kyber_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
   kyber_utils::poly_vec_add_to<k>(e, t_prime);

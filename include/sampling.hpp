@@ -1,5 +1,5 @@
 #pragma once
-#include "ff.hpp"
+#include "field.hpp"
 #include "ntt.hpp"
 #include "params.hpp"
 #include "shake128.hpp"
@@ -20,7 +20,7 @@ namespace kyber_utils {
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static inline void
 parse(shake128::shake128<false>& hasher, // Squeezes bytes
-      ff::ff_t* const __restrict poly    // Degree 255 polynomial
+      field::zq_t* const __restrict poly // Degree 255 polynomial
 )
 {
   constexpr size_t n = ntt::N;
@@ -37,12 +37,13 @@ parse(shake128::shake128<false>& hasher, // Squeezes bytes
       const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) |
                           (static_cast<uint16_t>(buf[off + 1] >> 4));
 
-      const bool flg = d1 < ff::Q;
-      poly[coeff_idx].v = flg * d1;
-      coeff_idx = coeff_idx + 1 * flg;
+      if (d1 < field::Q) {
+        poly[coeff_idx] = field::zq_t::from_canonical(d1);
+        coeff_idx++;
+      }
 
-      if ((d2 < ff::Q) && (coeff_idx < n)) {
-        poly[coeff_idx].v = d2;
+      if ((d2 < field::Q) && (coeff_idx < n)) {
+        poly[coeff_idx] = field::zq_t::from_canonical(d2);
         coeff_idx++;
       }
     }
@@ -57,7 +58,7 @@ parse(shake128::shake128<false>& hasher, // Squeezes bytes
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const bool transpose>
 static inline void
-generate_matrix(ff::ff_t* const __restrict mat,
+generate_matrix(field::zq_t* const __restrict mat,
                 const uint8_t* const __restrict rho)
   requires(kyber_params::check_k(k))
 {
@@ -94,7 +95,7 @@ generate_matrix(ff::ff_t* const __restrict mat,
 template<const size_t eta>
 static inline void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
-    ff::ff_t* const __restrict poly      // Degree 255 polynomial
+    field::zq_t* const __restrict poly   // Degree 255 polynomial
     )
   requires(kyber_params::check_eta(eta))
 {
@@ -113,10 +114,10 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
       const uint8_t t1 = (word >> 1) & mask8;
       const uint8_t t2 = t0 + t1;
 
-      poly[poff + 0] = ff::ff_t{ static_cast<uint16_t>((t2 >> 0) & mask2) } -
-                       ff::ff_t{ static_cast<uint16_t>((t2 >> 2) & mask2) };
-      poly[poff + 1] = ff::ff_t{ static_cast<uint16_t>((t2 >> 4) & mask2) } -
-                       ff::ff_t{ static_cast<uint16_t>((t2 >> 6) & mask2) };
+      poly[poff + 0] = field::zq_t::from_canonical((t2 >> 0) & mask2) -
+                       field::zq_t::from_canonical((t2 >> 2) & mask2);
+      poly[poff + 1] = field::zq_t::from_canonical((t2 >> 4) & mask2) -
+                       field::zq_t::from_canonical((t2 >> 6) & mask2);
     }
   } else {
     static_assert(eta == 3, "η must be 3 !");
@@ -138,14 +139,14 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
       const uint32_t t2 = (word >> 2) & mask24;
       const uint32_t t3 = t0 + t1 + t2;
 
-      poly[poff + 0] = ff::ff_t{ static_cast<uint16_t>((t3 >> 0) & mask3) } -
-                       ff::ff_t{ static_cast<uint16_t>((t3 >> 3) & mask3) };
-      poly[poff + 1] = ff::ff_t{ static_cast<uint16_t>((t3 >> 6) & mask3) } -
-                       ff::ff_t{ static_cast<uint16_t>((t3 >> 9) & mask3) };
-      poly[poff + 2] = ff::ff_t{ static_cast<uint16_t>((t3 >> 12) & mask3) } -
-                       ff::ff_t{ static_cast<uint16_t>((t3 >> 15) & mask3) };
-      poly[poff + 3] = ff::ff_t{ static_cast<uint16_t>((t3 >> 18) & mask3) } -
-                       ff::ff_t{ static_cast<uint16_t>((t3 >> 21) & mask3) };
+      poly[poff + 0] = field::zq_t::from_canonical((t3 >> 0) & mask3) -
+                       field::zq_t::from_canonical((t3 >> 3) & mask3);
+      poly[poff + 1] = field::zq_t::from_canonical((t3 >> 6) & mask3) -
+                       field::zq_t::from_canonical((t3 >> 9) & mask3);
+      poly[poff + 2] = field::zq_t::from_canonical((t3 >> 12) & mask3) -
+                       field::zq_t::from_canonical((t3 >> 15) & mask3);
+      poly[poff + 3] = field::zq_t::from_canonical((t3 >> 18) & mask3) -
+                       field::zq_t::from_canonical((t3 >> 21) & mask3);
     }
   }
 }
@@ -155,7 +156,7 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<const size_t k, const size_t eta>
 static inline void
-generate_vector(ff::ff_t* const __restrict vec,
+generate_vector(field::zq_t* const __restrict vec,
                 const uint8_t* const __restrict sigma,
                 const uint8_t nonce)
   requires((k == 1) || kyber_params::check_k(k))

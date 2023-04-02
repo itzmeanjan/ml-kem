@@ -31,6 +31,8 @@ pke_keygen(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
+  state.SetItemsProcessed(state.iterations());
+
   std::free(seed);
   std::free(pkey);
   std::free(skey);
@@ -75,6 +77,8 @@ encrypt(benchmark::State& state)
     benchmark::DoNotOptimize(enc);
     benchmark::ClobberMemory();
   }
+
+  state.SetItemsProcessed(state.iterations());
 
   std::free(seed);
   std::free(pkey);
@@ -125,6 +129,8 @@ decrypt(benchmark::State& state)
     benchmark::DoNotOptimize(dec);
     benchmark::ClobberMemory();
   }
+
+  state.SetItemsProcessed(state.iterations());
 
   std::free(seed);
   std::free(pkey);

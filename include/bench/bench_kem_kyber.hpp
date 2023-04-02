@@ -34,6 +34,8 @@ kem_keygen(benchmark::State& state)
     benchmark::ClobberMemory();
   }
 
+  state.SetItemsProcessed(state.iterations());
+
   std::free(d);
   std::free(z);
   std::free(pkey);
@@ -82,6 +84,8 @@ encapsulate(benchmark::State& state)
     benchmark::DoNotOptimize(sender_key);
     benchmark::ClobberMemory();
   }
+
+  state.SetItemsProcessed(state.iterations());
 
   std::free(d);
   std::free(z);
@@ -137,6 +141,8 @@ decapsulate(benchmark::State& state)
     benchmark::DoNotOptimize(receiver_key);
     benchmark::ClobberMemory();
   }
+
+  state.SetItemsProcessed(state.iterations());
 
   for (size_t i = 0; i < klen; i++) {
     assert(sender_key[i] == receiver_key[i]);

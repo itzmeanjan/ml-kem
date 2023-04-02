@@ -13,7 +13,7 @@ make benchmark
 ### On Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz ( compiled with Clang )
 
 ```bash
-2023-03-10T11:19:00+04:00
+2023-04-02T19:34:26+04:00
 Running ./bench/a.out
 Run on (8 X 2400 MHz CPU s)
 CPU Caches:
@@ -21,34 +21,34 @@ CPU Caches:
   L1 Instruction 32 KiB
   L2 Unified 256 KiB (x4)
   L3 Unified 6144 KiB
-Load Average: 4.25, 5.31, 6.44
-----------------------------------------------------------------
-Benchmark                      Time             CPU   Iterations
-----------------------------------------------------------------
-kyber512_pke_keygen         26.6 us         26.0 us        27124
-kyber512_pke_encrypt        29.6 us         29.2 us        23871
-kyber512_pke_decrypt        11.1 us         10.8 us        63981
-kyber768_pke_keygen         44.8 us         44.4 us        15805
-kyber768_pke_encrypt        50.0 us         48.8 us        13427
-kyber768_pke_decrypt        16.3 us         14.9 us        46613
-kyber1024_pke_keygen        71.1 us         70.4 us         9706
-kyber1024_pke_encrypt       77.0 us         76.2 us         9184
-kyber1024_pke_decrypt       19.9 us         19.5 us        36111
-kyber512_kem_keygen         31.7 us         29.1 us        24879
-kyber512_kem_encap          35.0 us         34.6 us        20181
-kyber512_kem_decap          44.1 us         43.7 us        16037
-kyber768_kem_keygen         52.4 us         48.7 us        14533
-kyber768_kem_encap          57.8 us         57.0 us        12141
-kyber768_kem_decap          69.3 us         68.5 us        10045
-kyber1024_kem_keygen        77.4 us         75.6 us         9017
-kyber1024_kem_encap         87.6 us         86.4 us         7720
-kyber1024_kem_decap          110 us          103 us         6823
+Load Average: 2.43, 2.32, 1.94
+---------------------------------------------------------------------------------
+Benchmark                      Time             CPU   Iterations items_per_second
+---------------------------------------------------------------------------------
+kyber512_pke_keygen         25.4 us         25.3 us        27572       39.4813k/s
+kyber512_pke_encrypt        28.2 us         28.2 us        24645       35.4379k/s
+kyber512_pke_decrypt        10.4 us         10.4 us        65829       95.7532k/s
+kyber768_pke_keygen         43.0 us         42.9 us        16310       23.2865k/s
+kyber768_pke_encrypt        47.2 us         47.1 us        14864       21.2152k/s
+kyber768_pke_decrypt        14.2 us         14.2 us        48850       70.2276k/s
+kyber1024_pke_keygen        69.7 us         69.6 us         9674       14.3724k/s
+kyber1024_pke_encrypt       73.5 us         73.5 us         9286       13.6111k/s
+kyber1024_pke_decrypt       18.9 us         18.9 us        35965        52.805k/s
+kyber512_kem_keygen         27.5 us         27.4 us        25382       36.4449k/s
+kyber512_kem_encap          33.3 us         33.3 us        20795        30.034k/s
+kyber512_kem_decap          41.5 us         41.4 us        16699        24.132k/s
+kyber768_kem_keygen         45.8 us         45.8 us        15190       21.8362k/s
+kyber768_kem_encap          54.5 us         54.5 us        12555       18.3619k/s
+kyber768_kem_decap          65.1 us         65.0 us        10342       15.3807k/s
+kyber1024_kem_keygen        73.1 us         73.1 us         9409        13.688k/s
+kyber1024_kem_encap         82.5 us         82.5 us         8242       12.1227k/s
+kyber1024_kem_decap         98.2 us         98.1 us         7060       10.1915k/s
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with GCC )
 
 ```bash
-2023-03-10T07:17:11+00:00
+2023-04-02T15:41:02+00:00
 Running ./bench/a.out
 Run on (4 X 2300.08 MHz CPU s)
 CPU Caches:
@@ -56,34 +56,34 @@ CPU Caches:
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.18, 0.08, 0.02
-----------------------------------------------------------------
-Benchmark                      Time             CPU   Iterations
-----------------------------------------------------------------
-kyber512_pke_keygen         48.7 us         48.7 us        14378
-kyber512_pke_encrypt        57.1 us         57.1 us        12246
-kyber512_pke_decrypt        20.4 us         20.4 us        34229
-kyber768_pke_keygen         80.4 us         80.4 us         8705
-kyber768_pke_encrypt        94.5 us         94.5 us         7442
-kyber768_pke_decrypt        27.7 us         27.7 us        25235
-kyber1024_pke_keygen         127 us          127 us         5525
-kyber1024_pke_encrypt        146 us          146 us         4782
-kyber1024_pke_decrypt       36.5 us         36.5 us        19192
-kyber512_kem_keygen         52.4 us         52.4 us        13364
-kyber512_kem_encap          66.9 us         66.9 us        10455
-kyber512_kem_decap          83.0 us         83.0 us         8420
-kyber768_kem_keygen         86.6 us         86.6 us         8125
-kyber768_kem_encap           108 us          108 us         6509
-kyber768_kem_decap           130 us          130 us         5410
-kyber1024_kem_keygen         134 us          134 us         5217
-kyber1024_kem_encap          162 us          162 us         4289
-kyber1024_kem_decap          191 us          191 us         3667
+Load Average: 0.11, 0.03, 0.01
+--------------------------------------------------------------------------------
+Benchmark                      Time             CPU   Iterations UserCounters...
+--------------------------------------------------------------------------------
+kyber512_pke_keygen         46.6 us         46.6 us        15043 items_per_second=21.4648k/s
+kyber512_pke_encrypt        56.2 us         56.2 us        12478 items_per_second=17.8036k/s
+kyber512_pke_decrypt        20.5 us         20.5 us        34207 items_per_second=48.8547k/s
+kyber768_pke_keygen         79.9 us         79.9 us         8743 items_per_second=12.5099k/s
+kyber768_pke_encrypt        93.8 us         93.8 us         7454 items_per_second=10.6615k/s
+kyber768_pke_decrypt        27.9 us         27.9 us        25086 items_per_second=35.8342k/s
+kyber1024_pke_keygen         127 us          127 us         5524 items_per_second=7.88339k/s
+kyber1024_pke_encrypt        144 us          144 us         4828 items_per_second=6.96582k/s
+kyber1024_pke_decrypt       37.1 us         37.1 us        18890 items_per_second=26.947k/s
+kyber512_kem_keygen         50.6 us         50.6 us        13817 items_per_second=19.7582k/s
+kyber512_kem_encap          66.3 us         66.3 us        10567 items_per_second=15.0841k/s
+kyber512_kem_decap          82.1 us         82.1 us         8529 items_per_second=12.1857k/s
+kyber768_kem_keygen         86.1 us         86.1 us         8139 items_per_second=11.621k/s
+kyber768_kem_encap           107 us          107 us         6563 items_per_second=9.36933k/s
+kyber768_kem_decap           128 us          128 us         5455 items_per_second=7.79808k/s
+kyber1024_kem_keygen         135 us          135 us         5200 items_per_second=7.4184k/s
+kyber1024_kem_encap          162 us          162 us         4323 items_per_second=6.17727k/s
+kyber1024_kem_decap          190 us          190 us         3683 items_per_second=5.27069k/s
 ```
 
 ### On Intel(R) Xeon(R) CPU E5-2686 v4 @ 2.30GHz ( compiled with Clang )
 
 ```bash
-2023-03-10T07:18:02+00:00
+2023-04-02T15:42:07+00:00
 Running ./bench/a.out
 Run on (4 X 2300.08 MHz CPU s)
 CPU Caches:
@@ -91,26 +91,26 @@ CPU Caches:
   L1 Instruction 32 KiB (x2)
   L2 Unified 256 KiB (x2)
   L3 Unified 46080 KiB (x1)
-Load Average: 0.31, 0.14, 0.05
-----------------------------------------------------------------
-Benchmark                      Time             CPU   Iterations
-----------------------------------------------------------------
-kyber512_pke_keygen         41.1 us         41.1 us        17040
-kyber512_pke_encrypt        46.4 us         46.4 us        15096
-kyber512_pke_decrypt        17.5 us         17.5 us        40032
-kyber768_pke_keygen         69.1 us         69.1 us        10108
-kyber768_pke_encrypt        76.8 us         76.8 us         9033
-kyber768_pke_decrypt        23.7 us         23.7 us        29576
-kyber1024_pke_keygen         109 us          109 us         6388
-kyber1024_pke_encrypt        119 us          119 us         5833
-kyber1024_pke_decrypt       31.3 us         31.3 us        22413
-kyber512_kem_keygen         44.2 us         44.2 us        15847
-kyber512_kem_encap          54.8 us         54.8 us        12894
-kyber512_kem_decap          68.5 us         68.5 us        10220
-kyber768_kem_keygen         73.8 us         73.8 us         9414
-kyber768_kem_encap          87.8 us         87.8 us         7919
-kyber768_kem_decap           107 us          107 us         6527
-kyber1024_kem_keygen         116 us          116 us         6049
-kyber1024_kem_encap          134 us          134 us         5232
-kyber1024_kem_decap          158 us          158 us         4437
+Load Average: 0.21, 0.08, 0.02
+--------------------------------------------------------------------------------
+Benchmark                      Time             CPU   Iterations UserCounters...
+--------------------------------------------------------------------------------
+kyber512_pke_keygen         40.8 us         40.8 us        17143 items_per_second=24.4998k/s
+kyber512_pke_encrypt        46.3 us         46.3 us        15117 items_per_second=21.6126k/s
+kyber512_pke_decrypt        17.5 us         17.5 us        39973 items_per_second=57.0944k/s
+kyber768_pke_keygen         68.7 us         68.7 us        10176 items_per_second=14.5532k/s
+kyber768_pke_encrypt        76.7 us         76.7 us         9132 items_per_second=13.0393k/s
+kyber768_pke_decrypt        23.7 us         23.7 us        29529 items_per_second=42.1953k/s
+kyber1024_pke_keygen         110 us          110 us         6363 items_per_second=9.079k/s
+kyber1024_pke_encrypt        119 us          119 us         5864 items_per_second=8.41309k/s
+kyber1024_pke_decrypt       31.3 us         31.3 us        22341 items_per_second=31.9104k/s
+kyber512_kem_keygen         44.0 us         44.0 us        15925 items_per_second=22.7486k/s
+kyber512_kem_encap          54.1 us         54.1 us        12969 items_per_second=18.4918k/s
+kyber512_kem_decap          68.3 us         68.3 us        10255 items_per_second=14.6378k/s
+kyber768_kem_keygen         73.4 us         73.4 us         9519 items_per_second=13.6276k/s
+kyber768_kem_encap          87.6 us         87.6 us         7970 items_per_second=11.4148k/s
+kyber768_kem_decap           107 us          107 us         6566 items_per_second=9.36897k/s
+kyber1024_kem_keygen         116 us          116 us         6031 items_per_second=8.61909k/s
+kyber1024_kem_encap          133 us          133 us         5266 items_per_second=7.53159k/s
+kyber1024_kem_decap          157 us          157 us         4451 items_per_second=6.36268k/s
 ```

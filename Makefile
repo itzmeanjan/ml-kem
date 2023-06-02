@@ -32,7 +32,4 @@ bench/a.out: bench/main.cpp include/*.hpp include/bench/*.hpp sha3/include/*.hpp
 	$(CXX) $(CXXFLAGS) $(OPTFLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -o $@
 
 benchmark: bench/a.out
-	# no repeatation, showing mean time taken
-	./$< --benchmark_time_unit=us
-	# N(>0) repeatations, showing only aggregates
-	./$< --benchmark_time_unit=us --benchmark_repetitions=8 --benchmark_display_aggregates_only=true
+	./$< --benchmark_time_unit=us --benchmark_counters_tabular=true

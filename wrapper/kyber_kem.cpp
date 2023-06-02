@@ -1,6 +1,4 @@
-#include "decapsulation.hpp"
-#include "encapsulation.hpp"
-#include "kem_keygen.hpp"
+#include "kem.hpp"
 
 // Thin C wrapper on top of underlying C++ implementation of Kyber{512, 768,
 // 1024} KEM, which can be used for producing shared library object with
@@ -90,7 +88,7 @@ extern "C"
                  uint8_t* const __restrict pubkey,
                  uint8_t* const __restrict seckey)
   {
-    ccakem::keygen<2, 3>(d, z, pubkey, seckey);
+    kem::keygen<2, 3>(d, z, pubkey, seckey);
   }
 
   void encapsulate512(const uint8_t* const __restrict m,
@@ -99,7 +97,7 @@ extern "C"
                       uint8_t* const __restrict shared_key,
                       const size_t klen)
   {
-    auto kdf = ccakem::encapsulate<2, 3, 2, 10, 4>(m, pubkey, cipher);
+    auto kdf = kem::encapsulate<2, 3, 2, 10, 4>(m, pubkey, cipher);
     kdf.read(shared_key, klen);
   }
 
@@ -108,7 +106,7 @@ extern "C"
                       uint8_t* const __restrict shared_key,
                       const size_t klen)
   {
-    auto kdf = ccakem::decapsulate<2, 3, 2, 10, 4>(seckey, cipher);
+    auto kdf = kem::decapsulate<2, 3, 2, 10, 4>(seckey, cipher);
     kdf.read(shared_key, klen);
   }
 
@@ -117,7 +115,7 @@ extern "C"
                  uint8_t* const __restrict pubkey,
                  uint8_t* const __restrict seckey)
   {
-    ccakem::keygen<3, 2>(d, z, pubkey, seckey);
+    kem::keygen<3, 2>(d, z, pubkey, seckey);
   }
 
   void encapsulate768(const uint8_t* const __restrict m,
@@ -126,7 +124,7 @@ extern "C"
                       uint8_t* const __restrict shared_key,
                       const size_t klen)
   {
-    auto kdf = ccakem::encapsulate<3, 2, 2, 10, 4>(m, pubkey, cipher);
+    auto kdf = kem::encapsulate<3, 2, 2, 10, 4>(m, pubkey, cipher);
     kdf.read(shared_key, klen);
   }
 
@@ -135,7 +133,7 @@ extern "C"
                       uint8_t* const __restrict shared_key,
                       const size_t klen)
   {
-    auto kdf = ccakem::decapsulate<3, 2, 2, 10, 4>(seckey, cipher);
+    auto kdf = kem::decapsulate<3, 2, 2, 10, 4>(seckey, cipher);
     kdf.read(shared_key, klen);
   }
 
@@ -144,7 +142,7 @@ extern "C"
                   uint8_t* const __restrict pubkey,
                   uint8_t* const __restrict seckey)
   {
-    ccakem::keygen<4, 2>(d, z, pubkey, seckey);
+    kem::keygen<4, 2>(d, z, pubkey, seckey);
   }
 
   void encapsulate1024(const uint8_t* const __restrict m,
@@ -153,7 +151,7 @@ extern "C"
                        uint8_t* const __restrict shared_key,
                        const size_t klen)
   {
-    auto kdf = ccakem::encapsulate<4, 2, 2, 11, 5>(m, pubkey, cipher);
+    auto kdf = kem::encapsulate<4, 2, 2, 11, 5>(m, pubkey, cipher);
     kdf.read(shared_key, klen);
   }
 
@@ -162,7 +160,7 @@ extern "C"
                        uint8_t* const __restrict shared_key,
                        const size_t klen)
   {
-    auto kdf = ccakem::decapsulate<4, 2, 2, 11, 5>(seckey, cipher);
+    auto kdf = kem::decapsulate<4, 2, 2, 11, 5>(seckey, cipher);
     kdf.read(shared_key, klen);
   }
 }

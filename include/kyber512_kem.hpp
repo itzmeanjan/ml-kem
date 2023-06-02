@@ -5,7 +5,7 @@
 // Kyber Key Encapsulation Mechanism (KEM) instantiated with Kyber512 parameters
 namespace kyber512_kem {
 
-// See table 1 of specification @
+// See row 1 of table 1 of specification @
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 
 constexpr size_t k = 2;

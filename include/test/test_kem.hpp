@@ -1,5 +1,5 @@
 #pragma once
-#include "kyber_kem.hpp"
+#include "kem.hpp"
 #include "utils.hpp"
 #include <cassert>
 
@@ -51,9 +51,9 @@ test_kyber_cca_kem()
   prng.read(z, slen);
   prng.read(m, slen);
 
-  ccakem::keygen<k, eta1>(d, z, pkey, skey);
-  auto skdf = ccakem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
-  auto rkdf = ccakem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
+  kem::keygen<k, eta1>(d, z, pkey, skey);
+  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
+  auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
 
   skdf.read(sender_key, klen);
   rkdf.read(receiver_key, klen);

@@ -37,6 +37,8 @@ main()
   std::cout << "[test] INDCCA2-secure Kyber KEM\n";
 
   test_kyber::test_kyber512_kem_kat();
+  test_kyber::test_kyber768_kem_kat();
+  test_kyber::test_kyber1024_kem_kat();
   std::cout << "[test] Kyber KEM Known Answer Tests\n";
 
   return EXIT_SUCCESS;

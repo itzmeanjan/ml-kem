@@ -29,9 +29,9 @@ void
 test_kyber_cca_kem()
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_ccakem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_ccakem_secret_key_len<k>();
-  constexpr size_t ctlen = kyber_utils::get_ccakem_cipher_len<k, du, dv>();
+  constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
+  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
+  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
 
   uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
   uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));

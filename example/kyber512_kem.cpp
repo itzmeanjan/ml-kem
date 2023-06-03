@@ -1,4 +1,5 @@
 #include "kyber512_kem.hpp"
+#include <algorithm>
 #include <cassert>
 #include <iostream>
 
@@ -9,59 +10,61 @@
 int
 main()
 {
-  // Compile-time compute byte length of Kyber-512 KEM public key, secret key
-  // and cipher text
-  constexpr size_t pklen = kyber512_kem::pub_key_len();
-  constexpr size_t sklen = kyber512_kem::sec_key_len();
-  constexpr size_t ctlen = kyber512_kem::cipher_text_len();
-  constexpr size_t klen = 32;
+  constexpr size_t SEED_LEN = 32;
+  constexpr size_t KEY_LEN = 32;
 
-  uint8_t* pubkey = static_cast<uint8_t*>(std::malloc(pklen));
-  uint8_t* seckey = static_cast<uint8_t*>(std::malloc(sklen));
-  uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
-  uint8_t* shrd_key0 = static_cast<uint8_t*>(std::malloc(klen));
-  uint8_t* shrd_key1 = static_cast<uint8_t*>(std::malloc(klen));
+  // seeds required for keypair generation
+  std::vector<uint8_t> d(SEED_LEN, 0);
+  std::vector<uint8_t> z(SEED_LEN, 0);
 
-  std::memset(pubkey, 0, pklen);
-  std::memset(seckey, 0, sklen);
-  std::memset(cipher, 0, ctlen);
+  // public/ private keypair
+  std::vector<uint8_t> pkey(kyber512_kem::PKEY_LEN, 0);
+  std::vector<uint8_t> skey(kyber512_kem::SKEY_LEN, 0);
 
+  // seed required for key encapsulation
+  std::vector<uint8_t> m(SEED_LEN, 0);
+  std::vector<uint8_t> cipher(kyber512_kem::CIPHER_LEN, 0);
+
+  // shared secret that sender/ receiver arrives at
+  std::vector<uint8_t> shrd_key0(KEY_LEN, 0);
+  std::vector<uint8_t> shrd_key1(KEY_LEN, 0);
+
+  // pseudo-randomness source
   prng::prng_t prng;
 
-  kyber512_kem::keygen(prng, pubkey, seckey);
-  auto skdf = kyber512_kem::encapsulate(prng, pubkey, cipher);
-  auto rkdf = kyber512_kem::decapsulate(seckey, cipher);
+  // fill up seeds using PRNG
+  prng.read(d.data(), d.size());
+  prng.read(z.data(), z.size());
 
-  // key encapsulator ( who had public key ), derives 32 -bytes key from its KDF
-  skdf.read(shrd_key0, klen);
-  // key decapsulator ( who used secret key ), derives same 32 -bytes key
-  rkdf.read(shrd_key1, klen);
+  // generate a keypair
+  kyber512_kem::keygen(d.data(), z.data(), pkey.data(), skey.data());
 
-  // check that both parties who intended to share a secret key ( can be used
-  // with symmetric key primitives ) over insecure public channel, arrived at
-  // same 32 -bytes value.
-  bool flg = false;
-  for (size_t i = 0; i < klen; i++) {
-    flg |= static_cast<bool>(shrd_key0[i] ^ shrd_key1[i]);
-  }
+  // fill up seed required for key encapsulation, using PRNG
+  prng.read(m.data(), m.size());
+
+  // encapsulate key, compute cipher text and obtain KDF
+  auto skdf = kyber512_kem::encapsulate(m.data(), pkey.data(), cipher.data());
+  // decapsulate cipher text and obtain KDF
+  auto rkdf = kyber512_kem::decapsulate(skey.data(), cipher.data());
+
+  // both sender's and receiver's KDF should produce same KEY_LEN many bytes
+  skdf.read(shrd_key0.data(), KEY_LEN);
+  rkdf.read(shrd_key1.data(), KEY_LEN);
+
+  // check that both of the communicating parties arrived at same shared key
+  assert(std::ranges::equal(shrd_key0, shrd_key1));
 
   {
     using namespace kyber_utils;
 
-    std::cout << "pubkey : " << to_hex(pubkey, pklen) << "\n";
-    std::cout << "seckey : " << to_hex(seckey, sklen) << "\n";
-    std::cout << "shared secret 0 : " << to_hex(shrd_key0, klen) << "\n";
-    std::cout << "shared secret 1 : " << to_hex(shrd_key1, klen) << "\n";
+    std::cout << "Kyber512 KEM\n";
+    std::cout << "\npubkey : " << to_hex(pkey.data(), pkey.size());
+    std::cout << "\nseckey : " << to_hex(skey.data(), skey.size());
+    std::cout << "\ncipher : " << to_hex(cipher.data(), cipher.size());
+    std::cout << "\nshared secret 0 : " << to_hex(shrd_key0.data(), KEY_LEN);
+    std::cout << "\nshared secret 1 : " << to_hex(shrd_key1.data(), KEY_LEN);
+    std::cout << "\n";
   }
-
-  std::free(pubkey);
-  std::free(seckey);
-  std::free(cipher);
-  std::free(shrd_key0);
-  std::free(shrd_key1);
-
-  // defer assertion until end ( let memory allocation be freed first )
-  assert(!flg);
 
   return EXIT_SUCCESS;
 }

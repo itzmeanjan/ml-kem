@@ -38,7 +38,3 @@ __pycache__
 # For Clangd
 compile_commands.json
 .cache
-wrapper/python/bin
-wrapper/python/lib
-wrapper/python/lib64
-wrapper/python/pyvenv.cfg

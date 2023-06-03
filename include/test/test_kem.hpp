@@ -26,7 +26,7 @@ template<const size_t k,
          const size_t dv,
          const size_t klen>
 void
-test_kyber_cca_kem()
+test_kyber_kem()
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();

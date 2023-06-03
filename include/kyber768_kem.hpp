@@ -1,57 +1,53 @@
 #pragma once
-#include "kyber_kem.hpp"
+#include "kem.hpp"
 #include "utils.hpp"
 
 // Kyber Key Encapsulation Mechanism (KEM) instantiated with Kyber768 parameters
-//
-// See table 1 of specification @
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 namespace kyber768_kem {
 
-// Compile-time compute Kyber768 KEM public key byte length
-constexpr size_t
-pub_key_len()
-{
-  return kyber_utils::get_ccakem_public_key_len<3>();
-}
+// See row 2 of table 1 of specification @
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 
-// Compile-time compute Kyber768 KEM secret key byte length
-constexpr size_t
-sec_key_len()
-{
-  return kyber_utils::get_ccakem_secret_key_len<3>();
-}
+constexpr size_t k = 3;
+constexpr size_t η1 = 2;
+constexpr size_t η2 = 2;
+constexpr size_t du = 10;
+constexpr size_t dv = 4;
 
-// Compile-time compute Kyber768 KEM cipher text byte length
-constexpr size_t
-cipher_text_len()
-{
-  return kyber_utils::get_ccakem_cipher_len<3, 10, 4>();
-}
+// = 1184 -bytes Kyber768 public key
+constexpr size_t PKEY_LEN = kyber_utils::get_kem_public_key_len<k>();
+
+// = 2400 -bytes Kyber768 secret key
+constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len<k>();
+
+// = 1088 -bytes Kyber768 cipher text length
+constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len<k, du, dv>();
 
 // Computes a new Kyber768 KEM keypair s.t. public key is 1184 -bytes and secret
-// key is 2400 -bytes, given a pseudo random number generator.
+// key is 2400 -bytes, given 32 -bytes seed d ( used in CPA-PKE ) and 32 -bytes
+// seed z ( used in CCA-KEM ).
 inline void
-keygen(prng::prng_t& prng,
+keygen(const uint8_t* const __restrict d,
+       const uint8_t* const __restrict z,
        uint8_t* const __restrict pubkey,
        uint8_t* const __restrict seckey)
 {
-  kyber_kem::keygen<3, 2>(prng, pubkey, seckey);
+  kem::keygen<k, η1>(d, z, pubkey, seckey);
 }
 
-// Given a Kyber768 KEM public key ( of 1184 -bytes ) and a pseudo random number
-// generator, this routine computes a SHAKE256 XOF backed KDF (key derivation
-// function) and 1088 -bytes of cipher text, which can only be decrypted by
-// corresponding Kyber768 KEM secret key, for arriving at same SHAKE256 XOF
-// backed KDF.
+// Given 32 -bytes seed m ( which is used during encapsulation ) and a Kyber768
+// KEM public key ( of 1184 -bytes ), this routine computes a SHAKE256 XOF
+// backed KDF (key derivation function) and 1088 -bytes of cipher text, which
+// can only be decrypted by corresponding Kyber768 KEM secret key, for arriving
+// at same SHAKE256 XOF backed KDF.
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
 inline shake256::shake256<false>
-encapsulate(prng::prng_t& prng,
+encapsulate(const uint8_t* const __restrict m,
             const uint8_t* const __restrict pubkey,
             uint8_t* const __restrict cipher)
 {
-  return kyber_kem::encapsulate<3, 2, 2, 10, 4>(prng, pubkey, cipher);
+  return kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher);
 }
 
 // Given a Kyber768 KEM secret key ( of 2400 -bytes ) and a cipher text of 1088
@@ -64,7 +60,7 @@ inline shake256::shake256<false>
 decapsulate(const uint8_t* const __restrict seckey,
             const uint8_t* const __restrict cipher)
 {
-  return kyber_kem::decapsulate<3, 2, 2, 10, 4>(seckey, cipher);
+  return kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher);
 }
 
 }

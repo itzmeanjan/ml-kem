@@ -12,7 +12,7 @@ Kyber offers both
 - IND-CPA-secure public key encryption [Kyber CPAPKE]
 - IND-CCA2-secure key encapsulation mechanism [Kyber CCAKEM]
 
-while its security is based on hardness of solving learning-with-errors (LWE) problem in module lattices.
+while its security is based on hardness of solving learning-with-errors (LWE) problem in module (i.e. structured) lattices.
 
 Under **IND-CPA-secure Kyber PKE**, two communicating parties both generating their key pairs while publishing their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by respective secret key ( which is private to key owner ) and 32 -bytes message can be recovered back.
 
@@ -22,9 +22,7 @@ PKE KeyGen | - | Public Key and Secret Key
 Encryption | Public Key, 32 -bytes message and 32 -bytes random coin | Cipher Text
 Decryption | Secret Key and Cipher Text | 32 -bytes message
 
-> **Note**
-
-> When a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on IND-CPA-secure Kyber PKE, we can construct an IND-CCA2-secure KEM.
+> **Note** When a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on IND-CPA-secure Kyber PKE, we can construct an IND-CCA2-secure KEM.
 
 While with **IND-CCA2-secure Kyber KEM**, two parties interested in secretly communicating over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 XOF in this context ) which is obtained by both of these parties as result of seeding SHAKE256 XOF with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE.
 
@@ -34,24 +32,19 @@ KEM KeyGen | - | Public Key and Secret Key
 Encapsulation | Public Key | Cipher Text and SHAKE256 KDF
 Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
 
-> IND-CPA-secure Kyber PKE can be used for asynchronous secure communication such as email.
+> **Note** IND-CPA-secure Kyber PKE can be used for asynchronous secure communication such as email.
 
-> IND-CCA2-secure Kyber KEM can be used for synchronous secure communication such as TLS.
+> **Note** IND-CCA2-secure Kyber KEM can be used for synchronous secure communication such as TLS.
 
-Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber PKE and KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. 
+Here I'm developing & maintaining `kyber` - a zero-dependency, header-only and easy-to-use C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. 
 
-Only dependency is `sha3` and `subtle` - both of them are zero-dependency, header-only C++ libraries themselves. I decided to write `sha3` so that I can modularize a fairly common PQC dependency because SHA3 hash functions and extendable output functions are pretty common symmetric key primitives used in post-quantum cryptographic constructions such as Kyber, Dilithium, Falcon and SPHINCS+ etc.. While `subtle` is a pretty light-weight library which helps achieving constant-timeness in cryptographic libraries. Here it's used for performing constant-time byte comparison and conditional selection without using booleans - only relying on integer addition, subtration and bit-wise operations.
+Only dependencies are `sha3` and `subtle` - both of them are zero-dependency, header-only C++ libraries themselves. I decided to write `sha3` so that I can modularize a fairly common PQC dependency, because of the fact that - SHA3 hash functions and extendable output functions are common symmetric key primitives used in post-quantum cryptographic constructions such as Kyber, Dilithium, Falcon and SPHINCS+ etc.. While `subtle` is a pretty light-weight library which helps achieving constant-timeness in cryptographic libraries. Here it's used for performing constant-time byte comparison and conditional selection without using booleans - only relying on integer addition, subtration and bit-wise operations.
 
-- Both `sha3` and `subtle` are pinned to specific commit, using git submodule.
-- See [usage](#usage) section below for git submodule set up guide.
+> **Note** Both `sha3` and `subtle` are pinned to specific commit, using git submodule. See [usage](#usage) section below for git submodule set up guide.
 
-> **Note**
+> **Note** Find Kyber specification [here](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf) - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
 
-> Find Kyber specification [here](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf). I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
-
-> See NIST selected PQC candidates [here](https://csrc.nist.gov/Projects/post-quantum-cryptography/selected-algorithms-2022)
-
-> Find progress of NIST PQC standardization effort [here](https://csrc.nist.gov/projects/post-quantum-cryptography)
+> **Note** Find progress of NIST PQC standardization effort [here](https://csrc.nist.gov/projects/post-quantum-cryptography)
 
 ## Prerequisites
 
@@ -59,13 +52,13 @@ Only dependency is `sha3` and `subtle` - both of them are zero-dependency, heade
 
 ```bash
 $ clang++ --version
-Ubuntu clang version 14.0.0-1ubuntu1
-Target: aarch64-unknown-linux-gnu
+Ubuntu clang version 15.0.7
+Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
 
 $ g++ --version
-g++ (Ubuntu 11.2.0-19ubuntu1) 11.2.0
+g++ (Ubuntu 12.2.0-17ubuntu1) 12.2.0
 ```
 
 - System development utilities such as `make`, `cmake` & `git`
@@ -81,40 +74,25 @@ $ git --version
 git version 2.34.1
 ```
 
-- For testing functional correctness and conformance to standard, you'll need to have `python3` and related Python dependencies installed.
+- For benchmarking Kyber implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found [this](https://github.com/google/benchmark/tree/604f6fd3#installation) guide helpful.
 
-```bash
-$ python3 --version
-Python 3.10.8
-
-# Download Python dependencies
-$ python3 -m pip install -r wrapper/python/requirements.txt --user
-```
-
-- For benchmarking Kyber implementation on CPU systems, you'll need to have `google-benchmark` header and library globally installed. You may want to follow [this](https://github.com/google/benchmark/tree/3b19d722#installation) guide.
-
-- For importing `sha3` and `subtle`, initialize & update git submodule after cloning this repository
+- For importing dependencies `sha3`, `subtle` - initialize & update git submodule after cloning this repository
 
 ```bash
 git clone https://github.com/itzmeanjan/kyber.git
-cd kyber
-git submodule update --init
 
+pushd kyber
+git submodule update --init
 # Now you can {test, benchmark, use} `kyber`
+popd
 ```
 
 ## Testing
 
-For testing functional correctness and compatibility ( with Kyber specification and reference implementation ) of this Kyber implementation ( along with its component units ), you have to issue
+For testing functional correctness and conformance ( with Kyber specification and reference implementation ) of this Kyber implementation, you have to issue
 
 ```bash
-make # testing + test_kat
-
-# If you want to avoid running tests against KATs, issue
-make testing
-
-# If you want to only test against KATs, issue
-make test_kat
+make
 ```
 
 ```bash
@@ -122,105 +100,154 @@ make test_kat
 [test] (i)NTT over degree-255 polynomial
 [test] Polynomial serialization/ deserialization
 [test] Coefficient compression/ decompression
-[test] INDCPA-secure Public Key Encryption
-[test] INDCCA2-secure Key Encapsulation Mechanism
-bash test_kat.sh
-make[1]: Nothing to be done for `lib'.
-~/Documents/work/kyber/wrapper/python ~/Documents/work/kyber
-=========================================================================================== test session starts ============================================================================================
-platform darwin -- Python 3.10.8, pytest-7.1.3, pluggy-1.0.0 -- /usr/local/opt/python@3.10/bin/python3.10
-cachedir: .pytest_cache
-benchmark: 3.4.1 (defaults: timer=time.perf_counter disable_gc=False min_rounds=5 min_time=0.000005 max_time=1.0 calibration_precision=10 warmup=False warmup_iterations=100000)
-rootdir: /Users/anjan/Documents/work/kyber/wrapper/python
-plugins: benchmark-3.4.1
-collected 3 items
-
-test_kyber_kem.py::test_kyber512 PASSED                                                                                                                                                              [ 33%]
-test_kyber_kem.py::test_kyber768 PASSED                                                                                                                                                              [ 66%]
-test_kyber_kem.py::test_kyber1024 PASSED                                                                                                                                                             [100%]
-
-============================================================================================ 3 passed in 0.63s =============================================================================================
-~/Documents/work/kyber
+[test] INDCCA2-secure Kyber KEM
+[test] Kyber KEM Known Answer Tests
 ```
 
 ## Benchmarking
 
-Find micro-benchmarking ( using `google-benchmark` ) results [here](./bench).
+For benchmarking Kyber KEM routines ( i.e. keygen, encaps and decaps ) for various suggested parameter sets, targeting CPU systems, you need to issue
+
+```bash
+make benchmark
+```
+
+> **Note** Benchmarking expects presence of `google-benchmark` header and library in global namespace ( so that it can be found by the compiler ).
+
+> **Warning** When benchmarking, ensure that you've disabled CPU frequency scaling, by following [this](https://github.com/google/benchmark/blob/3b19d722/docs/reducing_variance.md) guide.
+
+### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC )
+
+```bash
+2023-06-03T11:27:13+04:00
+Running ./bench/a.out
+Run on (16 X 571.333 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1280 KiB (x8)
+  L3 Unified 18432 KiB (x1)
+Load Average: 1.10, 0.64, 0.47
+----------------------------------------------------------------------------
+Benchmark                 Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------
+kyber512/keygen        18.3 us         18.3 us        38106        54.622k/s
+kyber512/encap         24.1 us         24.1 us        29070       41.5211k/s
+kyber512/decap         29.7 us         29.7 us        23587       33.7262k/s
+kyber768/keygen        31.5 us         31.5 us        22286       31.7307k/s
+kyber768/encap         39.2 us         39.2 us        17844       25.5098k/s
+kyber768/decap         46.7 us         46.7 us        15024       21.4321k/s
+kyber1024/keygen       49.2 us         49.2 us        14232        20.326k/s
+kyber1024/encap        58.8 us         58.8 us        11824       17.0102k/s
+kyber1024/decap        68.5 us         68.5 us        10176       14.5951k/s
+```
+
+### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang )
+
+```bash
+2023-06-03T11:27:54+04:00
+Running ./bench/a.out
+Run on (16 X 4578.25 MHz CPU s)
+CPU Caches:
+  L1 Data 48 KiB (x8)
+  L1 Instruction 32 KiB (x8)
+  L2 Unified 1280 KiB (x8)
+  L3 Unified 18432 KiB (x1)
+Load Average: 0.95, 0.66, 0.48
+----------------------------------------------------------------------------
+Benchmark                 Time             CPU   Iterations items_per_second
+----------------------------------------------------------------------------
+kyber512/keygen        15.4 us         15.4 us        45807       65.0474k/s
+kyber512/encap         19.3 us         19.3 us        36323       51.7862k/s
+kyber512/decap         23.6 us         23.6 us        29651       42.3194k/s
+kyber768/keygen        25.9 us         25.9 us        26803       38.6156k/s
+kyber768/encap         31.2 us         31.2 us        22373       32.0088k/s
+kyber768/decap         37.5 us         37.5 us        18676       26.6759k/s
+kyber1024/keygen       40.1 us         40.1 us        17344       24.9457k/s
+kyber1024/encap        47.0 us         47.0 us        14881       21.2596k/s
+kyber1024/decap        55.2 us         55.2 us        12730       18.1072k/s
+```
 
 ## Usage
 
-`kyber` is written to be a zero-dependency, header-only C++ library such that it's pretty easy-to-use in your project. All you need to do
+`kyber` is written to be a zero-dependency, header-only C++ library such that it's pretty easy to start using it in your project. All you need to do is following.
 
-- Clone `kyber` repository
+- Clone `kyber` repository.
 
 ```bash
 cd
 git clone https://github.com/itzmeanjan/kyber.git
 ```
 
-- Initialize and update git submodule, so that `sha3` and `subtle` are available inside `kyber` source tree
+- Initialize and update git submodule, so that dependencies i.e. `sha3` and `subtle` are available inside `kyber` source tree.
 
 ```bash
 cd kyber
 git submodule update --init
 ```
 
-- Write your program while including [kyber.hpp](./include/kyber.hpp), which includes declarations ( and definitions ) of all required routines, spread across various namespaces
+- Write your program while including proper header file ( based on which variant of Kyber KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required KEM routines and constants ( such as byte length of public/ private keys and cipher text ).
 
 ```cpp
 // main.cpp
 
 #include "kyber512_kem.hpp"
+#include <algorithm>
 #include <cassert>
 
-int main() {
-    uint8_t pkey[kyber512_kem::pub_key_len()];
-    uint8_t skey[kyber512_kem::sec_key_len()];
-    uint8_t cipher[kyber512_kem::cipher_text_len()];
+int
+main()
+{
+  uint8_t d[32]{}; // seed
+  uint8_t z[32]{}; // seed
+  uint8_t pkey[kyber512_kem::PKEY_LEN]{};
+  uint8_t skey[kyber512_kem::SKEY_LEN]{};
+  uint8_t m[32]{}; // seed
+  uint8_t cipher[kyber512_kem::CIPHER_LEN]{};
 
-    // Be careful !
-    //
-    // Read API documentation in include/prng.hpp
-    prng::prng_t prng;
+  // Be careful !
+  //
+  // Read API documentation in include/prng.hpp
+  prng::prng_t prng;
 
-    kyber512_kem::keygen(prng, pkey, skey);
-    auto skdf = kyber512_kem::encapsulate(prng, pkey, cipher);
-    auto rkdf = kyber512_kem::decapsulate(skey, cipher);
+  prng.read(d, sizeof(d));
+  prng.read(z, sizeof(z));
+  prng.read(m, sizeof(m));
 
-    uint8_t sender_key[32];
-    skdf.read(sender_key, sizeof(sender_key));
+  kyber512_kem::keygen(d, z, pkey, skey);
+  auto skdf = kyber512_kem::encapsulate(m, pkey, cipher);
+  auto rkdf = kyber512_kem::decapsulate(skey, cipher);
 
-    uint8_t receiver_key[32];
-    rkdf.read(receiver_key, sizeof(receiver_key));
+  uint8_t sender_key[32]{};
+  skdf.read(sender_key, sizeof(sender_key));
 
-    for (size_t i = 0; i < sizeof(sender_key); i++) {
-        assert(sender_key[i] == receiver_key[i]);
-    }
+  uint8_t receiver_key[32]{};
+  rkdf.read(receiver_key, sizeof(receiver_key));
 
-    return 0;
+  assert(std::ranges::equal(sender_key, receiver_key));
+  return 0;
 }
 ```
 
-> **Note** You may only want to use Kyber PKE or KEM, then you can simply include either of [kyber_pke.hpp](./include/kyber_pke.hpp) or [kyber_kem.hpp](./include/kyber_kem.hpp). If you want parameter instantiated PKE or KEM routines, consider looking at `kyber{512, 768, 1024}_{pke, kem}.hpp`.
-
-- When compiling your program, let your compiler know where it can find `kyber` and `sha3` headers, which includes their definitions too
+- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( kyber being a header-only library ) too
 
 ```bash
 # Assuming `kyber` was cloned just under $HOME
 
 KYBER_HEADERS=~/kyber/include
 SHA3_HEADERS=~/kyber/sha3/include
+SUBTLE_HEADERS=~/kyber/subtle/include
 
-g++ -std=c++20 -Wall -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS main.cpp
+g++ -std=c++20 -Wall -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
 ```
 
-Kyber | Namespace | Header
---- | :-: | --:
-IND-CPA-secure Public Key Encryption | `kyber_pke::` | [kyber_pke.hpp](./include/kyber_pke.hpp)
-IND-CCA-secure Key Encapsulation Mechanism | `kyber_kem::` | [kyber_kem.hpp](./include/kyber_kem.hpp)
-Utility Routine | `kyber_utils::` | -
+Kyber KEM Variant | Namespace | Header
+:-- | :-: | --:
+Kyber512 KEM Routines | `kyber512_kem::` | [include/kyber512_kem.hpp](include/kyber512_kem.hpp)
+Kyber768 KEM Routines | `kyber768_kem::` | [include/kyber768_kem.hpp](include/kyber768_kem.hpp)
+Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include/kyber1024_kem.hpp)
 
-> **Note** Select Kyber parameter set from table 1 of Kyber [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
+> **Note** Kyber parameter sets are selected from table 1 of Kyber [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
 
 ---
 
@@ -228,56 +255,41 @@ Utility Routine | `kyber_utils::` | -
 
 Step | Namespace | Routine | Input | Output | How is it used ?
 --- | --- | :-: | --: | --: | --:
-PKE KeyGen | `kyber_pke::` | `keygen<k, η1>()` | - | (k * 12 * 32 + 32) -bytes public key & (k * 12 * 32) -bytes secret key | Imagine two parties i.e. sender and receiver. Both of them generate PKE keypair & publish their public keys to each other.
-Encrypt | `kyber_pke::` | `encrypt<k, η1, η2, du, dv>(...)` | (k * 12 * 32 + 32) -bytes public key, 32 -bytes plain text ( to be encrypted ) & 32 -bytes random coin ( used as seed of randomness ) | (k * du * 32 + dv * 32) -bytes encrypted text | Message sender takes receiver's public key and encrypts a 32 -bytes message. Finally it sends cipher text to the receiver.
-Decrypt | `kyber_pke::` | `decrypt<k, du, dv>(...)` | (k * 12 * 32) -bytes secret key & (k * du * 32 + dv * 32) -bytes cipher text | 32 -bytes plain text | Receiver takes their secret key and cipher text ( received from sender ) to recover 32 -bytes plain text message, that was encrypted by the sender.
-
-> **Note** In [pke.cpp](./example/kyber512_pke.cpp), I show how to use Kyber PKE API, while sticking to Kyber512 parameters.
-
-```bash
-g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include example/kyber512_pke.cpp && ./a.out
-
-pubkey : fac9337d888430016152ba06cc41c5a92710ed9787f6caa710d7c57c879d3de018c50bbffc14a92e233c6b3acddae9ca9543cfb5f16aa4209a65269a98a4820ad0a26579c71d1ca52cd65446c92835cb0f30b65c50a89048d57a6ce9a45818b3acd9a078ba9b2b5421fc02084a1b9d884563fad88c66cb7c25171aa4b5051d0b567240065f4841cf5904f73474a498932ab858acb108d486c62f9c2b8d6a3c6880353b15b4a9e91697081c6e551966db191fb284a7e5a8e985cf46b941811b8f8d7c574470b3e90b7530f7c8c8a58b1c2bb3029c2fc99168544375b102627b860d1ba8803f594a9a2704ed286559814061c2729bf1ba562827e2b5af3874acf0451eccca42f420985f07bfd2634883c3c44dc91f4894aca33387a205abd7f84219e47bfc556fb368c7b8fc62aeb9243dc11b0e647b37d19b25ec807bb243430182a2994107c157b539b5c446bc3ce08daf9697561baa6837adbc121a6e0643f50317be733fc76624a0e530f8f42e2835bc7d5a166768309fe82291f9a6fe4679f213052355a9d669277e715af3e14d830859bac0034b6247009d57f50bc5b023bfc40918d1c6ba8db016d70b2aa181324d624f38f5a0fa81aa96338bf71c1696aa0bfff3651eb217cdacb5d5e1147fd6287ae83ab5bc62f150a7dc21cf7af65003d4467028b7929078fdb73659300a8feb9e5a126e0d33c780b7497c151f91b11d0294a9d67540b7750de313cf3ef032e120cab7f5b9802164b4d136c41b56686aa182e8bdb0728e1033734685246568858e9629e8f4068d037303b144163abe1780a09c94168d501bf6a61d2f88215ea86f860b8353b9338ae8311428bef17c6cf0581eeab7b96bd00fd123cf5a3445ffaa0413d05f01202061840db89c2f4dbb74264c8da370ba21dc3baac4381d7895c8bc2e7512ab8890051a306908c67433ca44d2f9ac14320e48251116fcb1c9f343349cc4077cceb395118189204319891ef85df03a68f8d22030880396e7cc3d42473bcbaab6641d7af725f3d3940af46a068ba7d62bc125e9723d60bf4f6133ec068544051a8f697515240fda2418c5419aa22e1f25903eec7541d8de09ed43fe6560fbde5aa0fc0bd3de8fd6f180
-seckey : a08379055a37664c6b3d58cfcfb6af6cdac956c570e4e68a0a4b9eec7bcb05a19f9663353d97a42f4503aba5c224c95e924691b2b957160cbd7d0b2c98602b2858036aa8664a7718a363c8988b2ca23a8bd32c8f1c0ab8901555463c3307959d75a66e5671c2398c6e740cc636da984e801044727e3fd51964e85c77f45fd759696577570bac75d13156daf64b42d338db59a10bb29935c0c45374019c09c17521a95784592f3733e3c576a816195a59bc03d66f844b60f7aab6ea5cb168a3136a3c487699c294053e8b7813960b6503d37c33b2169bc2067a9035ee941cfbeb5a4d1a1dbc293089c1265082afcea0600734b9392473c15c94656b93750766cb59809e210086aaa0658407c0ec61421bc333811914e779bc580a1014ac433c53f0c157bba765e7f8555e0c0241350fc07c9b4f435665925664695a36eaab568a71ea101fdbb6902fc79fcf0a688e8a58544753aa201ec68ab5862b4c24185ef3869d0ed519e81121d00b4dc4c762b3a90971f174aae8c7f05267e3db6690c99ef7c67e362b89f0a13721e66c7e855adbe21cb1e32c1fb53e0f71746f30335cd9a1c569609b6a5306ba87fff8bed720c3c34092df5c4f0301a85ff9cdcca103e018c5629bc46349427fb2cadd86c4d5f5adcdb715c9864e0446bfd2c6232e2858a5892a12aa58668b13beb924e079c474d12f2f6556ec2c24f4640122c37ea0f97aa862a5e5541ef6dac4a6486383bc7729775102c89541d67a35499909c91237fc052652780d5a25e2c84d7d509f17c0092a37cf7edbcded108935597122243efea541f9cb020a4b329d7b653a27ce77926f2918651f66b55c6bae71f46410ea702f571d09401e234cb71c2c627c119bcdb96accda98cd461868a33f9b0ccc8464b469369cc6e033b316417bab47f43915a42a00f61012f032c2fa6a78f3ab1cb62122a7b171885a7c651c7f43c5b8fb6c5807f040d2749f74301767899b62ac0e98ba608045bd4cc0a3dd648452cab2153acee6a22effc73aca36a6cac8008d2cb4f19c71d82b1b1f411ff94c577d1b1429e8a451b48c71288c6a55724cd1c3
-plain text : c327a0162e13cd9a37212f9a2fb39784a822d7d31cb657aa06d86c4e6124775f
-cipher     : c53d24b3843938e8570338e61e47a751b9944e7fd07cf77d022612987f271cca62cbad4fe751d322b550178b5e9887ccc854673f34bd2d7b566455a022c02d75c6e99d8376dc39d2b611a000c8453e89192277d61027a6b2aab2f5f00ce3bab84edb2596389a39bc9e6aa822e583cd26bf4548cc818f57e87cbaacc0f08da2a88e8beed151e9d6bbadf69d60d28da9af907a1a93f25189a71b8e56871b128897d7c7771f0eabd11fb0179f60a7579ebd4c14286cb8ec75574cf697f13f0df131bb91125e3c0fb720e1ee3771fc6ef3e4faed52bb7f1b9bae1a11036227b7fd954b27609c7224333e4025eb02aab1b562aa0dfe62f27ddfd81508ae424870ac6454ea71738405888541a453c8cc72b245e406a90984232e9cd6f92791e9029f36667ca53ed639e374eb20269985d0e89710182b68f900e862f78f07cc281f18cc40afc42050a6b468ed2f61c0c8a3bf09642bcc6c95492c5c418038e688ccef2cc8fbd23e2b415cd42c3ce4f721da28cb15a1cbabf3b6ef24bda94ccefdafd7126dcf3733dd75208afb460dd2e1a59eb41720eda04e99e0ca69e0c2132d89ef830fec8687aeebaeb2f5192210bf19404fa3dbf79c37b5e7874ce69156a251d94d2f11e3950f2f9de449be2757702a400cb46ecbd341876f0159089f00a4857a0180938619a3f01c01a965e65dc9fbd258a2d3be374c30753b8d8c29ec07e043510527a04c6c126cd01e0e33d3b15f953230b5d4612ec8a4e7eb5290ec7b7020278981a624ef6f479774361f9bc991571ec00721549cfa5bbf240f9ede390af70550a677dedbe40a5e5ace670399363f7837520d2a6e6d078223a204510ddf03fd7cb8094cddc8937c5021d3ff2dd5440acd24582f0fc2df145338536bbca3dbf2a357ba02d13ff53e8fe158aff2fb45381e169267efbde7ee40ca5d055b183621a2a612e67e718b8f5911125af0cc52e60304c4d9357811cc7aa1ecc93a6adb4b76658498868c8d64f001cd900627d1081b4766ac21c59c0720a977fc6deafe70a07a0ce68272c663a1fc4c1c7aaa757cd2c8ad1b17f6ff29b13da4e9656d8804
-decrypted  : c327a0162e13cd9a37212f9a2fb39784a822d7d31cb657aa06d86c4e6124775f
-```
+PKE KeyGen | `pke::` | `keygen<k, η1>()` | - | (k * 12 * 32 + 32) -bytes public key & (k * 12 * 32) -bytes secret key | Imagine two parties i.e. sender and receiver. Both of them generate PKE keypair & publish their public keys to each other.
+Encrypt | `pke::` | `encrypt<k, η1, η2, du, dv>(...)` | (k * 12 * 32 + 32) -bytes public key, 32 -bytes plain text ( to be encrypted ) & 32 -bytes random coin ( used as seed of randomness ) | (k * du * 32 + dv * 32) -bytes encrypted text | Message sender takes receiver's public key and encrypts a 32 -bytes message. Finally it sends cipher text to the receiver.
+Decrypt | `pke::` | `decrypt<k, du, dv>(...)` | (k * 12 * 32) -bytes secret key & (k * du * 32 + dv * 32) -bytes cipher text | 32 -bytes plain text | Receiver takes their secret key and cipher text ( received from sender ) to recover 32 -bytes plain text message, that was encrypted by the sender.
 
 ### Kyber Key Encapsulation Mechanism (KEM)
 
 Step | Namespace | Routine | Input | Output | How is it used ?
 --- | --- | :-: | --: | --: | --:
-KEM KeyGen | `kyber_kem::` | `keygen<k, η1>()` | - | (k * 12 * 32 + 32) -bytes public key & (k * 24 * 32 + 96) -bytes secret key | Imagine two parties peer1 & peer2, want to securely ( using symmetric key encryption i.e. AES ) communicate over insecure channel. Both of them generate their KEM keypair and publish their public keys to each other.
-Encapsulation | `kyber_kem::` | `encapsulate<k, η1, η2, du, dv>(...)` | (k * 12 * 32 + 32) -bytes public key | (k * du * 32 + dv * 32) -bytes cipher text and a KDF ( i.e. SHAKE256 XOF object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer1 wants to establish a secure connection with Peer2 & both of them have already agreed to use AES with 256 -bit symmetric keys. Peer1 encapsulates 32 -bytes random seed inside cipher text, using Peer2's public key, which it shares with Peer2, over insecure channel. Peer1 derives a 256 -bit key from KDF, that it obtained at end of encapsulation.
-Decapsulation | `kyber_kem::` | `decapsulate<k, η1, η2, du, dv>(...)` | (k * 24 * 32 + 96) -bytes secret key & (k * du * 32 + dv * 32) -bytes cipher text | a KDF ( i.e. SHAKE256 XOF object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer2 uses its secret key to decapsulate cipher text ( received from Peer1 ), recovering 32 -bytes random seed, which it uses for seeding a KDF, deriving a 256 -bit key. Now both the parties have same 256 -bit key, which they can use with AES to encrypt/ decrypt ( much more efficiently ) their messages.
+KEM KeyGen | `kem::` | `keygen<k, η1>()` | - | (k * 12 * 32 + 32) -bytes public key & (k * 24 * 32 + 96) -bytes secret key | Imagine two parties peer1 & peer2, want to securely ( using symmetric key encryption i.e. AES ) communicate over insecure channel. Both of them generate their KEM keypair and publish their public keys to each other.
+Encapsulation | `kem::` | `encapsulate<k, η1, η2, du, dv>(...)` | (k * 12 * 32 + 32) -bytes public key | (k * du * 32 + dv * 32) -bytes cipher text and a KDF ( i.e. SHAKE256 XOF object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer1 wants to establish a secure connection with Peer2 & both of them have already agreed to use AES with 256 -bit symmetric keys. Peer1 encapsulates 32 -bytes random seed inside cipher text, using Peer2's public key, which it shares with Peer2, over insecure channel. Peer1 derives a 256 -bit key from KDF, that it obtained at end of encapsulation.
+Decapsulation | `kem::` | `decapsulate<k, η1, η2, du, dv>(...)` | (k * 24 * 32 + 96) -bytes secret key & (k * du * 32 + dv * 32) -bytes cipher text | a KDF ( i.e. SHAKE256 XOF object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer2 uses its secret key to decapsulate cipher text ( received from Peer1 ), recovering 32 -bytes random seed, which it uses for seeding a KDF, deriving a 256 -bit key. Now both the parties have same 256 -bit key, which they can use with AES to encrypt/ decrypt ( much more efficiently ) their messages.
 
-> **Note** In [kem.cpp](./example/kyber512_kem.cpp), I keep an example demonstrating usage of Kyber KEM API, while using Kyber512 parameters.
+See example [program](./example/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from proper respective namespace.
 
 ```bash
-g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include example/kyber512_kem.cpp && ./a.out
+$ g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ example/kyber512_kem.cpp && ./a.out 
+Kyber512 KEM
 
-pubkey : 45580b5ecb5c78eb335992afc2ea9c0fb192919269d8068e9ae855bc705d26f3c4257b8db267c1ac381d480442aca3767f7c8cefbb6b28818aec4118f98906769728c7b74ce4aaa8fce11d8503579867a026e0bfc05945171a9c4157664056562e978a86f7a6e5f45b621689ea27bc92545c06a6b44ae163abf5039d207e060017e548acce256c40fbb6a9b9073cc4630e1823e658333c83aa9f661b6bc29f4adcab5691adba747d23a1c8a5e7bf973c2a600a4aeeab4ad793b2ade8c2fc8225c8a8634ba31c0cb896e3305a7e3483374609b8254427b6cbb9ac26fc8439b5632d7134921e178196940b482bbc1d9520e7bb94ab2ab53b7c97c1639146062fbcd634c57060d6088baea4884ad839907a6a7edb3b26d0b3ed3a2f512b5b3f38bb0a0a47b75cb619ca471f79af13c0a869863c11d48e9a9a02b0998c24a490c4373a6d95346a7712e91a5dc7271fa8a355eed756bed5a0b0f13fafe3c45115918216ceca15085471a7857055156753cd38c4cfe4208f241325357b228904fdba923f228f6f37b50f04027c65831c9179fa03120e01b00f321335c05d89f952fdca8c78f61ce0f474a7e552c26b133504187b947412656a31e7b8324b4b50b5c710cc5fea9bc032518a70a2b7ae964e1f62a4e55086c6964dd2e178558144d6d2bbee6725e0e77d7e5a81f8ba0657aa6d92339b4b68bcbb558f3d1a4415b3c993e86c2275600d877c2480480b687f20107f40e16506941fd7dc52e975b765a19a9d77b8bca7b1b39575688a879af75fe0a1296b158a6db7aeb3619271f1488376058107970a31705e0a949c5169361a0122861610d75f7cd3cd85870f64e2649a7b550a61a009950b0ed4496449c6e16c5bdf7bc10f07ac3182c98e901cffdc686b2b646e286820194ed4b559e17210f54268996615dc3cc9f89840d2bc2e5c134fcb733f7e99b596672d3326392e506967ea9db231b15ce777a1ec7bf36a32ce549f7f619d75595f09db42bdf8ccf4aba2a2c226993c0b29a4bb3801805db193cab268b9c6cb83e3a18ad1644ba87e494710c08a18589856d2f761796210eb54c1a4c9e3f19a6fc00e9b49384bb8fb38aee60a7fa63a3ba77cc1d9d23da107b081
-seckey : 83d308ba12ce27a42abb331cd739793a50c326875853112ccdaa05765a8b6c254d22d3a2836c1feef4014a5167224a2a181c089195ad90e89489154e82a8101a2a21e43393fecaa8d0524dcdc2c4b59a06fc27bee61b131e811ce99161d6c183af50411a328a621337ffe1a227b0bbe624123d517587d63aebba776bc823b38a8c785c0fdb651fd8c297a6bb040c8417bd94003ff79b4e293cd69958aae07e1ab81a15bb3f60347c596913baa6b68f5c253c2908c101596a4c43b4e93480209471612b9bc55d7eba3e04ea507dac13316892403a5270a523e7778e8051187ff66b0cd98910d93215627847dc7b51092559b018e8d0a353369eab13bf8c2b30adb87deb32b5907586eca68ed92350b9e130a37acf99ac00ad2528792663a253492182759ad259fc058c9df031ce091d39c36c3d0b9dd3834ab8c8483a92678e378bc8e655eae48fec25976359241aa70189e375c9fc1989cabe1fa924967425c8925aec6a0c72ca9f81b22c314378b726c2c4ea410212a7cea88cd87a907f41989e570e040092eb6a3aea5c4a4dc8b5fcba5e36e80f810ab9c26cba25b116c5e7bce3c54729f913d45b746d9b7caaab034bdc3b9b438764269f39f8cb1b163de0c7a9b28b4de93cbabaf73dcafa61b2cc0a417c4494d431ed2b99e5b16be6b83867410773b4765559c84071297e6549d9136687c4897e33b6e6a5677fb380d5d14a60677293560fe723063fb81ef2d66ff83a17351b9c0bab1839744d34799f97094b2aa955a58892286609bcd7a07eb766d5631dab38825ef53643236251758a30306d12b032be8cc530cb911e5a21760bc838214655150737eac4e130aaed52a78032a5e7625edfa991527aa69695cde2c69ea4d99a2006b0f24b215285a8e8b73556ccaacdb66cc27a7d2e5b1af849554a3bb30af91dc48230be25722266bba250b0069b8ac0d4a489ecbfbb724012b6183074a93748a81dd840dc5952bbf683d93634c6b3bddd27c3d6e14826ab65e2bb9c2adc01b8b515509804dc6ba8b575076460135f48bd88e865372019e78b7fc48a92b484c58c4650e1661746431a45580b5ecb5c78eb335992afc2ea9c0fb192919269d8068e9ae855bc705d26f3c4257b8db267c1ac381d480442aca3767f7c8cefbb6b28818aec4118f98906769728c7b74ce4aaa8fce11d8503579867a026e0bfc05945171a9c4157664056562e978a86f7a6e5f45b621689ea27bc92545c06a6b44ae163abf5039d207e060017e548acce256c40fbb6a9b9073cc4630e1823e658333c83aa9f661b6bc29f4adcab5691adba747d23a1c8a5e7bf973c2a600a4aeeab4ad793b2ade8c2fc8225c8a8634ba31c0cb896e3305a7e3483374609b8254427b6cbb9ac26fc8439b5632d7134921e178196940b482bbc1d9520e7bb94ab2ab53b7c97c1639146062fbcd634c57060d6088baea4884ad839907a6a7edb3b26d0b3ed3a2f512b5b3f38bb0a0a47b75cb619ca471f79af13c0a869863c11d48e9a9a02b0998c24a490c4373a6d95346a7712e91a5dc7271fa8a355eed756bed5a0b0f13fafe3c45115918216ceca15085471a7857055156753cd38c4cfe4208f241325357b228904fdba923f228f6f37b50f04027c65831c9179fa03120e01b00f321335c05d89f952fdca8c78f61ce0f474a7e552c26b133504187b947412656a31e7b8324b4b50b5c710cc5fea9bc032518a70a2b7ae964e1f62a4e55086c6964dd2e178558144d6d2bbee6725e0e77d7e5a81f8ba0657aa6d92339b4b68bcbb558f3d1a4415b3c993e86c2275600d877c2480480b687f20107f40e16506941fd7dc52e975b765a19a9d77b8bca7b1b39575688a879af75fe0a1296b158a6db7aeb3619271f1488376058107970a31705e0a949c5169361a0122861610d75f7cd3cd85870f64e2649a7b550a61a009950b0ed4496449c6e16c5bdf7bc10f07ac3182c98e901cffdc686b2b646e286820194ed4b559e17210f54268996615dc3cc9f89840d2bc2e5c134fcb733f7e99b596672d3326392e506967ea9db231b15ce777a1ec7bf36a32ce549f7f619d75595f09db42bdf8ccf4aba2a2c226993c0b29a4bb3801805db193cab268b9c6cb83e3a18ad1644ba87e494710c08a18589856d2f761796210eb54c1a4c9e3f19a6fc00e9b49384bb8fb38aee60a7fa63a3ba77cc1d9d23da107b08147f790da9f2a09c78a0e53434a5326f74eb175776a1628f6c7be3213a2a2401c48e67f6d7afe95c35fe15c4454b838c926a9ec53b9c324f0168151e6e954c546
-shared secret 0 : 3364912ae34021241f4aafd8253d909db0e5a9b685de85e1252f8533382296ff
-shared secret 1 : 3364912ae34021241f4aafd8253d909db0e5a9b685de85e1252f8533382296ff
+pubkey : baab4973d53ba839ab7ec568d2a23b546147a03abedd38ce53f83e0cf87bf8c7b722d939c694c9c1bac8b01ab53c615851e63b2bd88e66809866f539c3c88573f497b4d580338ac174721ccc466d91f131604b690e759297e60636aaa3366b73138c54d4aa40f43651bffb024ef81676b3755e6ba351c776fa526d645c10ab6612f12c86dae254893468f111c6f409b626104314222bed129992f8846e0698e05610185a96ab80aadc964fa6ba14a8540221562f0a0099bd349dbfb905ed36962654929aa7170cf73dfe397ffef1258da4c97668669f188b465841c9614f3425cf7d3b99ba03073a5b66a5580df075034290cf5100c5f5310983ac413e7c8441e27d6676c9b0e069203a54c7a7274738cc2445319a8627a76a69ee33a84f602feb031671d138ad76551fc17b011acf5ea415119042167a089bd4a8bac90c2179184de61c71eaa7be5324e7810d49c90389b3090acc7d02f2189eac2a3f9996baba4641a96cdf024029098d4bd01417745399b31b1a4a9355794c94f5533feb21d1fb3dfe132d8985651d351bcb63a4c3bc785cd6cb31893abc7cafc940c62de7afcb71bbbe714284b7619281cf355b5771d47d15996694f630182413493b92cf4538f197a41781b2d43614d3b0b5dde08c1508083d39c58068cd52bbbe6761a0b61c886e68b6f2f4632e069620b6ae4fe48613da399b505242fc6ce9a7b67e7727fd511452c93b56877d062a551477ad385171c6889ddea0383cc53b0314bf063bc8fe8000d7d6675d372cfbd83fb1d00d6e67bef530313eb8a4e111511359688ff36bcee03ee3a1352ab313c1aacc1b068e250a39498015caf82829358c59c6aaf854b2ca87a162496ee8918e0ed696aa26587c88c5dcc9ac49fbc037a354fdbbca3d3947e72a7977d07d45a411faa784d6873937a3ac208a6429f272f14a5c1019a073e521dc35555d0052ef151a37e5230f2556dd30a55f6c485b83155299481ae17faf970ae38655a5f26bcbb7744c6c7c318a87076535968bb1895a0080052788684d8774cb84b52a3fc7307753c5b11a1c9c5a1383e649218a08e096519f4ad9d16091a795adf7f7a171150a957470b0e1c04f118ce7e6fad5f98b9763
+seckey : 097318acb55488097ffd38768e01105bbc8972452fcbb30d10e2026e8741d851817f895988db0fa361476a47cf871559dc69808aa846ecb54d2f0a1f91f647615a5ba67a847180943a10b5294cb2158c97a57b1f5fe413485c25e232157ab82b6cd434e1fc09d698c6c5a79414d105106c7bcd22a011218274277b7785968ed919612b7a5888134d48ba262a4d63aa3280614793b85ce5899cd1a821f4352707b15c0c507c7d12a67d3b3cbff055cf54731eb2aae85a2fa86507ce931f01b3203814599f1200707b56f4f45feeb1c2eee51683e44ad28882acf0a8194274c51421cfc457d1c502227799c1124485d5766198ab2c09127ed88c41f1c92a51a0fe4451f6d13665c92efcd8953f3bbe6cc81cad0708f3c61cb1374a19f65706e0c448f9a897953ec55bade36825634ab83a4205dc13bb8350c21a5c3c9d408ef2504f00b4bd02d626e9c70043017f064762cc628972b5bd22fc8621d871d2123676b573c76957584c64e229c892965247f540a3b180077bbcfb3652d5aca39c581f4a62c5ac2b01d70136a4a6353355328a96215427cff65a0f8339cdd2ec1a2c693117ab1011056214ab8736f0aa823643bd4993b7c57352a4b0d6243f962c1a8be9965f0381dbf7723a528308a52c609708d97b8589a6965eca0a4f5ca8575879265280fbf9a768fa1755b45385e0341dcc0b0ff41fa7316413a30f8e047a8755213d940264d7bc1581338d172c06708f76a72ad5d54522571ee758383b523073c6c762f320cb0825cc9579b67463d534a87ff8ca00c9362c18a4ff677cde9b6436ea2cc43b0ebf8994ad6245fd4705565040b7d95b8ef80d3b50c2ab030ef4e30c58437609390fcd15a80b113575e70882747366123412a42c53d60f7873b5d94c2ad9c1ad88609ee050384e6a59ef30c098ba015f09b8b7f87068a9a96430a392840957749f67205454468994ab31a867188c8711fda3a728085d7996194628119a6501b5f87bcc7b974036b3764526cc2b068d8a9ecd30cdb9b2bcac922541a2a786f85791b7a9a9297d0cd6c36e631cf0bb0d33641edfaa8b699368f0a465baab4973d53ba839ab7ec568d2a23b546147a03abedd38ce53f83e0cf87bf8c7b722d939c694c9c1bac8b01ab53c615851e63b2bd88e66809866f539c3c88573f497b4d580338ac174721ccc466d91f131604b690e759297e60636aaa3366b73138c54d4aa40f43651bffb024ef81676b3755e6ba351c776fa526d645c10ab6612f12c86dae254893468f111c6f409b626104314222bed129992f8846e0698e05610185a96ab80aadc964fa6ba14a8540221562f0a0099bd349dbfb905ed36962654929aa7170cf73dfe397ffef1258da4c97668669f188b465841c9614f3425cf7d3b99ba03073a5b66a5580df075034290cf5100c5f5310983ac413e7c8441e27d6676c9b0e069203a54c7a7274738cc2445319a8627a76a69ee33a84f602feb031671d138ad76551fc17b011acf5ea415119042167a089bd4a8bac90c2179184de61c71eaa7be5324e7810d49c90389b3090acc7d02f2189eac2a3f9996baba4641a96cdf024029098d4bd01417745399b31b1a4a9355794c94f5533feb21d1fb3dfe132d8985651d351bcb63a4c3bc785cd6cb31893abc7cafc940c62de7afcb71bbbe714284b7619281cf355b5771d47d15996694f630182413493b92cf4538f197a41781b2d43614d3b0b5dde08c1508083d39c58068cd52bbbe6761a0b61c886e68b6f2f4632e069620b6ae4fe48613da399b505242fc6ce9a7b67e7727fd511452c93b56877d062a551477ad385171c6889ddea0383cc53b0314bf063bc8fe8000d7d6675d372cfbd83fb1d00d6e67bef530313eb8a4e111511359688ff36bcee03ee3a1352ab313c1aacc1b068e250a39498015caf82829358c59c6aaf854b2ca87a162496ee8918e0ed696aa26587c88c5dcc9ac49fbc037a354fdbbca3d3947e72a7977d07d45a411faa784d6873937a3ac208a6429f272f14a5c1019a073e521dc35555d0052ef151a37e5230f2556dd30a55f6c485b83155299481ae17faf970ae38655a5f26bcbb7744c6c7c318a87076535968bb1895a0080052788684d8774cb84b52a3fc7307753c5b11a1c9c5a1383e649218a08e096519f4ad9d16091a795adf7f7a171150a957470b0e1c04f118ce7e6fad5f98b9763063fd79c6d0535c4be3ce7b52645bb09507470b20b62aafbfb7f72db4266c4e5c9f614f83a50008fe3985128dda4839534d6a04b6337a7baed6a7ab8a47700d9
+cipher : a72e28e64fd2d80d91c8ed5f412bab5bf2d8c6aba0fccd502ba33f0883d80de7844ad81349500ef6fe6cdbdca1fb137a34704b8def89199439def4c21704c7927c9666cbf34de96db2af340962a50963f038ba7354799d826025371643c89c412412196d37d17ee9d25a0498253dfe4b5c5a90356f066dc912987bb96786906d535e53e37c6f085747cedd8eea0100d7b57bded553c84129555a1a8ea96c615d85dc1527b51a613f40a1f1f59dfdeb38af998019e408f11f4e10af76f0ccf80b808518ce810cc06c3132425e630ea0a00623d95e619598054655bed6b5c82571e42de56e77400fa308cc9e0fa793cb1e0165eccc30c1f42505755c564e06c70f8f36ef54fb8e9882736b001a85ed265ea2daa8e7b482338ec2efad860a832d5c7541d30343e8084a84181a98b6e51190a1be3efa3b41d06563eea5a3aed58af8cd6c4ae1b4fd739d3cd5d44c4c05685eeba246a1833468deb61787c4f5480d2a85e7c50f9bd3088592452f33b77c8cf7bac678f9f63a0cb148825ad1e6811e6f5236431842195c203d4a7c9702d5d1e7c3fd11caa1aa1d0f4c154c28fc8f88acb9bc1ad74c0acee0c655153d8c2532f975cc86a5e21c7c7df95c0720750a786a584fa593110779b8a426bd7b304c7f724c5739d61aefe718f7286b303a1f62fe302905bb257c6df328d7d762ab0c811de729fe482b9b8e9ad2e063731902871cdaa88f1270d98c4e024ac94f1a3bf9b803b7b3176f67286474d4423c2c48c1d24519f8d460ee316582137a39a37b5f3b816b4c5324b140ddac4726a03cfc42ac2d5ad180fcfe5cf0e448c9dc7d20eb97e113c1f3efb24c3681a087965b256085520dfe58aa8950d9679cd76d7f672136f2db25d20bc6371ad0f686a431ed32a8e6d4991035fb044028bb8e42561d78629ad391e029845e2752f0da32081301f85353dde5626f04c88740f216fe9ebd4df96969554c2760f288be3b08cd1e7e91c771557d00f015e28541c3754fba9e34c624ec3ee8de9805ed053120343f5a2e5963b88f491be95b5b834c510dc6caae0ee43ff8742cf1d80149075154c5781a
+shared secret 0 : 6015c21a27bb6dd6a10f0a73edd652ee62950020256441b5e12695cd48b6c498
+shared secret 1 : 6015c21a27bb6dd6a10f0a73edd652ee62950020256441b5e12695cd48b6c498
 ```
+
+---
 
 ## Important Implementation Note
 
-You may notice that Kyber PKE implementation ( present in [kyber_pke.hpp](./include/kyber_pke.hpp) ) is a thin wrapper on top of routines ( such as keygen, encrypt & decrypt ) living under namespace `cpapke::` in files
+You'll notice Kyber KEM API accepts 32 -bytes seeds ( `d`, `z` for key generation and `m` for encapsulation ) for all three concrete instantiations ( i.e. Kyber{512, 768, 1024} ) - this is what you, as an user of Kyber KEM API, need to ensure that you call those routines with uniformly random sampled seeds.
 
-- PKE KeyGen : [pke_keygen.hpp](./include/pke_keygen.hpp)
-- Encryption : [encryption.hpp](./include/encryption.hpp)
-- Decryption : [decryption.hpp](./include/decryption.hpp)
+I provide you with a PRNG implementation, which lives in [include/prng.hpp](./include/prng.hpp). Before you start using that, I want you to take a moment and understand what can be the implication of using the default constructor of `prng::prng_t`. 
 
-which have little different ( somewhat generic ) looking interface. They are kept that way so that it becomes easier to write test cases using Known Answer Tests ( read test vectors ), obtained from Kyber reference implementation, following steps described in this [gist](https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710). This compartmentalization also helps benchmarking keygen, encrypt, decrypt routines, without getting influenced by the delay of sampling of randomness using pseudo random number generator (PRNG).
-
-Similarly, you'll notice [kyber_kem.hpp](./include/kyber_kem.hpp) follows same approach, acting as a thin wrapper on top of underlying generic Kyber KEM implementation ( living under namespace `ccakem::` ), exposing nicer APIs.
-
-> **Note** There are also easy-to-use parameterized instances of Kyber{512, 768, 1024} PKE and KEM, kept in header files `kyber{512, 768, 1024}_{pke, kem}.hpp`.
-
-Before you start using PRNG implementation ( see [prng.hpp](./include/prng.hpp) ), I want you to take a moment and understand what can be the implication of using the default constructor of `prng::prng_t`. In case default constructor is used, `std::random_device` is requested for 32 random bytes ( in form of eight `uint32_t`s ), which is hashed using SHAKE256 XOF. When you request ( using `read()` function ) arbitrary many random bytes from that initialized PRNG, it's actually squeezed out from SHAKE256 XOF state. Now one thing to note here is `std::random_device` itself is not guaranteed to provide you with system randomness in all possible usecases. It's an implementation defined behaviour. So it's better to be careful. Read https://en.cppreference.com/w/cpp/numeric/random/random_device/random_device 's notes section. But there's another way of using `prng::prng_t` - you can use its explicit constructor for creating a PRNG by hashing N -many random bytes. These N random bytes can be presampled from any secure randomness source that you may have in mind. After that same underlying SHAKE256 XOF is used for squeezing arbitrary many bytes arbitrary many times from PRNG.
+- In case default constructor is used, `std::random_device` is requested for 32 random bytes ( in form of eight `uint32_t`s ), which is hashed using SHAKE256 XOF. When you request ( using `read()` function ) arbitrary many random bytes from that initialized PRNG, it's actually squeezed out from SHAKE256 XOF state. Now one thing to note here is `std::random_device` itself is not guaranteed to provide you with system randomness in all possible usecases/ targets. It's an implementation defined behaviour. So it's better to be careful. Read https://en.cppreference.com/w/cpp/numeric/random/random_device/random_device 's notes section. 
+- But there's another way of using `prng::prng_t` - you can use its explicit constructor for creating a PRNG by hashing N -many random bytes, supplied as input. These N bytes input can be presampled from any secure randomness source that you may have access to. After that same underlying SHAKE256 XOF is used for squeezing arbitrary many bytes arbitrary many times from PRNG.
 
 ```cpp
 #include "prng.hpp"
@@ -288,8 +300,8 @@ uint8_t seed[slen];
 
 // fill `seed` with N many random bytes
 
-prng::prng_t prng0; // default initialization ( not recommended )
-prng::prng_t prng1{seed, slen}; // explicit initialization ( safer alternative )
+// default initialization ( recommended only if you're sure that target system provides you with reliable randomness source when accessing `std::random_device` )
+prng::prng_t prng0;
+// explicit initialization ( safer alternative )
+prng::prng_t prng1{seed, slen};
 ```
-
-If you're not happy with SHAKE256 XOF backed PRNG, you can always start using the underlying API, which lives under namespace `cpapke::` or `ccakem::`. For how to use, take a look at [kyber_pke.hpp](./include/kyber_pke.hpp) or [kyber_kem.hpp](./include/kyber_kem.hpp).

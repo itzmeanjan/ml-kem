@@ -22,7 +22,7 @@ namespace prng {
 struct prng_t
 {
 private:
-  shake256::shake256<false> state;
+  shake256::shake256 state;
 
 public:
   inline prng_t()
@@ -41,17 +41,19 @@ public:
       off += sizeof(v);
     }
 
-    state.hash(seed, sizeof(seed));
+    state.absorb(seed, sizeof(seed));
+    state.finalize();
   }
 
   inline explicit prng_t(const uint8_t* const seed, const size_t slen)
   {
-    state.hash(seed, slen);
+    state.absorb(seed, slen);
+    state.finalize();
   }
 
   inline void read(uint8_t* const bytes, const size_t len)
   {
-    state.read(bytes, len);
+    state.squeeze(bytes, len);
   }
 };
 

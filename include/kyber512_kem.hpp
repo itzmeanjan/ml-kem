@@ -42,7 +42,7 @@ keygen(const uint8_t* const __restrict d,
 // SHAKE256 XOF backed KDF.
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
-inline shake256::shake256<false>
+inline shake256::shake256
 encapsulate(const uint8_t* const __restrict m,
             const uint8_t* const __restrict pubkey,
             uint8_t* const __restrict cipher)
@@ -56,7 +56,7 @@ encapsulate(const uint8_t* const __restrict m,
 // derivation function).
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
-inline shake256::shake256<false>
+inline shake256::shake256
 decapsulate(const uint8_t* const __restrict seckey,
             const uint8_t* const __restrict cipher)
 {

@@ -76,7 +76,7 @@ encapsulate(benchmark::State& state)
   for (auto _ : state) {
     auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
     benchmark::DoNotOptimize(skdf);
-    skdf.read(sender_key, klen);
+    skdf.squeeze(sender_key, klen);
 
     benchmark::DoNotOptimize(m);
     benchmark::DoNotOptimize(pkey);
@@ -129,12 +129,12 @@ decapsulate(benchmark::State& state)
   prng.read(m, slen);
 
   auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
-  skdf.read(sender_key, klen);
+  skdf.squeeze(sender_key, klen);
 
   for (auto _ : state) {
     auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
     benchmark::DoNotOptimize(rkdf);
-    rkdf.read(receiver_key, klen);
+    rkdf.squeeze(receiver_key, klen);
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(cipher);

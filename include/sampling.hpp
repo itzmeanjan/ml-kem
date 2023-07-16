@@ -19,17 +19,17 @@ namespace kyber_utils {
 // See algorithm 1, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 inline void
-parse(shake128::shake128<false>& hasher, // Squeezes bytes
+parse(shake128::shake128& hasher,        // Squeezes bytes
       field::zq_t* const __restrict poly // Degree 255 polynomial
 )
 {
   constexpr size_t n = ntt::N;
 
   size_t coeff_idx = 0;
-  uint8_t buf[shake128::rate / 8];
+  uint8_t buf[shake128::RATE / 8];
 
   while (coeff_idx < ntt::N) {
-    hasher.read(buf, sizeof(buf));
+    hasher.squeeze(buf, sizeof(buf));
 
     for (size_t off = 0; (off < sizeof(buf)) && (coeff_idx < n); off += 3) {
       const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) |
@@ -78,8 +78,8 @@ generate_matrix(field::zq_t* const __restrict mat,
       }
 
       shake128::shake128 hasher{};
-      hasher.hash(xof_in, sizeof(xof_in));
-
+      hasher.absorb(xof_in, sizeof(xof_in));
+      hasher.finalize();
       parse(hasher, mat + off);
     }
   }
@@ -171,8 +171,9 @@ generate_vector(field::zq_t* const __restrict vec,
     prf_in[32] = nonce + static_cast<uint8_t>(i);
 
     shake256::shake256 hasher{};
-    hasher.hash(prf_in, sizeof(prf_in));
-    hasher.read(prf_out, sizeof(prf_out));
+    hasher.absorb(prf_in, sizeof(prf_in));
+    hasher.finalize();
+    hasher.squeeze(prf_out, sizeof(prf_out));
 
     kyber_utils::cbd<eta>(prf_out, vec + off);
   }

@@ -55,8 +55,8 @@ test_kyber_kem()
   auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
   auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
 
-  skdf.read(sender_key, klen);
-  rkdf.read(receiver_key, klen);
+  skdf.squeeze(sender_key, klen);
+  rkdf.squeeze(receiver_key, klen);
 
   bool flg = false;
   for (size_t i = 0; i < klen; i++) {

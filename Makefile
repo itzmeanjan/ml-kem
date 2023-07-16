@@ -13,7 +13,7 @@ tests/a.out: tests/main.cpp include/*.hpp include/tests/*.hpp sha3/include/*.hpp
 test: tests/a.out
 	./$<
 
-benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp sha3/include/*.hpp subtle/include/*.hpp
+benchmarks/bench.out: benchmarks/main.cpp include/*.hpp sha3/include/*.hpp subtle/include/*.hpp
 	# In case you haven't built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -lpthread -o $@
@@ -21,7 +21,7 @@ benchmarks/bench.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp
 benchmark: benchmarks/bench.out
 	./$< --benchmark_time_unit=us --benchmark_counters_tabular=true
 
-benchmarks/perf.out: benchmarks/main.cpp include/*.hpp include/benchmarks/*.hpp sha3/include/*.hpp subtle/include/*.hpp
+benchmarks/perf.out: benchmarks/main.cpp include/*.hpp sha3/include/*.hpp subtle/include/*.hpp
 	# In case you've built google-benchmark with libPFM support.
 	# More @ https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -lbenchmark -lpthread -lpfm -o $@

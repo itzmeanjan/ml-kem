@@ -1,9 +1,5 @@
-#pragma once
 #include "compression.hpp"
-#include <cassert>
-
-// Test functional correctness of Kyber PQC suite implementation
-namespace test_kyber {
+#include <gtest/gtest.h>
 
 // Test functional correctness of compression/ decompression logic s.t. given an
 // element x ∈ Z_q following is satisfied
@@ -12,16 +8,18 @@ namespace test_kyber {
 //
 // |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
 //
-// This test is executed a few times on some random Z_q elements, for some
-// specified `d`.
-template<const size_t d>
-void
-test_compression()
+// Returned boolean accumulates result of all compression/ decompression
+// execution iterations. It must hold truth value for function caller to believe
+// that compression/ decompression logic is implemented correctly.
+template<const size_t d, const size_t itr_cnt>
+bool
+test_zq_compression()
+  requires(itr_cnt > 0)
 {
-  constexpr size_t cnt = 1024;
+  bool res = true;
   prng::prng_t prng;
 
-  for (size_t i = 0; i < cnt; i++) {
+  for (size_t i = 0; i < itr_cnt; i++) {
     const auto a = field::zq_t::random(prng);
 
     const auto b = kyber_utils::compress<d>(a);
@@ -41,8 +39,17 @@ test_compression()
     const size_t err = static_cast<size_t>(std::abs(c_prime - a_prime));
     const size_t terr = kyber_utils::compute_error<d>();
 
-    assert(err <= terr);
+    res &= (err <= terr);
   }
+
+  return res;
 }
 
+TEST(KyberKEM, CompressDecompressZq)
+{
+  ASSERT_TRUE((test_zq_compression<11, 1ul << 20>()));
+  ASSERT_TRUE((test_zq_compression<10, 1ul << 20>()));
+  ASSERT_TRUE((test_zq_compression<5, 1ul << 20>()));
+  ASSERT_TRUE((test_zq_compression<4, 1ul << 20>()));
+  ASSERT_TRUE((test_zq_compression<1, 1ul << 20>()));
 }

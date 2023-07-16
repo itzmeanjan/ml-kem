@@ -40,9 +40,14 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
   constexpr size_t skoff2 = skoff1 + 32;
 
   std::memcpy(seckey + skoff2, z, zlen);
-  pke::keygen<k, eta1>(d, pubkey, seckey);        // CPAPKE key generation
-  std::memcpy(seckey + skoff0, pubkey, pklen);    // copy public key
-  sha3_256::hash(pubkey, pklen, seckey + skoff1); // hash public key
+  pke::keygen<k, eta1>(d, pubkey, seckey);     // CPAPKE key generation
+  std::memcpy(seckey + skoff0, pubkey, pklen); // copy public key
+
+  // hash public key
+  sha3_256::sha3_256 hasher;
+  hasher.absorb(pubkey, pklen);
+  hasher.finalize();
+  hasher.digest(seckey + skoff1);
 }
 
 // Given (k * 12 * 32 + 32) -bytes public key and 32 -bytes seed ( used for
@@ -70,7 +75,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static inline shake256::shake256<false>
+static inline shake256::shake256
 encapsulate(
   const uint8_t* const __restrict m,      // 32 -bytes seed for encapsulation
   const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
@@ -86,18 +91,38 @@ encapsulate(
   uint8_t g_out[64]{};
   uint8_t kdf_in[64]{};
 
-  sha3_256::hash(m, mlen, g_in);
-  sha3_256::hash(pubkey, pklen, g_in + 32);
-  sha3_512::hash(g_in, sizeof(g_in), g_out);
+  sha3_256::sha3_256 h256;
+
+  h256.absorb(m, mlen);
+  h256.finalize();
+  h256.digest(g_in);
+  h256.reset();
+
+  h256.absorb(pubkey, pklen);
+  h256.finalize();
+  h256.digest(g_in + 32);
+  h256.reset();
+
+  sha3_512::sha3_512 h512;
+
+  h512.absorb(g_in, sizeof(g_in));
+  h512.finalize();
+  h512.digest(g_out);
+  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, cipher);
 
   std::memcpy(kdf_in, g_out, 32);
-  sha3_256::hash(cipher, ctlen, kdf_in + 32);
 
-  shake256::shake256 hasher{};
-  hasher.hash(kdf_in, sizeof(kdf_in));
-  return hasher;
+  h256.absorb(cipher, ctlen);
+  h256.finalize();
+  h256.digest(kdf_in + 32);
+  h256.reset();
+
+  shake256::shake256 xof256;
+  xof256.absorb(kdf_in, sizeof(kdf_in));
+  xof256.finalize();
+  return xof256;
 }
 
 // Given (k * 24 * 32 + 96) -bytes secret key and (k * du * 32 + dv * 32) -bytes
@@ -119,7 +144,7 @@ template<const size_t k,
          const size_t eta2,
          const size_t du,
          const size_t dv>
-static inline shake256::shake256<false>
+static inline shake256::shake256
 decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
   const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes
@@ -145,7 +170,12 @@ decapsulate(
 
   pke::decrypt<k, du, dv>(seckey, cipher, g_in);
   std::memcpy(g_in + 32, h, 32);
-  sha3_512::hash(g_in, sizeof(g_in), g_out);
+
+  sha3_512::sha3_512 h512;
+  h512.absorb(g_in, sizeof(g_in));
+  h512.finalize();
+  h512.digest(g_out);
+  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, c_prime);
 
@@ -159,11 +189,15 @@ decapsulate(
     kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
   }
 
-  sha3_256::hash(cipher, ctlen, kdf_in + 32);
+  sha3_256::sha3_256 h256;
+  h256.absorb(cipher, ctlen);
+  h256.finalize();
+  h256.digest(kdf_in + 32);
 
-  shake256::shake256 hasher;
-  hasher.hash(kdf_in, sizeof(kdf_in));
-  return hasher;
+  shake256::shake256 xof256;
+  xof256.absorb(kdf_in, sizeof(kdf_in));
+  xof256.finalize();
+  return xof256;
 }
 
 }

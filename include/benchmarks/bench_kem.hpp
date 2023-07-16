@@ -1,7 +1,9 @@
 #pragma once
 #include "kem.hpp"
 #include "utils.hpp"
+#include <algorithm>
 #include <benchmark/benchmark.h>
+#include <vector>
 
 // Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
 namespace bench_kyber {
@@ -15,17 +17,17 @@ keygen(benchmark::State& state)
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
   constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
 
-  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
-  uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
+  std::vector<uint8_t> d(slen);
+  std::vector<uint8_t> z(slen);
+  std::vector<uint8_t> pkey(pklen);
+  std::vector<uint8_t> skey(sklen);
 
   prng::prng_t prng;
-  prng.read(d, slen);
-  prng.read(z, slen);
+  prng.read(d.data(), d.size());
+  prng.read(z.data(), z.size());
 
   for (auto _ : state) {
-    kem::keygen<k, eta1>(d, z, pkey, skey);
+    kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
 
     benchmark::DoNotOptimize(d);
     benchmark::DoNotOptimize(z);
@@ -35,11 +37,6 @@ keygen(benchmark::State& state)
   }
 
   state.SetItemsProcessed(state.iterations());
-
-  std::free(d);
-  std::free(z);
-  std::free(pkey);
-  std::free(skey);
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM encapsulation algorithm
@@ -57,26 +54,27 @@ encapsulate(benchmark::State& state)
   constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
   constexpr size_t klen = 32;
 
-  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* m = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
-  uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
-  uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
-  uint8_t* sender_key = static_cast<uint8_t*>(std::malloc(klen));
+  std::vector<uint8_t> d(slen);
+  std::vector<uint8_t> z(slen);
+  std::vector<uint8_t> m(slen);
+  std::vector<uint8_t> pkey(pklen);
+  std::vector<uint8_t> skey(sklen);
+  std::vector<uint8_t> cipher(ctlen);
+  std::vector<uint8_t> sender_key(klen);
 
   prng::prng_t prng;
-  prng.read(d, slen);
-  prng.read(z, slen);
+  prng.read(d.data(), d.size());
+  prng.read(z.data(), z.size());
 
-  kem::keygen<k, eta1>(d, z, pkey, skey);
+  kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
 
-  prng.read(m, slen);
+  prng.read(m.data(), m.size());
 
   for (auto _ : state) {
-    auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
+    auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(
+      m.data(), pkey.data(), cipher.data());
     benchmark::DoNotOptimize(skdf);
-    skdf.read(sender_key, klen);
+    skdf.squeeze(sender_key.data(), sender_key.size());
 
     benchmark::DoNotOptimize(m);
     benchmark::DoNotOptimize(pkey);
@@ -86,14 +84,6 @@ encapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(state.iterations());
-
-  std::free(d);
-  std::free(z);
-  std::free(m);
-  std::free(pkey);
-  std::free(skey);
-  std::free(cipher);
-  std::free(sender_key);
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM decapsulation algorithm
@@ -111,30 +101,32 @@ decapsulate(benchmark::State& state)
   constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
   constexpr size_t klen = 32;
 
-  uint8_t* d = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* z = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* m = static_cast<uint8_t*>(std::malloc(slen));
-  uint8_t* pkey = static_cast<uint8_t*>(std::malloc(pklen));
-  uint8_t* skey = static_cast<uint8_t*>(std::malloc(sklen));
-  uint8_t* cipher = static_cast<uint8_t*>(std::malloc(ctlen));
-  uint8_t* sender_key = static_cast<uint8_t*>(std::malloc(klen));
-  uint8_t* receiver_key = static_cast<uint8_t*>(std::malloc(klen));
+  std::vector<uint8_t> d(slen);
+  std::vector<uint8_t> z(slen);
+  std::vector<uint8_t> m(slen);
+  std::vector<uint8_t> pkey(pklen);
+  std::vector<uint8_t> skey(sklen);
+  std::vector<uint8_t> cipher(ctlen);
+  std::vector<uint8_t> sender_key(klen);
+  std::vector<uint8_t> receiver_key(klen);
 
   prng::prng_t prng;
-  prng.read(d, slen);
-  prng.read(z, slen);
+  prng.read(d.data(), d.size());
+  prng.read(z.data(), z.size());
 
-  kem::keygen<k, eta1>(d, z, pkey, skey);
+  kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
 
-  prng.read(m, slen);
+  prng.read(m.data(), m.size());
 
-  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(m, pkey, cipher);
-  skdf.read(sender_key, klen);
+  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(
+    m.data(), pkey.data(), cipher.data());
+  skdf.squeeze(sender_key.data(), sender_key.size());
 
   for (auto _ : state) {
-    auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(skey, cipher);
+    auto rkdf =
+      kem::decapsulate<k, eta1, eta2, du, dv>(skey.data(), cipher.data());
     benchmark::DoNotOptimize(rkdf);
-    rkdf.read(receiver_key, klen);
+    rkdf.squeeze(receiver_key.data(), receiver_key.size());
 
     benchmark::DoNotOptimize(skey);
     benchmark::DoNotOptimize(cipher);
@@ -143,19 +135,7 @@ decapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(state.iterations());
-
-  for (size_t i = 0; i < klen; i++) {
-    assert(sender_key[i] == receiver_key[i]);
-  }
-
-  std::free(d);
-  std::free(z);
-  std::free(m);
-  std::free(pkey);
-  std::free(skey);
-  std::free(cipher);
-  std::free(sender_key);
-  std::free(receiver_key);
+  assert(std::ranges::equal(sender_key, receiver_key));
 }
 
 }

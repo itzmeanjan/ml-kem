@@ -48,8 +48,8 @@ main()
   auto rkdf = kyber512_kem::decapsulate(skey.data(), cipher.data());
 
   // both sender's and receiver's KDF should produce same KEY_LEN many bytes
-  skdf.read(shrd_key0.data(), KEY_LEN);
-  rkdf.read(shrd_key1.data(), KEY_LEN);
+  skdf.squeeze(shrd_key0.data(), KEY_LEN);
+  rkdf.squeeze(shrd_key1.data(), KEY_LEN);
 
   // check that both of the communicating parties arrived at same shared key
   assert(std::ranges::equal(shrd_key0, shrd_key1));

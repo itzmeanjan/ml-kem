@@ -61,7 +61,7 @@ $ g++ --version
 g++ (Ubuntu 12.2.0-17ubuntu1) 12.2.0
 ```
 
-- System development utilities such as `make`, `cmake` & `git`
+- Build tools such as `make`, `cmake`.
 
 ```bash
 $ make --version
@@ -69,14 +69,11 @@ GNU Make 4.3
 
 $ cmake --version
 cmake version 3.22.1
-
-$ git --version
-git version 2.34.1
 ```
 
-- For benchmarking Kyber implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found [this](https://github.com/google/benchmark/tree/604f6fd3#installation) guide helpful.
-
-- For importing dependencies `sha3`, `subtle` - initialize & update git submodule after cloning this repository
+- For benchmarking Kyber implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found [this](https://github.com/google/benchmark#installation) guide helpful.
+- If you are on a machine running GNU/Linux kernel and you want to obtain CPU Cycle count for KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following [this](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7) step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
+- For importing dependencies `sha3`, `subtle` - initialize & update git submodule after cloning this repository.
 
 ```bash
 git clone https://github.com/itzmeanjan/kyber.git
@@ -106,66 +103,71 @@ make
 
 ## Benchmarking
 
-For benchmarking Kyber KEM routines ( i.e. keygen, encaps and decaps ) for various suggested parameter sets, targeting CPU systems, you need to issue
+For benchmarking Kyber KEM routines ( i.e. keygen, encaps and decaps ) for various suggested parameter sets, targeting CPU systems, you need to issue.
 
 ```bash
-make benchmark
+make benchmark  # If you haven't built google-benchmark library with libPFM support.
+make perf       # If you have built google-benchmark library with libPFM support.
 ```
 
 > **Note** Benchmarking expects presence of `google-benchmark` header and library in global namespace ( so that it can be found by the compiler ).
 
-> **Warning** When benchmarking, ensure that you've disabled CPU frequency scaling, by following [this](https://github.com/google/benchmark/blob/3b19d722/docs/reducing_variance.md) guide.
+> **Warning** When benchmarking, ensure that you've disabled CPU frequency scaling, by following [this](https://github.com/google/benchmark/blob/main/docs/reducing_variance.md) guide.
+
+> **Note** `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing Kyber KEM routines in terms of CPU cycles. Follow [this](https://github.com/google/benchmark/blob/main/docs/perf_counters.md) for more details.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC )
 
 ```bash
-2023-06-03T11:27:13+04:00
-Running ./bench/a.out
-Run on (16 X 571.333 MHz CPU s)
+2023-07-16T15:32:26+04:00
+Running ./benchmarks/perf.out
+Run on (16 X 1311.11 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 1.10, 0.64, 0.47
-----------------------------------------------------------------------------
-Benchmark                 Time             CPU   Iterations items_per_second
-----------------------------------------------------------------------------
-kyber512/keygen        18.3 us         18.3 us        38106        54.622k/s
-kyber512/encap         24.1 us         24.1 us        29070       41.5211k/s
-kyber512/decap         29.7 us         29.7 us        23587       33.7262k/s
-kyber768/keygen        31.5 us         31.5 us        22286       31.7307k/s
-kyber768/encap         39.2 us         39.2 us        17844       25.5098k/s
-kyber768/decap         46.7 us         46.7 us        15024       21.4321k/s
-kyber1024/keygen       49.2 us         49.2 us        14232        20.326k/s
-kyber1024/encap        58.8 us         58.8 us        11824       17.0102k/s
-kyber1024/decap        68.5 us         68.5 us        10176       14.5951k/s
+Load Average: 0.12, 0.27, 0.32
+***WARNING*** There are 9 benchmarks with threads and 1 performance counters were requested. Beware counters will reflect the combined usage across all threads.
+---------------------------------------------------------------------------------------
+Benchmark                 Time             CPU   Iterations     CYCLES items_per_second
+---------------------------------------------------------------------------------------
+kyber512/keygen        18.1 us         18.1 us        38639   84.8877k       55.1314k/s
+kyber512/encap         23.7 us         23.7 us        29527    111.18k       42.1187k/s
+kyber512/decap         29.3 us         29.3 us        23826   137.434k       34.0758k/s
+kyber768/keygen        30.9 us         30.9 us        22640    144.59k       32.3781k/s
+kyber768/encap         38.8 us         38.8 us        18069   181.814k       25.7492k/s
+kyber768/decap         46.2 us         46.2 us        15162   216.234k       21.6523k/s
+kyber1024/keygen       47.9 us         47.9 us        14610   224.347k       20.8675k/s
+kyber1024/encap        57.9 us         57.9 us        12074   271.079k       17.2612k/s
+kyber1024/decap        67.9 us         67.9 us        10307    317.69k       14.7282k/s
 ```
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang )
 
 ```bash
-2023-06-03T11:27:54+04:00
-Running ./bench/a.out
-Run on (16 X 4578.25 MHz CPU s)
+2023-07-16T15:33:15+04:00
+Running ./benchmarks/perf.out
+Run on (16 X 4371.72 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 0.95, 0.66, 0.48
-----------------------------------------------------------------------------
-Benchmark                 Time             CPU   Iterations items_per_second
-----------------------------------------------------------------------------
-kyber512/keygen        15.4 us         15.4 us        45807       65.0474k/s
-kyber512/encap         19.3 us         19.3 us        36323       51.7862k/s
-kyber512/decap         23.6 us         23.6 us        29651       42.3194k/s
-kyber768/keygen        25.9 us         25.9 us        26803       38.6156k/s
-kyber768/encap         31.2 us         31.2 us        22373       32.0088k/s
-kyber768/decap         37.5 us         37.5 us        18676       26.6759k/s
-kyber1024/keygen       40.1 us         40.1 us        17344       24.9457k/s
-kyber1024/encap        47.0 us         47.0 us        14881       21.2596k/s
-kyber1024/decap        55.2 us         55.2 us        12730       18.1072k/s
+Load Average: 0.26, 0.29, 0.33
+***WARNING*** There are 9 benchmarks with threads and 1 performance counters were requested. Beware counters will reflect the combined usage across all threads.
+---------------------------------------------------------------------------------------
+Benchmark                 Time             CPU   Iterations     CYCLES items_per_second
+---------------------------------------------------------------------------------------
+kyber512/keygen        15.5 us         15.5 us        44767     72.75k       64.3635k/s
+kyber512/encap         19.1 us         19.1 us        36484   89.6099k        52.268k/s
+kyber512/decap         23.7 us         23.7 us        29515   110.922k       42.1968k/s
+kyber768/keygen        26.4 us         26.4 us        26596   123.574k       37.8928k/s
+kyber768/encap         31.5 us         31.5 us        22228   147.527k       31.7306k/s
+kyber768/decap         37.4 us         37.4 us        18705   175.022k       26.7379k/s
+kyber1024/keygen       40.6 us         40.6 us        17351   189.919k       24.6478k/s
+kyber1024/encap        46.9 us         47.0 us        14932   219.581k       21.2966k/s
+kyber1024/decap        55.4 us         55.5 us        12557   259.598k       18.0263k/s
 ```
 
 ## Usage
@@ -219,10 +221,10 @@ main()
   auto rkdf = kyber512_kem::decapsulate(skey, cipher);
 
   uint8_t sender_key[32]{};
-  skdf.read(sender_key, sizeof(sender_key));
+  skdf.squeeze(sender_key, sizeof(sender_key));
 
   uint8_t receiver_key[32]{};
-  rkdf.read(receiver_key, sizeof(receiver_key));
+  rkdf.squeeze(receiver_key, sizeof(receiver_key));
 
   assert(std::ranges::equal(sender_key, receiver_key));
   return 0;

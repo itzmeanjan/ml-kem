@@ -102,7 +102,7 @@ constexpr std::array<field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
-static inline void
+inline void
 ntt(field::zq_t* const poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
@@ -139,7 +139,7 @@ ntt(field::zq_t* const poly)
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
-static inline void
+inline void
 intt(field::zq_t* const poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
@@ -218,7 +218,7 @@ basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
 // g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)
 //
 // h = f ◦ g
-static inline void
+inline void
 polymul(const field::zq_t* const __restrict f, // degree-255 polynomial
         const field::zq_t* const __restrict g, // degree-255 polynomial
         field::zq_t* const __restrict h        // degree-255 polynomial

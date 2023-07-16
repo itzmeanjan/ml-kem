@@ -82,8 +82,8 @@ test_kyber512_kem_kat()
       auto skdf = kyber512::encapsulate(___m.data(), pkey.data(), ctxt.data());
       auto rkdf = kyber512::decapsulate(skey.data(), ctxt.data());
 
-      skdf.read(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.read(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
+      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
       assert(std::ranges::equal(___pk, pkey));
       assert(std::ranges::equal(___sk, skey));
@@ -169,8 +169,8 @@ test_kyber768_kem_kat()
       auto skdf = kyber768::encapsulate(___m.data(), pkey.data(), ctxt.data());
       auto rkdf = kyber768::decapsulate(skey.data(), ctxt.data());
 
-      skdf.read(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.read(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
+      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
       assert(std::ranges::equal(___pk, pkey));
       assert(std::ranges::equal(___sk, skey));
@@ -256,8 +256,8 @@ test_kyber1024_kem_kat()
       auto skdf = kyber1024::encapsulate(___m.data(), pkey.data(), ctxt.data());
       auto rkdf = kyber1024::decapsulate(skey.data(), ctxt.data());
 
-      skdf.read(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.read(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
+      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
       assert(std::ranges::equal(___pk, pkey));
       assert(std::ranges::equal(___sk, skey));

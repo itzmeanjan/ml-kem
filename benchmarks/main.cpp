@@ -1,4 +1,4 @@
-#include "bench/bench_kem.hpp"
+#include "benchmarks/bench_kem.hpp"
 
 // Register for benchmarking IND-CCA2-secure Kyber Key Encapsulation Mechanism
 

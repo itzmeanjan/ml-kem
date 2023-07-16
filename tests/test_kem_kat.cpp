@@ -2,27 +2,22 @@
 #include "kyber512_kem.hpp"
 #include "kyber768_kem.hpp"
 #include "utils.hpp"
-#include <cassert>
 #include <fstream>
-
-// Test functional correctness of Kyber PQC suite implementation
-namespace test_kyber {
-
-using namespace std::literals;
-namespace utils = kyber_utils;
-namespace kyber512 = kyber512_kem;
-namespace kyber768 = kyber768_kem;
-namespace kyber1024 = kyber1024_kem;
+#include <gtest/gtest.h>
 
 // Test if
 //
 // - Is Kyber512 KEM implemented correctly ?
 // - Is it conformant with the specification ?
 //
-// using Known Answer Tests.
-inline void
-test_kyber512_kem_kat()
+// using Known Answer Tests, generated following
+// https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
+TEST(KyberKEM, Kyber512KnownAnswerTests)
 {
+  using namespace std::literals;
+  namespace utils = kyber_utils;
+  namespace kyber512 = kyber512_kem;
+
   const std::string kat_file = "./kats/kyber512.kat";
   std::fstream file(kat_file);
 
@@ -85,11 +80,11 @@ test_kyber512_kem_kat()
       skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
       rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
-      assert(std::ranges::equal(___pk, pkey));
-      assert(std::ranges::equal(___sk, skey));
-      assert(std::ranges::equal(___ct, ctxt));
-      assert(std::ranges::equal(___ss, shrd_sec0));
-      assert(std::ranges::equal(shrd_sec0, shrd_sec1));
+      ASSERT_EQ(___pk, pkey);
+      ASSERT_EQ(___sk, skey);
+      ASSERT_EQ(___ct, ctxt);
+      ASSERT_EQ(___ss, shrd_sec0);
+      ASSERT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -101,15 +96,12 @@ test_kyber512_kem_kat()
   file.close();
 }
 
-// Test if
-//
-// - Is Kyber768 KEM implemented correctly ?
-// - Is it conformant with the specification ?
-//
-// using Known Answer Tests.
-inline void
-test_kyber768_kem_kat()
+TEST(KyberKEM, Kyber768KnownAnswerTests)
 {
+  using namespace std::literals;
+  namespace utils = kyber_utils;
+  namespace kyber768 = kyber768_kem;
+
   const std::string kat_file = "./kats/kyber768.kat";
   std::fstream file(kat_file);
 
@@ -172,11 +164,11 @@ test_kyber768_kem_kat()
       skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
       rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
-      assert(std::ranges::equal(___pk, pkey));
-      assert(std::ranges::equal(___sk, skey));
-      assert(std::ranges::equal(___ct, ctxt));
-      assert(std::ranges::equal(___ss, shrd_sec0));
-      assert(std::ranges::equal(shrd_sec0, shrd_sec1));
+      ASSERT_EQ(___pk, pkey);
+      ASSERT_EQ(___sk, skey);
+      ASSERT_EQ(___ct, ctxt);
+      ASSERT_EQ(___ss, shrd_sec0);
+      ASSERT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -193,10 +185,14 @@ test_kyber768_kem_kat()
 // - Is Kyber1024 KEM implemented correctly ?
 // - Is it conformant with the specification ?
 //
-// using Known Answer Tests.
-inline void
-test_kyber1024_kem_kat()
+// using Known Answer Tests, generated following
+// https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
+TEST(KyberKEM, Kyber1024KnownAnswerTests)
 {
+  using namespace std::literals;
+  namespace utils = kyber_utils;
+  namespace kyber1024 = kyber1024_kem;
+
   const std::string kat_file = "./kats/kyber1024.kat";
   std::fstream file(kat_file);
 
@@ -259,11 +255,11 @@ test_kyber1024_kem_kat()
       skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
       rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
 
-      assert(std::ranges::equal(___pk, pkey));
-      assert(std::ranges::equal(___sk, skey));
-      assert(std::ranges::equal(___ct, ctxt));
-      assert(std::ranges::equal(___ss, shrd_sec0));
-      assert(std::ranges::equal(shrd_sec0, shrd_sec1));
+      ASSERT_EQ(___pk, pkey);
+      ASSERT_EQ(___sk, skey);
+      ASSERT_EQ(___ct, ctxt);
+      ASSERT_EQ(___ss, shrd_sec0);
+      ASSERT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -273,6 +269,4 @@ test_kyber1024_kem_kat()
   }
 
   file.close();
-}
-
 }

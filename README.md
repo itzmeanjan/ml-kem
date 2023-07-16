@@ -71,6 +71,7 @@ $ cmake --version
 cmake version 3.22.1
 ```
 
+- For testing Kyber implementation, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide if you haven't installed it yet.
 - For benchmarking Kyber implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found [this](https://github.com/google/benchmark#installation) guide helpful.
 - If you are on a machine running GNU/Linux kernel and you want to obtain CPU Cycle count for KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following [this](https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7) step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
 - For importing dependencies `sha3`, `subtle` - initialize & update git submodule after cloning this repository.
@@ -89,16 +90,36 @@ popd
 For testing functional correctness and conformance ( with Kyber specification and reference implementation ) of this Kyber implementation, you have to issue
 
 ```bash
-make
-```
+$ make -j8
 
-```bash
-[test] Kyber prime field operations
-[test] (i)NTT over degree-255 polynomial
-[test] Polynomial serialization/ deserialization
-[test] Coefficient compression/ decompression
-[test] INDCCA2-secure Kyber KEM
-[test] Kyber KEM Known Answer Tests
+[==========] Running 10 tests from 1 test suite.
+[----------] Global test environment set-up.
+[----------] 10 tests from KyberKEM
+[ RUN      ] KyberKEM.CompressDecompressZq
+[       OK ] KyberKEM.CompressDecompressZq (202 ms)
+[ RUN      ] KyberKEM.ArithmeticOverZq
+[       OK ] KyberKEM.ArithmeticOverZq (298 ms)
+[ RUN      ] KyberKEM.Kyber512KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber512KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.Kyber768KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber768KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.Kyber1024KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber1024KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.Kyber512KnownAnswerTests
+[       OK ] KyberKEM.Kyber512KnownAnswerTests (8 ms)
+[ RUN      ] KyberKEM.Kyber768KnownAnswerTests
+[       OK ] KyberKEM.Kyber768KnownAnswerTests (13 ms)
+[ RUN      ] KyberKEM.Kyber1024KnownAnswerTests
+[       OK ] KyberKEM.Kyber1024KnownAnswerTests (20 ms)
+[ RUN      ] KyberKEM.NumberTheoreticTransform
+[       OK ] KyberKEM.NumberTheoreticTransform (0 ms)
+[ RUN      ] KyberKEM.PolynomialSerialization
+[       OK ] KyberKEM.PolynomialSerialization (0 ms)
+[----------] 10 tests from KyberKEM (545 ms total)
+
+[----------] Global test environment tear-down
+[==========] 10 tests from 1 test suite ran. (545 ms total)
+[  PASSED  ] 10 tests.
 ```
 
 ## Benchmarking

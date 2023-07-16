@@ -7,8 +7,27 @@ DEP_IFLAGS = -I ./sha3/include -I ./subtle/include
 
 all: test
 
-tests/a.out: tests/main.cpp include/*.hpp include/tests/*.hpp sha3/include/*.hpp subtle/include/*.hpp
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) $< -o $@
+tests/test_compression.o: tests/test_compression.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_field.o: tests/test_field.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_kem_kat.o: tests/test_kem_kat.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_kem.o: tests/test_kem.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_ntt.o: tests/test_ntt.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/test_serialize.o: tests/test_serialize.cpp include/*.hpp
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(IFLAGS) $(DEP_IFLAGS) -c $< -o $@
+
+tests/a.out: tests/test_compression.o tests/test_field.o tests/test_kem_kat.o tests/test_kem.o \
+				tests/test_ntt.o tests/test_serialize.o
+	$(CXX) $(OPT_FLAGS) $^ -lgtest -lgtest_main -o $@
 
 test: tests/a.out
 	./$<

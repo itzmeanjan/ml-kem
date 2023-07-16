@@ -35,10 +35,11 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
   // step 2
   uint8_t g_out[64]{};
 
-  sha3_512::sha3_512 hasher;
-  hasher.absorb(d, dlen);
-  hasher.finalize();
-  hasher.digest(g_out);
+  sha3_512::sha3_512 h512;
+  h512.absorb(d, dlen);
+  h512.finalize();
+  h512.digest(g_out);
+  h512.reset();
 
   const uint8_t* rho = g_out + 0;
   const uint8_t* sigma = g_out + 32;

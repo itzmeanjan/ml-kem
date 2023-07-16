@@ -91,41 +91,38 @@ encapsulate(
   uint8_t g_out[64]{};
   uint8_t kdf_in[64]{};
 
-  {
-    sha3_256::sha3_256 hasher;
-    hasher.absorb(m, mlen);
-    hasher.finalize();
-    hasher.digest(g_in);
-  }
+  sha3_256::sha3_256 h256;
 
-  {
-    sha3_256::sha3_256 hasher;
-    hasher.absorb(pubkey, pklen);
-    hasher.finalize();
-    hasher.digest(g_in + 32);
-  }
+  h256.absorb(m, mlen);
+  h256.finalize();
+  h256.digest(g_in);
+  h256.reset();
 
-  {
-    sha3_512::sha3_512 hasher;
-    hasher.absorb(g_in, sizeof(g_in));
-    hasher.finalize();
-    hasher.digest(g_out);
-  }
+  h256.absorb(pubkey, pklen);
+  h256.finalize();
+  h256.digest(g_in + 32);
+  h256.reset();
+
+  sha3_512::sha3_512 h512;
+
+  h512.absorb(g_in, sizeof(g_in));
+  h512.finalize();
+  h512.digest(g_out);
+  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, cipher);
 
   std::memcpy(kdf_in, g_out, 32);
-  {
-    sha3_256::sha3_256 hasher;
-    hasher.absorb(cipher, ctlen);
-    hasher.finalize();
-    hasher.digest(kdf_in + 32);
-  }
 
-  shake256::shake256 hasher{};
-  hasher.absorb(kdf_in, sizeof(kdf_in));
-  hasher.finalize();
-  return hasher;
+  h256.absorb(cipher, ctlen);
+  h256.finalize();
+  h256.digest(kdf_in + 32);
+  h256.reset();
+
+  shake256::shake256 xof256;
+  xof256.absorb(kdf_in, sizeof(kdf_in));
+  xof256.finalize();
+  return xof256;
 }
 
 // Given (k * 24 * 32 + 96) -bytes secret key and (k * du * 32 + dv * 32) -bytes
@@ -173,12 +170,12 @@ decapsulate(
 
   pke::decrypt<k, du, dv>(seckey, cipher, g_in);
   std::memcpy(g_in + 32, h, 32);
-  {
-    sha3_512::sha3_512 hasher;
-    hasher.absorb(g_in, sizeof(g_in));
-    hasher.finalize();
-    hasher.digest(g_out);
-  }
+
+  sha3_512::sha3_512 h512;
+  h512.absorb(g_in, sizeof(g_in));
+  h512.finalize();
+  h512.digest(g_out);
+  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, c_prime);
 
@@ -192,17 +189,15 @@ decapsulate(
     kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
   }
 
-  {
-    sha3_256::sha3_256 hasher;
-    hasher.absorb(cipher, ctlen);
-    hasher.finalize();
-    hasher.digest(kdf_in + 32);
-  }
+  sha3_256::sha3_256 h256;
+  h256.absorb(cipher, ctlen);
+  h256.finalize();
+  h256.digest(kdf_in + 32);
 
-  shake256::shake256 hasher;
-  hasher.absorb(kdf_in, sizeof(kdf_in));
-  hasher.finalize();
-  return hasher;
+  shake256::shake256 xof256;
+  xof256.absorb(kdf_in, sizeof(kdf_in));
+  xof256.finalize();
+  return xof256;
 }
 
 }

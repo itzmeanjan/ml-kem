@@ -1,17 +1,13 @@
-#pragma once
 #include "kem.hpp"
 #include "utils.hpp"
 #include <algorithm>
 #include <benchmark/benchmark.h>
 #include <vector>
 
-// Benchmark Kyber PQC suite implementation on CPU, using google-benchmark
-namespace bench_kyber {
-
 // Benchmarking IND-CCA2-secure Kyber KEM key generation algorithm
 template<const size_t k, const size_t eta1>
 void
-keygen(benchmark::State& state)
+bench_keygen(benchmark::State& state)
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
@@ -46,7 +42,7 @@ template<const size_t k,
          const size_t du,
          const size_t dv>
 void
-encapsulate(benchmark::State& state)
+bench_encapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
@@ -93,7 +89,7 @@ template<const size_t k,
          const size_t du,
          const size_t dv>
 void
-decapsulate(benchmark::State& state)
+bench_decapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
@@ -138,4 +134,19 @@ decapsulate(benchmark::State& state)
   assert(std::ranges::equal(sender_key, receiver_key));
 }
 
-}
+// Register for benchmarking IND-CCA2-secure Kyber Key Encapsulation Mechanism
+
+// Kyber512
+BENCHMARK(bench_keygen<2, 3>)->Name("kyber512/keygen");
+BENCHMARK(bench_encapsulate<2, 3, 2, 10, 4>)->Name("kyber512/encap");
+BENCHMARK(bench_decapsulate<2, 3, 2, 10, 4>)->Name("kyber512/decap");
+
+// Kyber768
+BENCHMARK(bench_keygen<3, 2>)->Name("kyber768/keygen");
+BENCHMARK(bench_encapsulate<3, 2, 2, 10, 4>)->Name("kyber768/encap");
+BENCHMARK(bench_decapsulate<3, 2, 2, 10, 4>)->Name("kyber768/decap");
+
+// Kyber1024
+BENCHMARK(bench_keygen<4, 2>)->Name("kyber1024/keygen");
+BENCHMARK(bench_encapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/encap");
+BENCHMARK(bench_decapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/decap");

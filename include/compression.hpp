@@ -12,7 +12,7 @@ namespace kyber_utils {
 //
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
+template<size_t d>
 static inline field::zq_t
 compress(const field::zq_t x)
   requires(kyber_params::check_d(d))
@@ -36,7 +36,7 @@ compress(const field::zq_t x)
 //
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
+template<size_t d>
 static inline field::zq_t
 decompress(const field::zq_t x)
   requires(kyber_params::check_d(d))
@@ -59,7 +59,7 @@ decompress(const field::zq_t x)
 //
 // See eq. 2 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
+template<size_t d>
 static inline size_t
 compute_error()
 {
@@ -72,7 +72,7 @@ compute_error()
 
 // Utility function to compress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
-template<const size_t d>
+template<size_t d>
 static inline void
 poly_compress(field::zq_t* const __restrict poly)
   requires(kyber_params::check_d(d))
@@ -84,7 +84,7 @@ poly_compress(field::zq_t* const __restrict poly)
 
 // Utility function to decompress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
-template<const size_t d>
+template<size_t d>
 static inline void
 poly_decompress(field::zq_t* const __restrict poly)
   requires(kyber_params::check_d(d))
@@ -94,4 +94,4 @@ poly_decompress(field::zq_t* const __restrict poly)
   }
 }
 
-}
+} // namespace kyber_utils

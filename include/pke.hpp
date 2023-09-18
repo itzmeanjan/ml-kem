@@ -22,7 +22,7 @@ namespace pke {
 // answer tests, obtained from Kyber reference implementation
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying PKE's key generation implementation.
-template<const size_t k, const size_t eta1>
+template<size_t k, size_t eta1>
 static inline void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed
        uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
@@ -87,11 +87,11 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed
 //
 // See algorithm 5 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv>
+template<size_t k,
+         size_t eta1,
+         size_t eta2,
+         size_t du,
+         size_t dv>
 static inline void
 encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
         const uint8_t* const __restrict msg,    // 32 -bytes message
@@ -168,7 +168,7 @@ encrypt(const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
 //
 // See algorithm 6 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t k, const size_t du, const size_t dv>
+template<size_t k, size_t du, size_t dv>
 static inline void
 decrypt(
   const uint8_t* const __restrict seckey, // (k * 12 * 32) -bytes secret key
@@ -207,4 +207,4 @@ decrypt(
   kyber_utils::encode<1>(v, dec);
 }
 
-}
+} // namespace pke

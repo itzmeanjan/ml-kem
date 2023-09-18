@@ -5,7 +5,7 @@
 #include <vector>
 
 // Benchmarking IND-CCA2-secure Kyber KEM key generation algorithm
-template<const size_t k, const size_t eta1>
+template<size_t k, size_t eta1>
 void
 bench_keygen(benchmark::State& state)
 {
@@ -36,11 +36,7 @@ bench_keygen(benchmark::State& state)
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM encapsulation algorithm
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv>
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 void
 bench_encapsulate(benchmark::State& state)
 {
@@ -83,11 +79,7 @@ bench_encapsulate(benchmark::State& state)
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM decapsulation algorithm
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv>
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 void
 bench_decapsulate(benchmark::State& state)
 {

@@ -56,7 +56,7 @@ parse(shake128::shake128& hasher,        // Squeezes bytes
 //
 // See step (4-8) of algorithm 4/ 5, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t k, const bool transpose>
+template<size_t k, bool transpose>
 static inline void
 generate_matrix(field::zq_t* const __restrict mat,
                 const uint8_t* const __restrict rho)
@@ -92,7 +92,7 @@ generate_matrix(field::zq_t* const __restrict mat,
 //
 // See algorithm 2, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t eta>
+template<size_t eta>
 static inline void
 cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
     field::zq_t* const __restrict poly   // Degree 255 polynomial
@@ -154,7 +154,7 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 // Sample a polynomial vector from Bη, following step (9-12) of algorithm 4,
 // defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t k, const size_t eta>
+template<size_t k, size_t eta>
 static inline void
 generate_vector(field::zq_t* const __restrict vec,
                 const uint8_t* const __restrict sigma,
@@ -179,4 +179,4 @@ generate_vector(field::zq_t* const __restrict vec,
   }
 }
 
-}
+} // namespace kyber_utils

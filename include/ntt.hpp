@@ -27,7 +27,7 @@ constexpr auto INV_N = field::zq_t::from_canonical(N / 2).inv();
 // See
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38
 // for source of inspiration
-template<const size_t mbw>
+template<size_t mbw>
 static inline constexpr size_t
 bit_rev(const size_t v)
 {
@@ -232,4 +232,4 @@ polymul(const field::zq_t* const __restrict f, // degree-255 polynomial
   }
 }
 
-}
+} // namespace ntt

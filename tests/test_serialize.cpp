@@ -8,7 +8,7 @@
 //
 // l denotes significant bit width ( from LSB side ) for each coefficient of
 // polynomial.
-template<const size_t l>
+template<size_t l>
 void
 test_serialize_deserialize()
 {

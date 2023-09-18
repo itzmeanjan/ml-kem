@@ -15,12 +15,7 @@
 // - This shared secret key can now be used with any symmetric key primitive.
 //
 // works as expected.
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv,
-         const size_t klen>
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t klen>
 void
 test_kyber_kem()
   requires(klen > 0)

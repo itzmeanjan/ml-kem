@@ -13,7 +13,7 @@ namespace kyber_utils {
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t l>
+template<size_t l>
 static inline void
 encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
        uint8_t* const __restrict arr // byte array of length 32*l -bytes
@@ -175,7 +175,7 @@ encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t l>
+template<size_t l>
 static inline void
 decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
        field::zq_t* const __restrict poly   // degree 255 polynomial
@@ -331,4 +331,4 @@ decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
   }
 }
 
-}
+} // namespace kyber_utils

@@ -64,4 +64,4 @@ decapsulate(const uint8_t* const __restrict seckey,
   return kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher);
 }
 
-}
+} // namespace kyber1024_kem

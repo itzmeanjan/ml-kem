@@ -11,7 +11,7 @@
 // Returned boolean accumulates result of all compression/ decompression
 // execution iterations. It must hold truth value for function caller to believe
 // that compression/ decompression logic is implemented correctly.
-template<const size_t d, const size_t itr_cnt>
+template<size_t d, size_t itr_cnt>
 bool
 test_zq_compression()
   requires(itr_cnt > 0)

@@ -23,7 +23,7 @@ namespace kem {
 // against known answer tests, obtained from Kyber reference implementation
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's key generation implementation.
-template<const size_t k, const size_t eta1>
+template<size_t k, size_t eta1>
 static inline void
 keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
        const uint8_t* const __restrict z, // 32 -bytes seed ( used in CCA-KEM )
@@ -70,11 +70,11 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
 // answer tests, obtained from Kyber reference implementation
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's encapsulation implementation.
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv>
+template<size_t k,
+         size_t eta1,
+         size_t eta2,
+         size_t du,
+         size_t dv>
 static inline shake256::shake256
 encapsulate(
   const uint8_t* const __restrict m,      // 32 -bytes seed for encapsulation
@@ -139,11 +139,11 @@ encapsulate(
 //
 // See algorithm 9 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t k,
-         const size_t eta1,
-         const size_t eta2,
-         const size_t du,
-         const size_t dv>
+template<size_t k,
+         size_t eta1,
+         size_t eta2,
+         size_t du,
+         size_t dv>
 static inline shake256::shake256
 decapsulate(
   const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
@@ -200,4 +200,4 @@ decapsulate(
   return xof256;
 }
 
-}
+} // namespace kem

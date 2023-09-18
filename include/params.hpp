@@ -135,4 +135,4 @@ check_decap_params(const size_t k,
   return check_encap_params(k, η1, η2, du, dv);
 }
 
-}
+} // namespace kyber_params

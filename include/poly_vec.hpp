@@ -9,10 +9,7 @@ namespace kyber_utils {
 // Given two matrices ( in NTT domain ) of compatible dimension, where each
 // matrix element is a degree-255 polynomial over Z_q | q = 3329, this routine
 // attempts to multiply and compute resulting matrix
-template<const size_t a_rows,
-         const size_t a_cols,
-         const size_t b_rows,
-         const size_t b_cols>
+template<size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols>
 static inline void
 matrix_multiply(const field::zq_t* const __restrict a,
                 const field::zq_t* const __restrict b,
@@ -42,7 +39,7 @@ matrix_multiply(const field::zq_t* const __restrict a,
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials ( where
 // polynomial coefficients are in non-NTT form ), this routine applies in-place
 // polynomial NTT over k polynomials
-template<const size_t k>
+template<size_t k>
 static inline void
 poly_vec_ntt(field::zq_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
@@ -57,7 +54,7 @@ poly_vec_ntt(field::zq_t* const __restrict vec)
 // polynomial coefficients are in NTT form i.e. they are placed in bit-reversed
 // order ), this routine applies in-place polynomial iNTT over those k
 // polynomials
-template<const size_t k>
+template<size_t k>
 static inline void
 poly_vec_intt(field::zq_t* const __restrict vec)
   requires((k == 1) || kyber_params::check_k(k))
@@ -70,7 +67,7 @@ poly_vec_intt(field::zq_t* const __restrict vec)
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine adds it to another polynomial vector of same dimension
-template<const size_t k>
+template<size_t k>
 static inline void
 poly_vec_add_to(const field::zq_t* const __restrict src,
                 field::zq_t* const __restrict dst)
@@ -85,7 +82,7 @@ poly_vec_add_to(const field::zq_t* const __restrict src,
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine subtracts it to another polynomial vector of same dimension
-template<const size_t k>
+template<size_t k>
 static inline void
 poly_vec_sub_from(const field::zq_t* const __restrict src,
                   field::zq_t* const __restrict dst)
@@ -101,7 +98,7 @@ poly_vec_sub_from(const field::zq_t* const __restrict src,
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this routine
 // encodes each of those polynomials into 32 x l -bytes, writing to a
 // (k x 32 x l) -bytes destination array
-template<const size_t k, const size_t l>
+template<size_t k, size_t l>
 static inline void
 poly_vec_encode(const field::zq_t* const __restrict src,
                 uint8_t* const __restrict dst)
@@ -118,7 +115,7 @@ poly_vec_encode(const field::zq_t* const __restrict src,
 // Given a byte array of length (k x 32 x l) -bytes, this routine decodes them
 // into k degree-255 polynomials, writing them to a column vector of dimension
 // k x 1
-template<const size_t k, const size_t l>
+template<size_t k, size_t l>
 static inline void
 poly_vec_decode(const uint8_t* const __restrict src,
                 field::zq_t* const __restrict dst)
@@ -134,7 +131,7 @@ poly_vec_decode(const uint8_t* const __restrict src,
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are compressed, while mutating input
-template<const size_t k, const size_t d>
+template<size_t k, size_t d>
 static inline void
 poly_vec_compress(field::zq_t* const __restrict vec)
   requires(kyber_params::check_k(k))
@@ -147,7 +144,7 @@ poly_vec_compress(field::zq_t* const __restrict vec)
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are decompressed, while mutating input
-template<const size_t k, const size_t d>
+template<size_t k, size_t d>
 static inline void
 poly_vec_decompress(field::zq_t* const __restrict vec)
   requires(kyber_params::check_k(k))
@@ -158,4 +155,4 @@ poly_vec_decompress(field::zq_t* const __restrict vec)
   }
 }
 
-}
+} // namespace kyber_utils

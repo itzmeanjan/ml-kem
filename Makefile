@@ -61,4 +61,4 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 format: $(KYBER_SOURCES) $(TEST_SOURCES) $(BENCHMARK_SOURCES)
-	clang-format -i $^
+	clang-format -i --style=Mozilla $^

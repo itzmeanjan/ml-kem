@@ -51,25 +51,6 @@ decompress(const field::zq_t x)
   return field::zq_t::from_canonical(t4);
 }
 
-// Decompression error that can happen for some given `d` s.t.
-//
-// x' = decompress(compress(x, d), d)
-//
-// |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
-//
-// See eq. 2 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<size_t d>
-static inline size_t
-compute_error()
-{
-  constexpr double t0 = static_cast<double>(field::Q);
-  constexpr double t1 = static_cast<double>(1ul << (d + 1));
-
-  const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
-  return t2;
-}
-
 // Utility function to compress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
 template<size_t d>

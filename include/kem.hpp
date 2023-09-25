@@ -4,6 +4,8 @@
 #include "sha3_512.hpp"
 #include "shake256.hpp"
 #include "subtle.hpp"
+#include "utils.hpp"
+#include <array>
 
 // IND-CCA2-secure Key Encapsulation Mechanism
 namespace kem {
@@ -25,29 +27,30 @@ namespace kem {
 // benchmarking underlying KEM's key generation implementation.
 template<size_t k, size_t eta1>
 static inline void
-keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
-       const uint8_t* const __restrict z, // 32 -bytes seed ( used in CCA-KEM )
-       uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes public key
-       uint8_t* const __restrict seckey  // (k * 24 * 32 + 96) -bytes secret key
-       )
+keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
+       std::span<const uint8_t, 32> z, // used in CCA-KEM
+       std::span<uint8_t, kyber_utils::get_kem_public_key_len<k>()> pubkey,
+       std::span<uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey)
   requires(kyber_params::check_keygen_params(k, eta1))
 {
-  constexpr size_t zlen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-
   constexpr size_t skoff0 = k * 12 * 32;
-  constexpr size_t skoff1 = skoff0 + pklen;
+  constexpr size_t skoff1 = skoff0 + pubkey.size();
   constexpr size_t skoff2 = skoff1 + 32;
 
-  std::memcpy(seckey + skoff2, z, zlen);
-  pke::keygen<k, eta1>(d, pubkey, seckey);     // CPAPKE key generation
-  std::memcpy(seckey + skoff0, pubkey, pklen); // copy public key
+  auto _seckey0 = seckey.template subspan<0, skoff0>();
+  auto _seckey1 = seckey.template subspan<skoff0, skoff1 - skoff0>();
+  auto _seckey2 = seckey.template subspan<skoff1, skoff2 - skoff1>();
+  auto _seckey3 = seckey.template subspan<skoff2, seckey.size() - skoff2>();
+
+  pke::keygen<k, eta1>(d, pubkey, _seckey0); // CPAPKE key generation
+  std::copy(pubkey.begin(), pubkey.end(), _seckey1.begin());
+  std::copy(z.begin(), z.end(), _seckey3.begin());
 
   // hash public key
-  sha3_256::sha3_256 hasher;
-  hasher.absorb(pubkey, pklen);
+  sha3_256::sha3_256_t hasher;
+  hasher.absorb(pubkey);
   hasher.finalize();
-  hasher.digest(seckey + skoff1);
+  hasher.digest(_seckey2);
 }
 
 // Given (k * 12 * 32 + 32) -bytes public key and 32 -bytes seed ( used for
@@ -70,57 +73,59 @@ keygen(const uint8_t* const __restrict d, // 32 -bytes seed ( used in CPA-PKE )
 // answer tests, obtained from Kyber reference implementation
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's encapsulation implementation.
-template<size_t k,
-         size_t eta1,
-         size_t eta2,
-         size_t du,
-         size_t dv>
-static inline shake256::shake256
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
+static inline shake256::shake256_t
 encapsulate(
-  const uint8_t* const __restrict m,      // 32 -bytes seed for encapsulation
-  const uint8_t* const __restrict pubkey, // (k * 12 * 32 + 32) -bytes
-  uint8_t* const __restrict cipher        // (k * du * 32 + dv * 32) -bytes
-  )
+  std::span<const uint8_t, 32> m,
+  std::span<const uint8_t, kyber_utils::get_kem_public_key_len<k>()> pubkey,
+  std::span<uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
   requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
 {
-  constexpr size_t mlen = 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t ctlen = k * du * 32 + dv * 32;
+  std::array<uint8_t, 64> g_in{};
+  std::array<uint8_t, 64> g_out{};
+  std::array<uint8_t, 64> kdf_in{};
 
-  uint8_t g_in[64]{};
-  uint8_t g_out[64]{};
-  uint8_t kdf_in[64]{};
+  auto _g_in = std::span(g_in);
+  auto _g_out = std::span(g_out);
+  auto _kdf_in = std::span(kdf_in);
 
-  sha3_256::sha3_256 h256;
+  auto _g_in0 = _g_in.subspan<0, 32>();
+  auto _g_in1 = _g_in.subspan<_g_in0.size(), 32>();
 
-  h256.absorb(m, mlen);
+  auto _g_out0 = _g_out.subspan<0, 32>();
+  auto _g_out1 = _g_out.subspan<_g_out0.size(), 32>();
+
+  auto _kdf_in0 = _kdf_in.subspan<0, 32>();
+  auto _kdf_in1 = _kdf_in.subspan<_kdf_in0.size(), 32>();
+
+  sha3_256::sha3_256_t h256;
+
+  h256.absorb(m);
   h256.finalize();
-  h256.digest(g_in);
+  h256.digest(_g_in0);
   h256.reset();
 
-  h256.absorb(pubkey, pklen);
+  h256.absorb(pubkey);
   h256.finalize();
-  h256.digest(g_in + 32);
+  h256.digest(_g_in1);
   h256.reset();
 
-  sha3_512::sha3_512 h512;
+  sha3_512::sha3_512_t h512;
 
-  h512.absorb(g_in, sizeof(g_in));
+  h512.absorb(_g_in);
   h512.finalize();
-  h512.digest(g_out);
+  h512.digest(_g_out);
   h512.reset();
 
-  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, cipher);
+  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, cipher);
+  std::copy(_g_out0.begin(), _g_out0.end(), _kdf_in0.begin());
 
-  std::memcpy(kdf_in, g_out, 32);
-
-  h256.absorb(cipher, ctlen);
+  h256.absorb(cipher);
   h256.finalize();
-  h256.digest(kdf_in + 32);
-  h256.reset();
+  h256.digest(_kdf_in1);
 
-  shake256::shake256 xof256;
-  xof256.absorb(kdf_in, sizeof(kdf_in));
+  shake256::shake256_t xof256;
+  xof256.absorb(_kdf_in);
   xof256.finalize();
   return xof256;
 }
@@ -139,45 +144,54 @@ encapsulate(
 //
 // See algorithm 9 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<size_t k,
-         size_t eta1,
-         size_t eta2,
-         size_t du,
-         size_t dv>
-static inline shake256::shake256
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
+static inline shake256::shake256_t
 decapsulate(
-  const uint8_t* const __restrict seckey, // (k * 24 * 32 + 96) -bytes
-  const uint8_t* const __restrict cipher  // (k * du * 32 + dv * 32) -bytes
-  )
+  std::span<const uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey,
+  std::span<const uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
   requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t ctlen = k * du * 32 + dv * 32;
+  constexpr size_t ctlen = cipher.size();
 
   constexpr size_t skoff0 = sklen;
   constexpr size_t skoff1 = skoff0 + pklen;
   constexpr size_t skoff2 = skoff1 + 32;
 
-  const uint8_t* const pubkey = seckey + skoff0;
-  const uint8_t* const h = seckey + skoff1;
-  const uint8_t* const z = seckey + skoff2;
+  auto pke_sk = seckey.template subspan<0, skoff0>();
+  auto pubkey = seckey.template subspan<skoff0, skoff1 - skoff0>();
+  auto h = seckey.template subspan<skoff1, skoff2 - skoff1>();
+  auto z = seckey.template subspan<skoff2, seckey.size() - skoff2>();
 
-  uint8_t g_in[64]{};
-  uint8_t g_out[64]{};
-  uint8_t c_prime[ctlen]{};
-  uint8_t kdf_in[64]{};
+  std::array<uint8_t, 64> g_in{};
+  std::array<uint8_t, 64> g_out{};
+  std::array<uint8_t, cipher.size()> c_prime{};
+  std::array<uint8_t, 64> kdf_in{};
 
-  pke::decrypt<k, du, dv>(seckey, cipher, g_in);
-  std::memcpy(g_in + 32, h, 32);
+  auto _g_in = std::span(g_in);
+  auto _g_out = std::span(g_out);
+  auto _kdf_in = std::span(kdf_in);
 
-  sha3_512::sha3_512 h512;
-  h512.absorb(g_in, sizeof(g_in));
+  auto _g_in0 = _g_in.subspan<0, 32>();
+  auto _g_in1 = _g_in.subspan<_g_in0.size(), 32>();
+
+  auto _g_out0 = _g_out.subspan<0, 32>();
+  auto _g_out1 = _g_out.subspan<_g_out0.size(), 32>();
+
+  auto _kdf_in0 = _kdf_in.subspan<0, 32>();
+  auto _kdf_in1 = _kdf_in.subspan<_kdf_in0.size(), 32>();
+
+  pke::decrypt<k, du, dv>(pke_sk, cipher, _g_in0);
+  std::copy(h.begin(), h.end(), _g_in1.begin());
+
+  sha3_512::sha3_512_t h512;
+  h512.absorb(_g_in);
   h512.finalize();
-  h512.digest(g_out);
+  h512.digest(_g_out);
   h512.reset();
 
-  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in, g_out + 32, c_prime);
+  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
   // line 7-11 of algorithm 9, in constant-time
   uint32_t flg = -1u;
@@ -189,13 +203,13 @@ decapsulate(
     kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
   }
 
-  sha3_256::sha3_256 h256;
-  h256.absorb(cipher, ctlen);
+  sha3_256::sha3_256_t h256;
+  h256.absorb(cipher);
   h256.finalize();
-  h256.digest(kdf_in + 32);
+  h256.digest(_kdf_in1);
 
-  shake256::shake256 xof256;
-  xof256.absorb(kdf_in, sizeof(kdf_in));
+  shake256::shake256_t xof256;
+  xof256.absorb(_kdf_in);
   xof256.finalize();
   return xof256;
 }

@@ -1,6 +1,8 @@
 #pragma once
 #include "shake256.hpp"
+#include <array>
 #include <random>
+#include <span>
 
 // Pseudo Random Number Generator
 namespace prng {
@@ -22,12 +24,14 @@ namespace prng {
 struct prng_t
 {
 private:
-  shake256::shake256 state;
+  shake256::shake256_t state;
 
 public:
+  // Default constructor which seeds PRNG with system randomness.
   inline prng_t()
   {
-    uint8_t seed[32];
+    std::array<uint8_t, 32> seed{};
+    auto _seed = std::span(seed);
 
     // Read more @
     // https://en.cppreference.com/w/cpp/numeric/random/random_device/random_device
@@ -36,25 +40,25 @@ public:
     size_t off = 0;
     while (off < sizeof(seed)) {
       const uint32_t v = rd();
-      std::memcpy(seed + off, &v, sizeof(v));
+      std::memcpy(_seed.subspan(off, sizeof(v)).data(), &v, sizeof(v));
 
       off += sizeof(v);
     }
 
-    state.absorb(seed, sizeof(seed));
+    state.absorb(_seed);
     state.finalize();
   }
 
-  inline explicit prng_t(const uint8_t* const seed, const size_t slen)
+  // Explicit constructor which can be used for seeding PRNG.
+  inline explicit prng_t(std::span<const uint8_t> seed)
   {
-    state.absorb(seed, slen);
+    state.absorb(seed);
     state.finalize();
   }
 
-  inline void read(uint8_t* const bytes, const size_t len)
-  {
-    state.squeeze(bytes, len);
-  }
+  // Once PRNG is seeded i.e. PRNG object is constructed, you can request
+  // arbitrary many pseudo-random bytes from PRNG.
+  inline void read(std::span<uint8_t> bytes) { state.squeeze(bytes); }
 };
 
 } // namespace prng

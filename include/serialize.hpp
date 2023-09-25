@@ -15,13 +15,10 @@ namespace kyber_utils {
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t l>
 static inline void
-encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
-       uint8_t* const __restrict arr // byte array of length 32*l -bytes
-       )
+encode(std::span<const field::zq_t> poly, std::span<uint8_t> arr)
   requires(kyber_params::check_l(l))
 {
-  constexpr size_t len = 32 * l;
-  std::memset(arr, 0, len);
+  std::fill(arr.begin(), arr.end(), 0);
 
   if constexpr (l == 1) {
     constexpr size_t itr_cnt = ntt::N >> 3;
@@ -177,9 +174,7 @@ encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t l>
 static inline void
-decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
-       field::zq_t* const __restrict poly   // degree 255 polynomial
-       )
+decode(std::span<const uint8_t> arr, std::span<field::zq_t> poly)
   requires(kyber_params::check_l(l))
 {
   if constexpr (l == 1) {

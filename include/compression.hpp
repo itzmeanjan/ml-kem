@@ -2,7 +2,7 @@
 #include "field.hpp"
 #include "ntt.hpp"
 #include "params.hpp"
-#include <cmath>
+#include <span>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
@@ -55,10 +55,10 @@ decompress(const field::zq_t x)
 // polynomial s.t. input polynomial is mutated.
 template<size_t d>
 static inline void
-poly_compress(field::zq_t* const __restrict poly)
+poly_compress(std::span<field::zq_t> poly)
   requires(kyber_params::check_d(d))
 {
-  for (size_t i = 0; i < ntt::N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = compress<d>(poly[i]);
   }
 }
@@ -67,10 +67,10 @@ poly_compress(field::zq_t* const __restrict poly)
 // polynomial s.t. input polynomial is mutated.
 template<size_t d>
 static inline void
-poly_decompress(field::zq_t* const __restrict poly)
+poly_decompress(std::span<field::zq_t> poly)
   requires(kyber_params::check_d(d))
 {
-  for (size_t i = 0; i < ntt::N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = decompress<d>(poly[i]);
   }
 }

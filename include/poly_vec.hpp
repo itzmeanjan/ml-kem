@@ -1,7 +1,10 @@
 #pragma once
 #include "compression.hpp"
+#include "field.hpp"
+#include "ntt.hpp"
 #include "params.hpp"
 #include "serialize.hpp"
+#include <array>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
@@ -11,12 +14,12 @@ namespace kyber_utils {
 // attempts to multiply and compute resulting matrix
 template<size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols>
 static inline void
-matrix_multiply(const field::zq_t* const __restrict a,
-                const field::zq_t* const __restrict b,
-                field::zq_t* const __restrict c)
+matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
+                std::span<const field::zq_t, b_rows * b_cols * ntt::N> b,
+                std::span<field::zq_t, a_rows * b_cols * ntt::N> c)
   requires(kyber_params::check_matrix_dim(a_cols, b_rows))
 {
-  field::zq_t tmp[ntt::N]{};
+  std::array<field::zq_t, ntt::N> tmp{};
 
   for (size_t i = 0; i < a_rows; i++) {
     for (size_t j = 0; j < b_cols; j++) {
@@ -26,7 +29,7 @@ matrix_multiply(const field::zq_t* const __restrict a,
         const size_t aoff = (i * a_cols + k) * ntt::N;
         const size_t boff = (k * b_cols + j) * ntt::N;
 
-        ntt::polymul(a + aoff, b + boff, tmp);
+        ntt::polymul(a.subspan(aoff, ntt::N), b.subspan(boff, ntt::N), tmp);
 
         for (size_t l = 0; l < ntt::N; l++) {
           c[coff + l] += tmp[l];
@@ -41,12 +44,12 @@ matrix_multiply(const field::zq_t* const __restrict a,
 // polynomial NTT over k polynomials
 template<size_t k>
 static inline void
-poly_vec_ntt(field::zq_t* const __restrict vec)
+poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::ntt(vec + off);
+    ntt::ntt(vec.subspan(off, ntt::N));
   }
 }
 
@@ -56,12 +59,12 @@ poly_vec_ntt(field::zq_t* const __restrict vec)
 // polynomials
 template<size_t k>
 static inline void
-poly_vec_intt(field::zq_t* const __restrict vec)
+poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::intt(vec + off);
+    ntt::intt(vec.subspan(off, ntt::N));
   }
 }
 
@@ -69,8 +72,8 @@ poly_vec_intt(field::zq_t* const __restrict vec)
 // routine adds it to another polynomial vector of same dimension
 template<size_t k>
 static inline void
-poly_vec_add_to(const field::zq_t* const __restrict src,
-                field::zq_t* const __restrict dst)
+poly_vec_add_to(std::span<const field::zq_t, k * ntt::N> src,
+                std::span<field::zq_t, k * ntt::N> dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -84,8 +87,8 @@ poly_vec_add_to(const field::zq_t* const __restrict src,
 // routine subtracts it to another polynomial vector of same dimension
 template<size_t k>
 static inline void
-poly_vec_sub_from(const field::zq_t* const __restrict src,
-                  field::zq_t* const __restrict dst)
+poly_vec_sub_from(std::span<const field::zq_t, k * ntt::N> src,
+                  std::span<field::zq_t, k * ntt::N> dst)
   requires((k == 1) || kyber_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -100,15 +103,16 @@ poly_vec_sub_from(const field::zq_t* const __restrict src,
 // (k x 32 x l) -bytes destination array
 template<size_t k, size_t l>
 static inline void
-poly_vec_encode(const field::zq_t* const __restrict src,
-                uint8_t* const __restrict dst)
+poly_vec_encode(std::span<const field::zq_t, k * ntt::N> src,
+                std::span<uint8_t, k * 32 * l> dst)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * ntt::N;
     const size_t off1 = i * l * 32;
 
-    kyber_utils::encode<l>(src + off0, dst + off1);
+    kyber_utils::encode<l>(src.subspan(off0, ntt::N),
+                           dst.subspan(off1, 32 * l));
   }
 }
 
@@ -117,41 +121,42 @@ poly_vec_encode(const field::zq_t* const __restrict src,
 // k x 1
 template<size_t k, size_t l>
 static inline void
-poly_vec_decode(const uint8_t* const __restrict src,
-                field::zq_t* const __restrict dst)
+poly_vec_decode(std::span<const uint8_t, k * 32 * l> src,
+                std::span<field::zq_t, k * ntt::N> dst)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * l * 32;
     const size_t off1 = i * ntt::N;
 
-    kyber_utils::decode<l>(src + off0, dst + off1);
+    kyber_utils::decode<l>(src.subspan(off0, 32 * l),
+                           dst.subspan(off1, ntt::N));
   }
 }
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
-// k * 256 coefficients are compressed, while mutating input
+// k * 256 coefficients are compressed, while mutating input.
 template<size_t k, size_t d>
 static inline void
-poly_vec_compress(field::zq_t* const __restrict vec)
+poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    kyber_utils::poly_compress<d>(vec + off);
+    kyber_utils::poly_compress<d>(vec.subspan(off, ntt::N));
   }
 }
 
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
-// k * 256 coefficients are decompressed, while mutating input
+// k * 256 coefficients are decompressed, while mutating input.
 template<size_t k, size_t d>
 static inline void
-poly_vec_decompress(field::zq_t* const __restrict vec)
+poly_vec_decompress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    kyber_utils::poly_decompress<d>(vec + off);
+    kyber_utils::poly_decompress<d>(vec.subspan(off, ntt::N));
   }
 }
 

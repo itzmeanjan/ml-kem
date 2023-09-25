@@ -4,6 +4,7 @@
 #include "params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
+#include <array>
 #include <cstdint>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
@@ -19,17 +20,17 @@ namespace kyber_utils {
 // See algorithm 1, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 inline void
-parse(shake128::shake128& hasher,        // Squeezes bytes
-      field::zq_t* const __restrict poly // Degree 255 polynomial
+parse(shake128::shake128_t& hasher, // Squeezes bytes
+      std::span<field::zq_t> poly   // Degree 255 polynomial
 )
 {
   constexpr size_t n = ntt::N;
 
   size_t coeff_idx = 0;
-  uint8_t buf[shake128::RATE / 8];
+  std::array<uint8_t, shake128::RATE / 8> buf{};
 
-  while (coeff_idx < ntt::N) {
-    hasher.squeeze(buf, sizeof(buf));
+  while (coeff_idx < n) {
+    hasher.squeeze(buf);
 
     for (size_t off = 0; (off < sizeof(buf)) && (coeff_idx < n); off += 3) {
       const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) |
@@ -50,20 +51,20 @@ parse(shake128::shake128& hasher,        // Squeezes bytes
   }
 }
 
-// Generate public matrix A ( consists of polynomials ) in NTT domain, by
-// sampling from a XOF ( read SHAKE128 ), which is seeded with 32 -bytes key and
-// two nonces ( each of 1 -byte )
+// Generate public matrix A ( consists of degree-255 polynomials ) in NTT
+// domain, by sampling from a XOF ( read SHAKE128 ), which is seeded with 32
+// -bytes key and two nonces ( each of 1 -byte )
 //
 // See step (4-8) of algorithm 4/ 5, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, bool transpose>
 static inline void
-generate_matrix(field::zq_t* const __restrict mat,
-                const uint8_t* const __restrict rho)
+generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat,
+                std::span<const uint8_t, 32> rho)
   requires(kyber_params::check_k(k))
 {
-  uint8_t xof_in[32 + 2]{};
-  std::memcpy(xof_in, rho, 32);
+  std::array<uint8_t, rho.size() + 2> xof_in{};
+  std::copy(rho.begin(), rho.end(), xof_in.begin());
 
   for (size_t i = 0; i < k; i++) {
     for (size_t j = 0; j < k; j++) {
@@ -77,10 +78,10 @@ generate_matrix(field::zq_t* const __restrict mat,
         xof_in[33] = static_cast<uint8_t>(i);
       }
 
-      shake128::shake128 hasher{};
-      hasher.absorb(xof_in, sizeof(xof_in));
+      shake128::shake128_t hasher{};
+      hasher.absorb(xof_in);
       hasher.finalize();
-      parse(hasher, mat + off);
+      parse(hasher, mat.subspan(off, ntt::N));
     }
   }
 }
@@ -94,8 +95,8 @@ generate_matrix(field::zq_t* const __restrict mat,
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t eta>
 static inline void
-cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
-    field::zq_t* const __restrict poly   // Degree 255 polynomial
+cbd(std::span<const uint8_t, 64 * eta> prf, // Byte array of length 64 * eta
+    std::span<field::zq_t> poly             // Degree 255 polynomial
     )
   requires(kyber_params::check_eta(eta))
 {
@@ -156,26 +157,26 @@ cbd(const uint8_t* const __restrict prf, // Byte array of length 64 * eta
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, size_t eta>
 static inline void
-generate_vector(field::zq_t* const __restrict vec,
-                const uint8_t* const __restrict sigma,
+generate_vector(std::span<field::zq_t, k * ntt::N> vec,
+                std::span<const uint8_t, 32> sigma,
                 const uint8_t nonce)
   requires((k == 1) || kyber_params::check_k(k))
 {
-  uint8_t prf_out[64 * eta]{};
-  uint8_t prf_in[32 + 1]{};
-  std::memcpy(prf_in, sigma, 32);
+  std::array<uint8_t, 64 * eta> prf_out{};
+  std::array<uint8_t, sigma.size() + 1> prf_in{};
+  std::copy(sigma.begin(), sigma.end(), prf_in.begin());
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
 
     prf_in[32] = nonce + static_cast<uint8_t>(i);
 
-    shake256::shake256 hasher{};
-    hasher.absorb(prf_in, sizeof(prf_in));
+    shake256::shake256_t hasher{};
+    hasher.absorb(prf_in);
     hasher.finalize();
-    hasher.squeeze(prf_out, sizeof(prf_out));
+    hasher.squeeze(prf_out);
 
-    kyber_utils::cbd<eta>(prf_out, vec + off);
+    kyber_utils::cbd<eta>(prf_out, vec.subspan(off, ntt::N));
   }
 }
 

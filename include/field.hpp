@@ -170,7 +170,7 @@ public:
   static inline zq_t random(prng::prng_t& prng)
   {
     uint16_t res = 0;
-    prng.read(reinterpret_cast<uint8_t*>(&res), sizeof(res));
+    prng.read(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
     return zq_t::from_canonical(res);
   }
 

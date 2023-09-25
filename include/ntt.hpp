@@ -103,7 +103,7 @@ constexpr std::array<field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
 inline void
-ntt(field::zq_t* const poly)
+ntt(std::span<field::zq_t> poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
@@ -140,7 +140,7 @@ ntt(field::zq_t* const poly)
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
 inline void
-intt(field::zq_t* const poly)
+intt(std::span<field::zq_t> poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
@@ -168,7 +168,7 @@ intt(field::zq_t* const poly)
     }
   }
 
-  for (size_t i = 0; i < N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] *= INV_N;
   }
 }
@@ -185,10 +185,10 @@ intt(field::zq_t* const poly)
 // See page 6 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static inline void
-basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
-        const field::zq_t* const __restrict g, // degree-1 polynomial
-        field::zq_t* const __restrict h,       // degree-1 polynomial
-        const field::zq_t ζ                    // zeta
+basemul(std::span<const field::zq_t> f, // degree-1 polynomial
+        std::span<const field::zq_t> g, // degree-1 polynomial
+        std::span<field::zq_t> h,       // degree-1 polynomial
+        const field::zq_t ζ             // zeta
 )
 {
   field::zq_t f0 = f[0];
@@ -219,16 +219,19 @@ basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
 //
 // h = f ◦ g
 inline void
-polymul(const field::zq_t* const __restrict f, // degree-255 polynomial
-        const field::zq_t* const __restrict g, // degree-255 polynomial
-        field::zq_t* const __restrict h        // degree-255 polynomial
+polymul(std::span<const field::zq_t> f, // degree-255 polynomial
+        std::span<const field::zq_t> g, // degree-255 polynomial
+        std::span<field::zq_t> h        // degree-255 polynomial
 )
 {
   constexpr size_t cnt = N >> 1;
 
   for (size_t i = 0; i < cnt; i++) {
     const size_t off = i << 1;
-    basemul(f + off, g + off, h + off, POLY_MUL_ζ_EXP[i]);
+    basemul(f.subspan(off, 2),
+            g.subspan(off, 2),
+            h.subspan(off, 2),
+            POLY_MUL_ζ_EXP[i]);
   }
 }
 

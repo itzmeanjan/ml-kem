@@ -1,4 +1,6 @@
+#include "field.hpp"
 #include "serialize.hpp"
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <vector>
 
@@ -25,8 +27,11 @@ test_serialize_deserialize()
     src[i] = field::zq_t::random(prng);
   }
 
-  kyber_utils::encode<l>(src, bytes);
-  kyber_utils::decode<l>(bytes, dst);
+  using poly_t = std::span<field::zq_t, ntt::N>;
+  using serialized_t = std::span<uint8_t, blen>;
+
+  kyber_utils::encode<l>(poly_t(src), serialized_t(bytes));
+  kyber_utils::decode<l>(serialized_t(bytes), poly_t(dst));
 
   for (size_t i = 0; i < ntt::N; i++) {
     EXPECT_EQ((src[i].to_canonical() & mask), (dst[i].to_canonical() & mask));

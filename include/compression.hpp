@@ -55,7 +55,7 @@ decompress(const field::zq_t x)
 // polynomial s.t. input polynomial is mutated.
 template<size_t d>
 static inline void
-poly_compress(std::span<field::zq_t> poly)
+poly_compress(std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {
@@ -67,7 +67,7 @@ poly_compress(std::span<field::zq_t> poly)
 // polynomial s.t. input polynomial is mutated.
 template<size_t d>
 static inline void
-poly_decompress(std::span<field::zq_t> poly)
+poly_decompress(std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {

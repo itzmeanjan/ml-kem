@@ -5,6 +5,7 @@
 #include "params.hpp"
 #include "serialize.hpp"
 #include <array>
+#include <cstdint>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
@@ -107,12 +108,15 @@ poly_vec_encode(std::span<const field::zq_t, k * ntt::N> src,
                 std::span<uint8_t, k * 32 * l> dst)
   requires(kyber_params::check_k(k))
 {
+  using poly_t = std::span<const field::zq_t, src.size() / k>;
+  using serialized_t = std::span<uint8_t, dst.size() / k>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * ntt::N;
     const size_t off1 = i * l * 32;
 
-    kyber_utils::encode<l>(src.subspan(off0, ntt::N),
-                           dst.subspan(off1, 32 * l));
+    kyber_utils::encode<l>(poly_t(src.subspan(off0, ntt::N)),
+                           serialized_t(dst.subspan(off1, 32 * l)));
   }
 }
 
@@ -125,12 +129,15 @@ poly_vec_decode(std::span<const uint8_t, k * 32 * l> src,
                 std::span<field::zq_t, k * ntt::N> dst)
   requires(kyber_params::check_k(k))
 {
+  using serialized_t = std::span<const uint8_t, src.size() / k>;
+  using poly_t = std::span<field::zq_t, dst.size() / k>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * l * 32;
     const size_t off1 = i * ntt::N;
 
-    kyber_utils::decode<l>(src.subspan(off0, 32 * l),
-                           dst.subspan(off1, ntt::N));
+    kyber_utils::decode<l>(serialized_t(src.subspan(off0, 32 * l)),
+                           poly_t(dst.subspan(off1, ntt::N)));
   }
 }
 
@@ -141,9 +148,11 @@ static inline void
 poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {
+  using poly_t = std::span<field::zq_t, vec.size() / k>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    kyber_utils::poly_compress<d>(vec.subspan(off, ntt::N));
+    kyber_utils::poly_compress<d>(poly_t(vec.subspan(off, ntt::N)));
   }
 }
 
@@ -154,9 +163,11 @@ static inline void
 poly_vec_decompress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {
+  using poly_t = std::span<field::zq_t, vec.size() / k>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    kyber_utils::poly_decompress<d>(vec.subspan(off, ntt::N));
+    kyber_utils::poly_decompress<d>(poly_t(vec.subspan(off, ntt::N)));
   }
 }
 

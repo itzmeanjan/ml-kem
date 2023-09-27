@@ -18,17 +18,22 @@ bench_keygen(benchmark::State& state)
   std::vector<uint8_t> pkey(pklen);
   std::vector<uint8_t> skey(sklen);
 
+  auto _d = std::span<uint8_t, slen>(d);
+  auto _z = std::span<uint8_t, slen>(z);
+  auto _pkey = std::span<uint8_t, pklen>(pkey);
+  auto _skey = std::span<uint8_t, sklen>(skey);
+
   prng::prng_t prng;
-  prng.read(d.data(), d.size());
-  prng.read(z.data(), z.size());
+  prng.read(_d);
+  prng.read(_z);
 
   for (auto _ : state) {
-    kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
+    kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
 
-    benchmark::DoNotOptimize(d);
-    benchmark::DoNotOptimize(z);
-    benchmark::DoNotOptimize(pkey);
-    benchmark::DoNotOptimize(skey);
+    benchmark::DoNotOptimize(_d);
+    benchmark::DoNotOptimize(_z);
+    benchmark::DoNotOptimize(_pkey);
+    benchmark::DoNotOptimize(_skey);
     benchmark::ClobberMemory();
   }
 
@@ -54,24 +59,31 @@ bench_encapsulate(benchmark::State& state)
   std::vector<uint8_t> cipher(ctlen);
   std::vector<uint8_t> sender_key(klen);
 
+  auto _d = std::span<uint8_t, slen>(d);
+  auto _z = std::span<uint8_t, slen>(z);
+  auto _m = std::span<uint8_t, slen>(m);
+  auto _pkey = std::span<uint8_t, pklen>(pkey);
+  auto _skey = std::span<uint8_t, sklen>(skey);
+  auto _cipher = std::span<uint8_t, ctlen>(cipher);
+  auto _sender_key = std::span<uint8_t, klen>(sender_key);
+
   prng::prng_t prng;
-  prng.read(d.data(), d.size());
-  prng.read(z.data(), z.size());
+  prng.read(_d);
+  prng.read(_z);
 
-  kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
+  kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
 
-  prng.read(m.data(), m.size());
+  prng.read(_m);
 
   for (auto _ : state) {
-    auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(
-      m.data(), pkey.data(), cipher.data());
+    auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
     benchmark::DoNotOptimize(skdf);
-    skdf.squeeze(sender_key.data(), sender_key.size());
+    skdf.squeeze(_sender_key);
 
-    benchmark::DoNotOptimize(m);
-    benchmark::DoNotOptimize(pkey);
-    benchmark::DoNotOptimize(cipher);
-    benchmark::DoNotOptimize(sender_key);
+    benchmark::DoNotOptimize(_m);
+    benchmark::DoNotOptimize(_pkey);
+    benchmark::DoNotOptimize(_cipher);
+    benchmark::DoNotOptimize(_sender_key);
     benchmark::ClobberMemory();
   }
 
@@ -98,27 +110,34 @@ bench_decapsulate(benchmark::State& state)
   std::vector<uint8_t> sender_key(klen);
   std::vector<uint8_t> receiver_key(klen);
 
+  auto _d = std::span<uint8_t, slen>(d);
+  auto _z = std::span<uint8_t, slen>(z);
+  auto _m = std::span<uint8_t, slen>(m);
+  auto _pkey = std::span<uint8_t, pklen>(pkey);
+  auto _skey = std::span<uint8_t, sklen>(skey);
+  auto _cipher = std::span<uint8_t, ctlen>(cipher);
+  auto _sender_key = std::span<uint8_t, klen>(sender_key);
+  auto _receiver_key = std::span<uint8_t, klen>(receiver_key);
+
   prng::prng_t prng;
-  prng.read(d.data(), d.size());
-  prng.read(z.data(), z.size());
+  prng.read(_d);
+  prng.read(_z);
 
-  kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
+  kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
 
-  prng.read(m.data(), m.size());
+  prng.read(_m);
 
-  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(
-    m.data(), pkey.data(), cipher.data());
-  skdf.squeeze(sender_key.data(), sender_key.size());
+  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
+  skdf.squeeze(_sender_key);
 
   for (auto _ : state) {
-    auto rkdf =
-      kem::decapsulate<k, eta1, eta2, du, dv>(skey.data(), cipher.data());
+    auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher);
     benchmark::DoNotOptimize(rkdf);
-    rkdf.squeeze(receiver_key.data(), receiver_key.size());
+    rkdf.squeeze(_receiver_key);
 
-    benchmark::DoNotOptimize(skey);
-    benchmark::DoNotOptimize(cipher);
-    benchmark::DoNotOptimize(receiver_key);
+    benchmark::DoNotOptimize(_skey);
+    benchmark::DoNotOptimize(_cipher);
+    benchmark::DoNotOptimize(_receiver_key);
     benchmark::ClobberMemory();
   }
 

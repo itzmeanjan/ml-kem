@@ -66,9 +66,9 @@ test_zq_compression()
 
 TEST(KyberKEM, CompressDecompressZq)
 {
-  ASSERT_TRUE((test_zq_compression<11, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<10, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<5, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<4, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<1, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<11, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<10, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<5, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<4, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<1, 1ul << 20>()));
 }

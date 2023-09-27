@@ -34,21 +34,26 @@ test_kyber_kem()
   std::vector<uint8_t> sender_key(klen);
   std::vector<uint8_t> receiver_key(klen);
 
+  auto _d = std::span<uint8_t, slen>(d);
+  auto _z = std::span<uint8_t, slen>(z);
+  auto _m = std::span<uint8_t, slen>(m);
+  auto _pkey = std::span<uint8_t, pklen>(pkey);
+  auto _skey = std::span<uint8_t, sklen>(skey);
+  auto _cipher = std::span<uint8_t, ctlen>(cipher);
+
   prng::prng_t prng;
-  prng.read(d.data(), d.size());
-  prng.read(z.data(), z.size());
-  prng.read(m.data(), m.size());
+  prng.read(d);
+  prng.read(z);
+  prng.read(m);
 
-  kem::keygen<k, eta1>(d.data(), z.data(), pkey.data(), skey.data());
-  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(
-    m.data(), pkey.data(), cipher.data());
-  auto rkdf =
-    kem::decapsulate<k, eta1, eta2, du, dv>(skey.data(), cipher.data());
+  kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
+  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
+  auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher);
 
-  skdf.squeeze(sender_key.data(), sender_key.size());
-  rkdf.squeeze(receiver_key.data(), receiver_key.size());
+  skdf.squeeze(sender_key);
+  rkdf.squeeze(receiver_key);
 
-  ASSERT_EQ(sender_key, receiver_key);
+  EXPECT_EQ(sender_key, receiver_key);
 }
 
 TEST(KyberKEM, Kyber512KeygenEncapsDecaps)

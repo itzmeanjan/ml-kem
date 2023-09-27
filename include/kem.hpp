@@ -89,14 +89,14 @@ encapsulate(
   auto _g_out = std::span(g_out);
   auto _kdf_in = std::span(kdf_in);
 
-  auto _g_in0 = _g_in.subspan<0, 32>();
-  auto _g_in1 = _g_in.subspan<_g_in0.size(), 32>();
+  auto _g_in0 = _g_in.template subspan<0, 32>();
+  auto _g_in1 = _g_in.template subspan<_g_in0.size(), 32>();
 
-  auto _g_out0 = _g_out.subspan<0, 32>();
-  auto _g_out1 = _g_out.subspan<_g_out0.size(), 32>();
+  auto _g_out0 = _g_out.template subspan<0, 32>();
+  auto _g_out1 = _g_out.template subspan<_g_out0.size(), 32>();
 
-  auto _kdf_in0 = _kdf_in.subspan<0, 32>();
-  auto _kdf_in1 = _kdf_in.subspan<_kdf_in0.size(), 32>();
+  auto _kdf_in0 = _kdf_in.template subspan<0, 32>();
+  auto _kdf_in1 = _kdf_in.template subspan<_kdf_in0.size(), 32>();
 
   sha3_256::sha3_256_t h256;
 
@@ -173,14 +173,14 @@ decapsulate(
   auto _g_out = std::span(g_out);
   auto _kdf_in = std::span(kdf_in);
 
-  auto _g_in0 = _g_in.subspan<0, 32>();
-  auto _g_in1 = _g_in.subspan<_g_in0.size(), 32>();
+  auto _g_in0 = _g_in.template subspan<0, 32>();
+  auto _g_in1 = _g_in.template subspan<_g_in0.size(), 32>();
 
-  auto _g_out0 = _g_out.subspan<0, 32>();
-  auto _g_out1 = _g_out.subspan<_g_out0.size(), 32>();
+  auto _g_out0 = _g_out.template subspan<0, 32>();
+  auto _g_out1 = _g_out.template subspan<_g_out0.size(), 32>();
 
-  auto _kdf_in0 = _kdf_in.subspan<0, 32>();
-  auto _kdf_in1 = _kdf_in.subspan<_kdf_in0.size(), 32>();
+  auto _kdf_in0 = _kdf_in.template subspan<0, 32>();
+  auto _kdf_in1 = _kdf_in.template subspan<_kdf_in0.size(), 32>();
 
   pke::decrypt<k, du, dv>(pke_sk, cipher, _g_in0);
   std::copy(h.begin(), h.end(), _g_in1.begin());

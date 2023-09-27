@@ -43,8 +43,8 @@ keygen(std::span<const uint8_t, 32> d,
   h512.digest(_g_out);
   h512.reset();
 
-  const auto rho = _g_out.subspan<0, 32>();
-  const auto sigma = _g_out.subspan<32, 32>();
+  const auto rho = _g_out.template subspan<0, 32>();
+  const auto sigma = _g_out.template subspan<32, 32>();
 
   // step 4, 5, 6, 7, 8
   std::array<field::zq_t, k * k * ntt::N> A_prime{};

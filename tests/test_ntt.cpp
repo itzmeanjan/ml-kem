@@ -22,8 +22,8 @@ TEST(KyberKEM, NumberTheoreticTransform)
     poly_b[i] = poly_a[i];
   }
 
-  ntt::ntt(poly_b.data());
-  ntt::intt(poly_b.data());
+  ntt::ntt(poly_b);
+  ntt::intt(poly_b);
 
-  ASSERT_EQ(poly_a, poly_b);
+  EXPECT_EQ(poly_a, poly_b);
 }

@@ -25,11 +25,11 @@ test_serialize_deserialize()
     src[i] = field::zq_t::random(prng);
   }
 
-  kyber_utils::encode<l>(src.data(), bytes.data());
-  kyber_utils::decode<l>(bytes.data(), dst.data());
+  kyber_utils::encode<l>(src, bytes);
+  kyber_utils::decode<l>(bytes, dst);
 
   for (size_t i = 0; i < ntt::N; i++) {
-    ASSERT_EQ((src[i].to_canonical() & mask), (dst[i].to_canonical() & mask));
+    EXPECT_EQ((src[i].to_canonical() & mask), (dst[i].to_canonical() & mask));
   }
 }
 

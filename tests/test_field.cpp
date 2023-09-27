@@ -18,8 +18,8 @@ TEST(KyberKEM, ArithmeticOverZq)
     const auto d = c - b;
     const auto e = c - a;
 
-    ASSERT_EQ(d, a);
-    ASSERT_EQ(e, b);
+    EXPECT_EQ(d, a);
+    EXPECT_EQ(e, b);
 
     // Multiplication, Exponentiation, Inversion and Division
     const auto f = a * b;
@@ -27,15 +27,15 @@ TEST(KyberKEM, ArithmeticOverZq)
     const auto h = f / a;
 
     if (b != field::zq_t()) {
-      ASSERT_EQ(g, a);
+      EXPECT_EQ(g, a);
     } else {
-      ASSERT_EQ(g, field::zq_t());
+      EXPECT_EQ(g, field::zq_t());
     }
 
     if (a != field::zq_t()) {
-      ASSERT_EQ(h, b);
+      EXPECT_EQ(h, b);
     } else {
-      ASSERT_EQ(h, field::zq_t());
+      EXPECT_EQ(h, field::zq_t());
     }
   }
 }

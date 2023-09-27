@@ -1,7 +1,7 @@
 CXX = g++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
-OPT_FLAGS = -O3 -march=native -mtune=native
+OPT_FLAGS = -O3 -march=native
 LINK_FLAGS = -flto
 I_FLAGS = -I ./include
 DEP_IFLAGS = -I ./sha3/include -I ./subtle/include

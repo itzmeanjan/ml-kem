@@ -142,7 +142,7 @@ bench_decapsulate(benchmark::State& state)
   }
 
   state.SetItemsProcessed(state.iterations());
-  assert(std::ranges::equal(sender_key, receiver_key));
+  assert(std::ranges::equal(_sender_key, _receiver_key));
 }
 
 // Register for benchmarking IND-CCA2-secure Kyber Key Encapsulation Mechanism

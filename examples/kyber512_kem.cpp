@@ -6,7 +6,7 @@
 // Compile it with
 //
 // g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include -I
-// ./subtle/include/ example/kyber512_kem.cpp
+// ./subtle/include/ examples/kyber512_kem.cpp
 int
 main()
 {
@@ -17,52 +17,63 @@ main()
   std::vector<uint8_t> d(SEED_LEN, 0);
   std::vector<uint8_t> z(SEED_LEN, 0);
 
+  auto _d = std::span<uint8_t, SEED_LEN>(d);
+  auto _z = std::span<uint8_t, SEED_LEN>(z);
+
   // public/ private keypair
   std::vector<uint8_t> pkey(kyber512_kem::PKEY_LEN, 0);
   std::vector<uint8_t> skey(kyber512_kem::SKEY_LEN, 0);
+
+  auto _pkey = std::span<uint8_t, kyber512_kem::PKEY_LEN>(pkey);
+  auto _skey = std::span<uint8_t, kyber512_kem::SKEY_LEN>(skey);
 
   // seed required for key encapsulation
   std::vector<uint8_t> m(SEED_LEN, 0);
   std::vector<uint8_t> cipher(kyber512_kem::CIPHER_LEN, 0);
 
+  auto _m = std::span<uint8_t, SEED_LEN>(m);
+  auto _cipher = std::span<uint8_t, kyber512_kem::CIPHER_LEN>(cipher);
+
   // shared secret that sender/ receiver arrives at
   std::vector<uint8_t> shrd_key0(KEY_LEN, 0);
   std::vector<uint8_t> shrd_key1(KEY_LEN, 0);
+
+  auto _shrd_key0 = std::span<uint8_t, KEY_LEN>(shrd_key0);
+  auto _shrd_key1 = std::span<uint8_t, KEY_LEN>(shrd_key1);
 
   // pseudo-randomness source
   prng::prng_t prng;
 
   // fill up seeds using PRNG
-  prng.read(d.data(), d.size());
-  prng.read(z.data(), z.size());
+  prng.read(_d);
+  prng.read(_z);
 
   // generate a keypair
-  kyber512_kem::keygen(d.data(), z.data(), pkey.data(), skey.data());
+  kyber512_kem::keygen(_d, _z, _pkey, _skey);
 
   // fill up seed required for key encapsulation, using PRNG
-  prng.read(m.data(), m.size());
+  prng.read(_m);
 
   // encapsulate key, compute cipher text and obtain KDF
-  auto skdf = kyber512_kem::encapsulate(m.data(), pkey.data(), cipher.data());
+  auto skdf = kyber512_kem::encapsulate(_m, _pkey, _cipher);
   // decapsulate cipher text and obtain KDF
-  auto rkdf = kyber512_kem::decapsulate(skey.data(), cipher.data());
+  auto rkdf = kyber512_kem::decapsulate(_skey, _cipher);
 
   // both sender's and receiver's KDF should produce same KEY_LEN many bytes
-  skdf.squeeze(shrd_key0.data(), KEY_LEN);
-  rkdf.squeeze(shrd_key1.data(), KEY_LEN);
+  skdf.squeeze(_shrd_key0);
+  rkdf.squeeze(_shrd_key1);
 
   // check that both of the communicating parties arrived at same shared key
-  assert(std::ranges::equal(shrd_key0, shrd_key1));
+  assert(std::ranges::equal(_shrd_key0, _shrd_key1));
 
   {
     using namespace kyber_utils;
 
     std::cout << "Kyber512 KEM\n";
-    std::cout << "\npubkey : " << to_hex(pkey.data(), pkey.size());
-    std::cout << "\nseckey : " << to_hex(skey.data(), skey.size());
-    std::cout << "\ncipher : " << to_hex(cipher.data(), cipher.size());
-    std::cout << "\nshared secret 0 : " << to_hex(shrd_key0.data(), KEY_LEN);
-    std::cout << "\nshared secret 1 : " << to_hex(shrd_key1.data(), KEY_LEN);
+    std::cout << "\npubkey        : " << to_hex(_pkey);
+    std::cout << "\nseckey        : " << to_hex(_skey);
+    std::cout << "\ncipher        : " << to_hex(_cipher);
+    std::cout << "\nshared secret : " << to_hex(_shrd_key0);
     std::cout << "\n";
   }
 

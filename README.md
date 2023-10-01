@@ -175,7 +175,7 @@ kyber1024/keygen_stddev      0.198 us        0.197 us            8    556.266   
 kyber1024/keygen_cv           0.29 %          0.29 %             8      0.18%            0.29%
 ```
 
-### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang.16.0.0 )
+### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang-16.0.0 )
 
 ```bash
 2023-10-01T11:17:00+05:30
@@ -361,4 +361,4 @@ prng::prng_t prng0;
 prng::prng_t prng1{seed};
 ```
 
->> **Note** Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.
+> **Note** Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.

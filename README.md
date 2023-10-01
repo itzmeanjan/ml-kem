@@ -310,16 +310,6 @@ Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include
 
 > **Note** Kyber parameter sets are selected from table 1 of Kyber [specification](https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf)
 
----
-
-### Kyber Key Encapsulation Mechanism (KEM)
-
-Step | Namespace | Routine | Input | Output | How is it used ?
---- | --- | :-: | --: | --: | --:
-KeyGen | `kem::` | `keygen<k, η1>()` | - | (k * 12 * 32 + 32) -bytes public key & (k * 24 * 32 + 96) -bytes secret key | Imagine two parties peer1 & peer2, want to securely ( using symmetric key encryption i.e. AES ) communicate over insecure channel. Both of them generate their KEM keypair and publish their public keys to each other.
-Encapsulation | `kem::` | `encapsulate<k, η1, η2, du, dv>(...)` | (k * 12 * 32 + 32) -bytes public key | (k * du * 32 + dv * 32) -bytes cipher text and a KDF ( i.e. SHAKE256 Xof object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer1 wants to establish a secure connection with Peer2 & both of them have already agreed to use AES with 256 -bit symmetric keys. Peer1 encapsulates 32 -bytes random seed inside cipher text, using Peer2's public key, which it shares with Peer2, over insecure channel. Peer1 derives a 256 -bit key from KDF, that it obtained at end of encapsulation.
-Decapsulation | `kem::` | `decapsulate<k, η1, η2, du, dv>(...)` | (k * 24 * 32 + 96) -bytes secret key & (k * du * 32 + dv * 32) -bytes cipher text | a KDF ( i.e. SHAKE256 Xof object ) which can be used for deriving shared secret key ( of arbitrary length ) | Peer2 uses its secret key to decapsulate cipher text ( received from Peer1 ), recovering 32 -bytes random seed, which it uses for seeding a KDF, deriving a 256 -bit key. Now both the parties have same 256 -bit key, which they can use with AES to encrypt/ decrypt ( much more efficiently ) their messages.
-
 See example [program](./example/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
 
 ```bash

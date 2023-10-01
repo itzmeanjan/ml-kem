@@ -1,4 +1,4 @@
-CXX = g++
+CXX = clang++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
 OPT_FLAGS = -O3 -march=native

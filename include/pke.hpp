@@ -41,10 +41,9 @@ keygen(std::span<const uint8_t, 32> d,
   h512.absorb(d);
   h512.finalize();
   h512.digest(_g_out);
-  h512.reset();
 
   const auto rho = _g_out.template subspan<0, 32>();
-  const auto sigma = _g_out.template subspan<32, 32>();
+  const auto sigma = _g_out.template subspan<rho.size(), 32>();
 
   // step 4, 5, 6, 7, 8
   std::array<field::zq_t, k * k * ntt::N> A_prime{};
@@ -210,4 +209,4 @@ decrypt(std::span<const uint8_t, k * 12 * 32> seckey,
   kyber_utils::encode<1>(v, dec);
 }
 
-} // namespace pke
+}

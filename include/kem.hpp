@@ -115,7 +115,6 @@ encapsulate(
   h512.absorb(_g_in);
   h512.finalize();
   h512.digest(_g_out);
-  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, cipher);
   std::copy(_g_out0.begin(), _g_out0.end(), _kdf_in0.begin());
@@ -189,7 +188,6 @@ decapsulate(
   h512.absorb(_g_in);
   h512.finalize();
   h512.digest(_g_out);
-  h512.reset();
 
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
@@ -214,4 +212,4 @@ decapsulate(
   return xof256;
 }
 
-} // namespace kem
+}

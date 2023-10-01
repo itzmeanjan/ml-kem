@@ -75,4 +75,4 @@ poly_decompress(std::span<field::zq_t, ntt::N> poly)
   }
 }
 
-} // namespace kyber_utils
+}

@@ -20,7 +20,10 @@ matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
                 std::span<field::zq_t, a_rows * b_cols * ntt::N> c)
   requires(kyber_params::check_matrix_dim(a_cols, b_rows))
 {
+  using poly_t = std::span<const field::zq_t, ntt::N>;
+
   std::array<field::zq_t, ntt::N> tmp{};
+  auto _tmp = std::span(tmp);
 
   for (size_t i = 0; i < a_rows; i++) {
     for (size_t j = 0; j < b_cols; j++) {
@@ -30,7 +33,9 @@ matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
         const size_t aoff = (i * a_cols + k) * ntt::N;
         const size_t boff = (k * b_cols + j) * ntt::N;
 
-        ntt::polymul(a.subspan(aoff, ntt::N), b.subspan(boff, ntt::N), tmp);
+        ntt::polymul(poly_t(a.subspan(aoff, ntt::N)),
+                     poly_t(b.subspan(boff, ntt::N)),
+                     _tmp);
 
         for (size_t l = 0; l < ntt::N; l++) {
           c[coff + l] += tmp[l];
@@ -48,9 +53,11 @@ static inline void
 poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
+  using poly_t = std::span<field::zq_t, ntt::N>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::ntt(vec.subspan(off, ntt::N));
+    ntt::ntt(poly_t(vec.subspan(off, ntt::N)));
   }
 }
 
@@ -63,9 +70,11 @@ static inline void
 poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
+  using poly_t = std::span<field::zq_t, ntt::N>;
+
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
-    ntt::intt(vec.subspan(off, ntt::N));
+    ntt::intt(poly_t(vec.subspan(off, ntt::N)));
   }
 }
 
@@ -171,4 +180,4 @@ poly_vec_decompress(std::span<field::zq_t, k * ntt::N> vec)
   }
 }
 
-} // namespace kyber_utils
+}

@@ -20,11 +20,9 @@ namespace kyber_utils {
 // See algorithm 1, defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 inline void
-parse(shake128::shake128_t& hasher, // Squeezes bytes
-      std::span<field::zq_t> poly   // Degree 255 polynomial
-)
+parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
 {
-  constexpr size_t n = ntt::N;
+  constexpr size_t n = poly.size();
 
   size_t coeff_idx = 0;
   std::array<uint8_t, shake128::RATE / 8> buf{};
@@ -32,7 +30,7 @@ parse(shake128::shake128_t& hasher, // Squeezes bytes
   while (coeff_idx < n) {
     hasher.squeeze(buf);
 
-    for (size_t off = 0; (off < sizeof(buf)) && (coeff_idx < n); off += 3) {
+    for (size_t off = 0; (off < buf.size()) && (coeff_idx < n); off += 3) {
       const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) |
                           (static_cast<uint16_t>(buf[off + 0]) << 0);
       const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) |
@@ -81,7 +79,9 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat,
       shake128::shake128_t hasher{};
       hasher.absorb(xof_in);
       hasher.finalize();
-      parse(hasher, mat.subspan(off, ntt::N));
+
+      using poly_t = std::span<field::zq_t, mat.size() / (k * k)>;
+      parse(hasher, poly_t(mat.subspan(off, ntt::N)));
     }
   }
 }
@@ -95,9 +95,7 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat,
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t eta>
 static inline void
-cbd(std::span<const uint8_t, 64 * eta> prf, // Byte array of length 64 * eta
-    std::span<field::zq_t> poly             // Degree 255 polynomial
-    )
+cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
@@ -176,8 +174,9 @@ generate_vector(std::span<field::zq_t, k * ntt::N> vec,
     hasher.finalize();
     hasher.squeeze(prf_out);
 
-    kyber_utils::cbd<eta>(prf_out, vec.subspan(off, ntt::N));
+    using poly_t = std::span<field::zq_t, vec.size() / k>;
+    kyber_utils::cbd<eta>(prf_out, poly_t(vec.subspan(off, ntt::N)));
   }
 }
 
-} // namespace kyber_utils
+}

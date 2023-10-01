@@ -63,4 +63,4 @@ decapsulate(std::span<const uint8_t, SKEY_LEN> seckey,
   return kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher);
 }
 
-} // namespace kyber768_kem
+}

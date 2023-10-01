@@ -83,4 +83,4 @@ get_kem_cipher_len()
   return k * du * 32 + dv * 32;
 }
 
-} // namespace kyber_utils
+}

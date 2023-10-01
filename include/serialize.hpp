@@ -328,4 +328,4 @@ decode(std::span<const uint8_t, 32 * l> arr,
   }
 }
 
-} // namespace kyber_utils
+}

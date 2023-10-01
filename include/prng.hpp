@@ -61,4 +61,4 @@ public:
   inline void read(std::span<uint8_t> bytes) { state.squeeze(bytes); }
 };
 
-} // namespace prng
+}

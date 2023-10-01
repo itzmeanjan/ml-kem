@@ -1,3 +1,4 @@
+#include "field.hpp"
 #include "ntt.hpp"
 #include <gtest/gtest.h>
 #include <vector>
@@ -15,15 +16,18 @@ TEST(KyberKEM, NumberTheoreticTransform)
   std::vector<field::zq_t> poly_a(ntt::N);
   std::vector<field::zq_t> poly_b(ntt::N);
 
+  auto _poly_a = std::span<field::zq_t, ntt::N>(poly_a);
+  auto _poly_b = std::span<field::zq_t, ntt::N>(poly_b);
+
   prng::prng_t prng;
 
   for (size_t i = 0; i < ntt::N; i++) {
-    poly_a[i] = field::zq_t::random(prng);
-    poly_b[i] = poly_a[i];
+    _poly_a[i] = field::zq_t::random(prng);
   }
+  std::copy(_poly_a.begin(), _poly_a.end(), _poly_b.begin());
 
-  ntt::ntt(poly_b.data());
-  ntt::intt(poly_b.data());
+  ntt::ntt(_poly_b);
+  ntt::intt(_poly_b);
 
-  ASSERT_EQ(poly_a, poly_b);
+  EXPECT_EQ(poly_a, poly_b);
 }

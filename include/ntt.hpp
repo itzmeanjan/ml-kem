@@ -27,7 +27,7 @@ constexpr auto INV_N = field::zq_t::from_canonical(N / 2).inv();
 // See
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38
 // for source of inspiration
-template<const size_t mbw>
+template<size_t mbw>
 static inline constexpr size_t
 bit_rev(const size_t v)
 {
@@ -103,14 +103,14 @@ constexpr std::array<field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
 inline void
-ntt(field::zq_t* const poly)
+ntt(std::span<field::zq_t, N> poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
     const size_t k_beg = N >> (l + 1);
 
-    for (size_t start = 0; start < N; start += lenx2) {
+    for (size_t start = 0; start < poly.size(); start += lenx2) {
       const size_t k_now = k_beg + (start >> (l + 1));
       // Looking up precomputed constant, though it can be computed using
       //
@@ -140,14 +140,14 @@ ntt(field::zq_t* const poly)
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
 inline void
-intt(field::zq_t* const poly)
+intt(std::span<field::zq_t, N> poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
     const size_t len = 1ul << l;
     const size_t lenx2 = len << 1;
     const size_t k_beg = (N >> l) - 1;
 
-    for (size_t start = 0; start < N; start += lenx2) {
+    for (size_t start = 0; start < poly.size(); start += lenx2) {
       const size_t k_now = k_beg - (start >> (l + 1));
       // Looking up precomputed constant, though it can be computed using
       //
@@ -168,7 +168,7 @@ intt(field::zq_t* const poly)
     }
   }
 
-  for (size_t i = 0; i < N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] *= INV_N;
   }
 }
@@ -185,10 +185,10 @@ intt(field::zq_t* const poly)
 // See page 6 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 static inline void
-basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
-        const field::zq_t* const __restrict g, // degree-1 polynomial
-        field::zq_t* const __restrict h,       // degree-1 polynomial
-        const field::zq_t ζ                    // zeta
+basemul(std::span<const field::zq_t, 2> f, // degree-1 polynomial
+        std::span<const field::zq_t, 2> g, // degree-1 polynomial
+        std::span<field::zq_t, 2> h,       // degree-1 polynomial
+        const field::zq_t ζ                // zeta
 )
 {
   field::zq_t f0 = f[0];
@@ -219,16 +219,22 @@ basemul(const field::zq_t* const __restrict f, // degree-1 polynomial
 //
 // h = f ◦ g
 inline void
-polymul(const field::zq_t* const __restrict f, // degree-255 polynomial
-        const field::zq_t* const __restrict g, // degree-255 polynomial
-        field::zq_t* const __restrict h        // degree-255 polynomial
+polymul(std::span<const field::zq_t, N> f, // degree-255 polynomial
+        std::span<const field::zq_t, N> g, // degree-255 polynomial
+        std::span<field::zq_t, N> h        // degree-255 polynomial
 )
 {
-  constexpr size_t cnt = N >> 1;
+  constexpr size_t cnt = f.size() >> 1;
+
+  using poly_t = std::span<const field::zq_t, 2>;
+  using mut_poly_t = std::span<field::zq_t, 2>;
 
   for (size_t i = 0; i < cnt; i++) {
     const size_t off = i << 1;
-    basemul(f + off, g + off, h + off, POLY_MUL_ζ_EXP[i]);
+    basemul(poly_t(f.subspan(off, 2)),
+            poly_t(g.subspan(off, 2)),
+            mut_poly_t(h.subspan(off, 2)),
+            POLY_MUL_ζ_EXP[i]);
   }
 }
 

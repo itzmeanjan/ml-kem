@@ -1,4 +1,6 @@
+#include "field.hpp"
 #include "serialize.hpp"
+#include <cstdint>
 #include <gtest/gtest.h>
 #include <vector>
 
@@ -8,7 +10,7 @@
 //
 // l denotes significant bit width ( from LSB side ) for each coefficient of
 // polynomial.
-template<const size_t l>
+template<size_t l>
 void
 test_serialize_deserialize()
 {
@@ -25,11 +27,14 @@ test_serialize_deserialize()
     src[i] = field::zq_t::random(prng);
   }
 
-  kyber_utils::encode<l>(src.data(), bytes.data());
-  kyber_utils::decode<l>(bytes.data(), dst.data());
+  using poly_t = std::span<field::zq_t, ntt::N>;
+  using serialized_t = std::span<uint8_t, blen>;
+
+  kyber_utils::encode<l>(poly_t(src), serialized_t(bytes));
+  kyber_utils::decode<l>(serialized_t(bytes), poly_t(dst));
 
   for (size_t i = 0; i < ntt::N; i++) {
-    ASSERT_EQ((src[i].to_canonical() & mask), (dst[i].to_canonical() & mask));
+    EXPECT_EQ((src[i].to_canonical() & mask), (dst[i].to_canonical() & mask));
   }
 }
 

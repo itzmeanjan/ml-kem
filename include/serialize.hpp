@@ -13,15 +13,13 @@ namespace kyber_utils {
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t l>
+template<size_t l>
 static inline void
-encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
-       uint8_t* const __restrict arr // byte array of length 32*l -bytes
-       )
+encode(std::span<const field::zq_t, ntt::N> poly,
+       std::span<uint8_t, 32 * l> arr)
   requires(kyber_params::check_l(l))
 {
-  constexpr size_t len = 32 * l;
-  std::memset(arr, 0, len);
+  std::fill(arr.begin(), arr.end(), 0);
 
   if constexpr (l == 1) {
     constexpr size_t itr_cnt = ntt::N >> 3;
@@ -175,11 +173,10 @@ encode(const field::zq_t* const __restrict poly, // degree 255 polynomial
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t l>
+template<size_t l>
 static inline void
-decode(const uint8_t* const __restrict arr, // byte array of length 32*l -bytes
-       field::zq_t* const __restrict poly   // degree 255 polynomial
-       )
+decode(std::span<const uint8_t, 32 * l> arr,
+       std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_l(l))
 {
   if constexpr (l == 1) {

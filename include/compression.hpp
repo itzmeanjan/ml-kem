@@ -2,7 +2,7 @@
 #include "field.hpp"
 #include "ntt.hpp"
 #include "params.hpp"
-#include <cmath>
+#include <span>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
@@ -12,7 +12,7 @@ namespace kyber_utils {
 //
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
+template<size_t d>
 static inline field::zq_t
 compress(const field::zq_t x)
   requires(kyber_params::check_d(d))
@@ -36,7 +36,7 @@ compress(const field::zq_t x)
 //
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
+template<size_t d>
 static inline field::zq_t
 decompress(const field::zq_t x)
   requires(kyber_params::check_d(d))
@@ -51,45 +51,26 @@ decompress(const field::zq_t x)
   return field::zq_t::from_canonical(t4);
 }
 
-// Decompression error that can happen for some given `d` s.t.
-//
-// x' = decompress(compress(x, d), d)
-//
-// |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
-//
-// See eq. 2 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-template<const size_t d>
-static inline size_t
-compute_error()
-{
-  constexpr double t0 = static_cast<double>(field::Q);
-  constexpr double t1 = static_cast<double>(1ul << (d + 1));
-
-  const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
-  return t2;
-}
-
 // Utility function to compress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
-template<const size_t d>
+template<size_t d>
 static inline void
-poly_compress(field::zq_t* const __restrict poly)
+poly_compress(std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_d(d))
 {
-  for (size_t i = 0; i < ntt::N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = compress<d>(poly[i]);
   }
 }
 
 // Utility function to decompress each of 256 coefficients of a degree-255
 // polynomial s.t. input polynomial is mutated.
-template<const size_t d>
+template<size_t d>
 static inline void
-poly_decompress(field::zq_t* const __restrict poly)
+poly_decompress(std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_d(d))
 {
-  for (size_t i = 0; i < ntt::N; i++) {
+  for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = decompress<d>(poly[i]);
   }
 }

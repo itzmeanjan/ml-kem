@@ -73,18 +73,18 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec0{};
       std::array<uint8_t, 32> shrd_sec1{};
 
-      kyber512::keygen(___d.data(), ___z.data(), pkey.data(), skey.data());
-      auto skdf = kyber512::encapsulate(___m.data(), pkey.data(), ctxt.data());
-      auto rkdf = kyber512::decapsulate(skey.data(), ctxt.data());
+      kyber512::keygen(___d, ___z, pkey, skey);
+      auto skdf = kyber512::encapsulate(___m, pkey, ctxt);
+      auto rkdf = kyber512::decapsulate(skey, ctxt);
 
-      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0);
+      rkdf.squeeze(shrd_sec1);
 
-      ASSERT_EQ(___pk, pkey);
-      ASSERT_EQ(___sk, skey);
-      ASSERT_EQ(___ct, ctxt);
-      ASSERT_EQ(___ss, shrd_sec0);
-      ASSERT_EQ(shrd_sec0, shrd_sec1);
+      EXPECT_EQ(___pk, pkey);
+      EXPECT_EQ(___sk, skey);
+      EXPECT_EQ(___ct, ctxt);
+      EXPECT_EQ(___ss, shrd_sec0);
+      EXPECT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -157,18 +157,18 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec0{};
       std::array<uint8_t, 32> shrd_sec1{};
 
-      kyber768::keygen(___d.data(), ___z.data(), pkey.data(), skey.data());
-      auto skdf = kyber768::encapsulate(___m.data(), pkey.data(), ctxt.data());
-      auto rkdf = kyber768::decapsulate(skey.data(), ctxt.data());
+      kyber768::keygen(___d, ___z, pkey, skey);
+      auto skdf = kyber768::encapsulate(___m, pkey, ctxt);
+      auto rkdf = kyber768::decapsulate(skey, ctxt);
 
-      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0);
+      rkdf.squeeze(shrd_sec1);
 
-      ASSERT_EQ(___pk, pkey);
-      ASSERT_EQ(___sk, skey);
-      ASSERT_EQ(___ct, ctxt);
-      ASSERT_EQ(___ss, shrd_sec0);
-      ASSERT_EQ(shrd_sec0, shrd_sec1);
+      EXPECT_EQ(___pk, pkey);
+      EXPECT_EQ(___sk, skey);
+      EXPECT_EQ(___ct, ctxt);
+      EXPECT_EQ(___ss, shrd_sec0);
+      EXPECT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);
@@ -248,18 +248,18 @@ TEST(KyberKEM, Kyber1024KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec0{};
       std::array<uint8_t, 32> shrd_sec1{};
 
-      kyber1024::keygen(___d.data(), ___z.data(), pkey.data(), skey.data());
-      auto skdf = kyber1024::encapsulate(___m.data(), pkey.data(), ctxt.data());
-      auto rkdf = kyber1024::decapsulate(skey.data(), ctxt.data());
+      kyber1024::keygen(___d, ___z, pkey, skey);
+      auto skdf = kyber1024::encapsulate(___m, pkey, ctxt);
+      auto rkdf = kyber1024::decapsulate(skey, ctxt);
 
-      skdf.squeeze(shrd_sec0.data(), shrd_sec0.size());
-      rkdf.squeeze(shrd_sec1.data(), shrd_sec1.size());
+      skdf.squeeze(shrd_sec0);
+      rkdf.squeeze(shrd_sec1);
 
-      ASSERT_EQ(___pk, pkey);
-      ASSERT_EQ(___sk, skey);
-      ASSERT_EQ(___ct, ctxt);
-      ASSERT_EQ(___ss, shrd_sec0);
-      ASSERT_EQ(shrd_sec0, shrd_sec1);
+      EXPECT_EQ(___pk, pkey);
+      EXPECT_EQ(___sk, skey);
+      EXPECT_EQ(___ct, ctxt);
+      EXPECT_EQ(___ss, shrd_sec0);
+      EXPECT_EQ(shrd_sec0, shrd_sec1);
 
       std::string empty_line;
       std::getline(file, empty_line);

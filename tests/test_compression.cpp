@@ -1,6 +1,25 @@
 #include "compression.hpp"
 #include <gtest/gtest.h>
 
+// Decompression error that can happen for some given `d` s.t.
+//
+// x' = decompress(compress(x, d), d)
+//
+// |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
+//
+// See eq. 2 of Kyber specification
+// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+template<size_t d>
+static inline constexpr size_t
+compute_error()
+{
+  constexpr double t0 = static_cast<double>(field::Q);
+  constexpr double t1 = static_cast<double>(1ul << (d + 1));
+
+  const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
+  return t2;
+}
+
 // Test functional correctness of compression/ decompression logic s.t. given an
 // element x ∈ Z_q following is satisfied
 //
@@ -11,7 +30,7 @@
 // Returned boolean accumulates result of all compression/ decompression
 // execution iterations. It must hold truth value for function caller to believe
 // that compression/ decompression logic is implemented correctly.
-template<const size_t d, const size_t itr_cnt>
+template<size_t d, size_t itr_cnt>
 bool
 test_zq_compression()
   requires(itr_cnt > 0)
@@ -37,7 +56,7 @@ test_zq_compression()
     const auto a_prime = static_cast<int32_t>(br1[flg1]);
 
     const size_t err = static_cast<size_t>(std::abs(c_prime - a_prime));
-    const size_t terr = kyber_utils::compute_error<d>();
+    const size_t terr = compute_error<d>();
 
     res &= (err <= terr);
   }
@@ -47,9 +66,9 @@ test_zq_compression()
 
 TEST(KyberKEM, CompressDecompressZq)
 {
-  ASSERT_TRUE((test_zq_compression<11, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<10, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<5, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<4, 1ul << 20>()));
-  ASSERT_TRUE((test_zq_compression<1, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<11, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<10, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<5, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<4, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<1, 1ul << 20>()));
 }

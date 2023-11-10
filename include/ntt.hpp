@@ -231,10 +231,7 @@ polymul(std::span<const field::zq_t, N> f, // degree-255 polynomial
 
   for (size_t i = 0; i < cnt; i++) {
     const size_t off = i << 1;
-    basemul(poly_t(f.subspan(off, 2)),
-            poly_t(g.subspan(off, 2)),
-            mut_poly_t(h.subspan(off, 2)),
-            POLY_MUL_ζ_EXP[i]);
+    basemul(poly_t(f.subspan(off, 2)), poly_t(g.subspan(off, 2)), mut_poly_t(h.subspan(off, 2)), POLY_MUL_ζ_EXP[i]);
   }
 }
 

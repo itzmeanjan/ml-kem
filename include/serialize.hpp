@@ -15,8 +15,7 @@ namespace kyber_utils {
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t l>
 static inline void
-encode(std::span<const field::zq_t, ntt::N> poly,
-       std::span<uint8_t, 32 * l> arr)
+encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr)
   requires(kyber_params::check_l(l))
 {
   std::fill(arr.begin(), arr.end(), 0);
@@ -42,8 +41,7 @@ encode(std::span<const field::zq_t, ntt::N> poly,
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 1;
-      arr[i] = (static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) |
-               (static_cast<uint8_t>(poly[off + 0].raw() & msk) << 0);
+      arr[i] = (static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) | static_cast<uint8_t>(poly[off + 0].raw() & msk);
     }
   } else if constexpr (l == 5) {
     constexpr size_t itr_cnt = ntt::N >> 3;
@@ -66,18 +64,13 @@ encode(std::span<const field::zq_t, ntt::N> poly,
       const auto t6 = poly[poff + 6].raw();
       const auto t7 = poly[poff + 7].raw();
 
-      arr[boff + 0] = (static_cast<uint8_t>(t1 & mask3) << 5) |
-                      (static_cast<uint8_t>(t0 & mask5) << 0);
-      arr[boff + 1] = (static_cast<uint8_t>(t3 & mask1) << 7) |
-                      (static_cast<uint8_t>(t2 & mask5) << 2) |
+      arr[boff + 0] = (static_cast<uint8_t>(t1 & mask3) << 5) | (static_cast<uint8_t>(t0 & mask5) << 0);
+      arr[boff + 1] = (static_cast<uint8_t>(t3 & mask1) << 7) | (static_cast<uint8_t>(t2 & mask5) << 2) |
                       static_cast<uint8_t>((t1 >> 3) & mask2);
-      arr[boff + 2] = (static_cast<uint8_t>(t4 & mask4) << 4) |
-                      static_cast<uint8_t>((t3 >> 1) & mask4);
-      arr[boff + 3] = (static_cast<uint8_t>(t6 & mask2) << 6) |
-                      (static_cast<uint8_t>(t5 & mask5) << 1) |
+      arr[boff + 2] = (static_cast<uint8_t>(t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 1) & mask4);
+      arr[boff + 3] = (static_cast<uint8_t>(t6 & mask2) << 6) | (static_cast<uint8_t>(t5 & mask5) << 1) |
                       static_cast<uint8_t>((t4 >> 4) & mask1);
-      arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) |
-                      static_cast<uint8_t>((t6 >> 2) & mask3);
+      arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3);
     }
   } else if constexpr (l == 10) {
     constexpr size_t itr_cnt = ntt::N >> 2;
@@ -95,12 +88,9 @@ encode(std::span<const field::zq_t, ntt::N> poly,
       const auto t3 = poly[poff + 3].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask6) << 2) |
-                      static_cast<uint8_t>((t0 >> 8) & mask2);
-      arr[boff + 2] = static_cast<uint8_t>((t2 & mask4) << 4) |
-                      static_cast<uint8_t>((t1 >> 6) & mask4);
-      arr[boff + 3] = static_cast<uint8_t>((t3 & mask2) << 6) |
-                      static_cast<uint8_t>((t2 >> 4) & mask6);
+      arr[boff + 1] = static_cast<uint8_t>((t1 & mask6) << 2) | static_cast<uint8_t>((t0 >> 8) & mask2);
+      arr[boff + 2] = static_cast<uint8_t>((t2 & mask4) << 4) | static_cast<uint8_t>((t1 >> 6) & mask4);
+      arr[boff + 3] = static_cast<uint8_t>((t3 & mask2) << 6) | static_cast<uint8_t>((t2 >> 4) & mask6);
       arr[boff + 4] = static_cast<uint8_t>(t3 >> 2);
     }
   } else if constexpr (l == 11) {
@@ -128,22 +118,15 @@ encode(std::span<const field::zq_t, ntt::N> poly,
       const auto t7 = poly[poff + 7].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0 & mask8);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask5) << 3) |
-                      static_cast<uint8_t>((t0 >> 8) & mask3);
-      arr[boff + 2] = static_cast<uint8_t>((t2 & mask2) << 6) |
-                      static_cast<uint8_t>((t1 >> 5) & mask6);
+      arr[boff + 1] = static_cast<uint8_t>((t1 & mask5) << 3) | static_cast<uint8_t>((t0 >> 8) & mask3);
+      arr[boff + 2] = static_cast<uint8_t>((t2 & mask2) << 6) | static_cast<uint8_t>((t1 >> 5) & mask6);
       arr[boff + 3] = static_cast<uint8_t>((t2 >> 2) & mask8);
-      arr[boff + 4] = static_cast<uint8_t>((t3 & mask7) << 1) |
-                      static_cast<uint8_t>((t2 >> 10) & mask1);
-      arr[boff + 5] = static_cast<uint8_t>((t4 & mask4) << 4) |
-                      static_cast<uint8_t>((t3 >> 7) & mask4);
-      arr[boff + 6] = static_cast<uint8_t>((t5 & mask1) << 7) |
-                      static_cast<uint8_t>((t4 >> 4) & mask7);
+      arr[boff + 4] = static_cast<uint8_t>((t3 & mask7) << 1) | static_cast<uint8_t>((t2 >> 10) & mask1);
+      arr[boff + 5] = static_cast<uint8_t>((t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 7) & mask4);
+      arr[boff + 6] = static_cast<uint8_t>((t5 & mask1) << 7) | static_cast<uint8_t>((t4 >> 4) & mask7);
       arr[boff + 7] = static_cast<uint8_t>((t5 >> 1) & mask8);
-      arr[boff + 8] = static_cast<uint8_t>((t6 & mask6) << 2) |
-                      static_cast<uint8_t>((t5 >> 9) & mask2);
-      arr[boff + 9] = static_cast<uint8_t>((t7 & mask3) << 5) |
-                      static_cast<uint8_t>((t6 >> 6) & mask5);
+      arr[boff + 8] = static_cast<uint8_t>((t6 & mask6) << 2) | static_cast<uint8_t>((t5 >> 9) & mask2);
+      arr[boff + 9] = static_cast<uint8_t>((t7 & mask3) << 5) | static_cast<uint8_t>((t6 >> 6) & mask5);
       arr[boff + 10] = static_cast<uint8_t>((t7 >> 3) & mask8);
     }
   } else {
@@ -160,8 +143,7 @@ encode(std::span<const field::zq_t, ntt::N> poly,
       const auto t1 = poly[poff + 1].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask4) << 4) |
-                      static_cast<uint8_t>((t0 >> 8) & mask4);
+      arr[boff + 1] = static_cast<uint8_t>((t1 & mask4) << 4) | static_cast<uint8_t>((t0 >> 8) & mask4);
       arr[boff + 2] = static_cast<uint8_t>(t1 >> 4);
     }
   }
@@ -175,8 +157,7 @@ encode(std::span<const field::zq_t, ntt::N> poly,
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t l>
 static inline void
-decode(std::span<const uint8_t, 32 * l> arr,
-       std::span<field::zq_t, ntt::N> poly)
+decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly)
   requires(kyber_params::check_l(l))
 {
   if constexpr (l == 1) {
@@ -220,16 +201,16 @@ decode(std::span<const uint8_t, 32 * l> arr,
       const size_t boff = i * 5;
 
       const auto t0 = static_cast<uint16_t>(arr[boff + 0] & mask5);
-      const auto t1 = static_cast<uint16_t>((arr[boff + 1] & mask2) << 3) |
-                      static_cast<uint16_t>((arr[boff + 0] >> 5) & mask3);
+      const auto t1 =
+        static_cast<uint16_t>((arr[boff + 1] & mask2) << 3) | static_cast<uint16_t>((arr[boff + 0] >> 5) & mask3);
       const auto t2 = static_cast<uint16_t>((arr[boff + 1] >> 2) & mask5);
-      const auto t3 = static_cast<uint16_t>((arr[boff + 2] & mask4) << 1) |
-                      static_cast<uint16_t>((arr[boff + 1] >> 7) & mask1);
-      const auto t4 = static_cast<uint16_t>((arr[boff + 3] & mask1) << 4) |
-                      static_cast<uint16_t>((arr[boff + 2] >> 4) & mask4);
+      const auto t3 =
+        static_cast<uint16_t>((arr[boff + 2] & mask4) << 1) | static_cast<uint16_t>((arr[boff + 1] >> 7) & mask1);
+      const auto t4 =
+        static_cast<uint16_t>((arr[boff + 3] & mask1) << 4) | static_cast<uint16_t>((arr[boff + 2] >> 4) & mask4);
       const auto t5 = static_cast<uint16_t>((arr[boff + 3] >> 1) & mask5);
-      const auto t6 = static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) |
-                      static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
+      const auto t6 =
+        static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) | static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
       const auto t7 = static_cast<uint16_t>((arr[boff + 4] >> 3) & mask5);
 
       poly[poff + 0] = field::zq_t(t0);
@@ -251,14 +232,10 @@ decode(std::span<const uint8_t, 32 * l> arr,
       const size_t poff = i << 2;
       const size_t boff = i * 5;
 
-      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask2) << 8) |
-                      static_cast<uint16_t>(arr[boff + 0]);
-      const auto t1 = (static_cast<uint16_t>(arr[boff + 2] & mask4) << 6) |
-                      static_cast<uint16_t>(arr[boff + 1] >> 2);
-      const auto t2 = (static_cast<uint16_t>(arr[boff + 3] & mask6) << 4) |
-                      static_cast<uint16_t>(arr[boff + 2] >> 4);
-      const auto t3 = (static_cast<uint16_t>(arr[boff + 4]) << 2) |
-                      static_cast<uint16_t>(arr[boff + 3] >> 6);
+      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask2) << 8) | static_cast<uint16_t>(arr[boff + 0]);
+      const auto t1 = (static_cast<uint16_t>(arr[boff + 2] & mask4) << 6) | static_cast<uint16_t>(arr[boff + 1] >> 2);
+      const auto t2 = (static_cast<uint16_t>(arr[boff + 3] & mask6) << 4) | static_cast<uint16_t>(arr[boff + 2] >> 4);
+      const auto t3 = (static_cast<uint16_t>(arr[boff + 4]) << 2) | static_cast<uint16_t>(arr[boff + 3] >> 6);
 
       poly[poff + 0] = field::zq_t(t0);
       poly[poff + 1] = field::zq_t(t1);
@@ -279,24 +256,16 @@ decode(std::span<const uint8_t, 32 * l> arr,
       const size_t poff = i << 3;
       const size_t boff = i * 11;
 
-      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask3) << 8) |
-                      static_cast<uint16_t>(arr[boff + 0]);
-      const auto t1 = (static_cast<uint16_t>(arr[boff + 2] & mask6) << 5) |
-                      static_cast<uint16_t>(arr[boff + 1] >> 3);
+      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask3) << 8) | static_cast<uint16_t>(arr[boff + 0]);
+      const auto t1 = (static_cast<uint16_t>(arr[boff + 2] & mask6) << 5) | static_cast<uint16_t>(arr[boff + 1] >> 3);
       const auto t2 = (static_cast<uint16_t>(arr[boff + 4] & mask1) << 10) |
-                      (static_cast<uint16_t>(arr[boff + 3]) << 2) |
-                      static_cast<uint16_t>(arr[boff + 2] >> 6);
-      const auto t3 = (static_cast<uint16_t>(arr[boff + 5] & mask4) << 7) |
-                      static_cast<uint16_t>(arr[boff + 4] >> 1);
-      const auto t4 = (static_cast<uint16_t>(arr[boff + 6] & mask7) << 4) |
-                      static_cast<uint16_t>(arr[boff + 5] >> 4);
+                      (static_cast<uint16_t>(arr[boff + 3]) << 2) | static_cast<uint16_t>(arr[boff + 2] >> 6);
+      const auto t3 = (static_cast<uint16_t>(arr[boff + 5] & mask4) << 7) | static_cast<uint16_t>(arr[boff + 4] >> 1);
+      const auto t4 = (static_cast<uint16_t>(arr[boff + 6] & mask7) << 4) | static_cast<uint16_t>(arr[boff + 5] >> 4);
       const auto t5 = (static_cast<uint16_t>(arr[boff + 8] & mask2) << 9) |
-                      (static_cast<uint16_t>(arr[boff + 7]) << 1) |
-                      static_cast<uint16_t>(arr[boff + 6] >> 7);
-      const auto t6 = (static_cast<uint16_t>(arr[boff + 9] & mask5) << 6) |
-                      static_cast<uint16_t>(arr[boff + 8] >> 2);
-      const auto t7 = (static_cast<uint16_t>(arr[boff + 10]) << 3) |
-                      static_cast<uint16_t>(arr[boff + 9] >> 5);
+                      (static_cast<uint16_t>(arr[boff + 7]) << 1) | static_cast<uint16_t>(arr[boff + 6] >> 7);
+      const auto t6 = (static_cast<uint16_t>(arr[boff + 9] & mask5) << 6) | static_cast<uint16_t>(arr[boff + 8] >> 2);
+      const auto t7 = (static_cast<uint16_t>(arr[boff + 10]) << 3) | static_cast<uint16_t>(arr[boff + 9] >> 5);
 
       poly[poff + 0] = field::zq_t(t0);
       poly[poff + 1] = field::zq_t(t1);
@@ -317,10 +286,8 @@ decode(std::span<const uint8_t, 32 * l> arr,
       const size_t poff = i << 1;
       const size_t boff = i * 3;
 
-      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask4) << 8) |
-                      static_cast<uint16_t>(arr[boff + 0]);
-      const auto t1 = (static_cast<uint16_t>(arr[boff + 2]) << 4) |
-                      static_cast<uint16_t>(arr[boff + 1] >> 4);
+      const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask4) << 8) | static_cast<uint16_t>(arr[boff + 0]);
+      const auto t1 = (static_cast<uint16_t>(arr[boff + 2]) << 4) | static_cast<uint16_t>(arr[boff + 1] >> 4);
 
       poly[poff + 0] = field::zq_t(t0);
       poly[poff + 1] = field::zq_t(t1);

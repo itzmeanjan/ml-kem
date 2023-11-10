@@ -28,10 +28,7 @@ struct zq_t
 public:
   // Given a 16 -bit unsigned integer `a`, this function constructs a Zq
   // element, such that `a` is reduced modulo Q.
-  inline constexpr zq_t(const uint16_t a = 0u)
-  {
-    this->v = barrett_reduce(static_cast<uint32_t>(a));
-  }
+  inline constexpr zq_t(const uint16_t a = 0u) { this->v = barrett_reduce(static_cast<uint32_t>(a)); }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   inline constexpr uint32_t raw() const { return this->v; }
@@ -43,10 +40,7 @@ public:
   static inline constexpr zq_t zero() { return zq_t(); }
 
   // Modulo addition of two Zq elements.
-  inline constexpr zq_t operator+(const zq_t rhs) const
-  {
-    return zq_t(this->v + rhs.v);
-  }
+  inline constexpr zq_t operator+(const zq_t rhs) const { return zq_t(this->v + rhs.v); }
 
   // Compound modulo addition of two Zq elements.
   inline constexpr void operator+=(const zq_t rhs) { *this = *this + rhs; }
@@ -55,10 +49,7 @@ public:
   inline constexpr zq_t operator-() const { return zq_t(Q - this->v); }
 
   // Modulo subtraction of one Zq element from another one.
-  inline constexpr zq_t operator-(const zq_t rhs) const
-  {
-    return *this + (-rhs);
-  }
+  inline constexpr zq_t operator-(const zq_t rhs) const { return *this + (-rhs); }
 
   // Compound modulo subtraction of two Zq elements.
   inline constexpr void operator-=(const zq_t rhs) { *this = *this - rhs; }
@@ -94,26 +85,17 @@ public:
   //
   // Note, if Zq element is 0, we can't compute multiplicative inverse and 0 is
   // returned.
-  inline constexpr zq_t inv() const
-  {
-    return *this ^ static_cast<size_t>((Q - 2));
-  }
+  inline constexpr zq_t inv() const { return *this ^ static_cast<size_t>((Q - 2)); }
 
   // Modulo division of two Zq elements.
   //
   // Note, if denominator is 0, returned result is 0 too, becaue we can't
   // compute multiplicative inverse of 0.
-  inline constexpr zq_t operator/(const zq_t rhs) const
-  {
-    return *this * rhs.inv();
-  }
+  inline constexpr zq_t operator/(const zq_t rhs) const { return *this * rhs.inv(); }
 
   // Compare two Zq elements, returning truth value, in case they are same,
   // otherwise returns false value.
-  inline constexpr bool operator==(const zq_t rhs) const
-  {
-    return this->v == rhs.v;
-  }
+  inline constexpr bool operator==(const zq_t rhs) const { return this->v == rhs.v; }
 
   // Samples a random Zq element, using pseudo random number generator.
   static inline zq_t random(prng::prng_t& prng)

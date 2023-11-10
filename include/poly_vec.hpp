@@ -14,7 +14,7 @@ namespace kyber_utils {
 // matrix element is a degree-255 polynomial over Z_q | q = 3329, this routine
 // attempts to multiply and compute resulting matrix
 template<size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols>
-static inline void
+static inline constexpr void
 matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
                 std::span<const field::zq_t, b_rows * b_cols * ntt::N> b,
                 std::span<field::zq_t, a_rows * b_cols * ntt::N> c)
@@ -49,7 +49,7 @@ matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
 // polynomial coefficients are in non-NTT form ), this routine applies in-place
 // polynomial NTT over k polynomials
 template<size_t k>
-static inline void
+static inline constexpr void
 poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
@@ -66,7 +66,7 @@ poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
 // order ), this routine applies in-place polynomial iNTT over those k
 // polynomials
 template<size_t k>
-static inline void
+static inline constexpr void
 poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
   requires((k == 1) || kyber_params::check_k(k))
 {
@@ -81,7 +81,7 @@ poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine adds it to another polynomial vector of same dimension
 template<size_t k>
-static inline void
+static inline constexpr void
 poly_vec_add_to(std::span<const field::zq_t, k * ntt::N> src,
                 std::span<field::zq_t, k * ntt::N> dst)
   requires((k == 1) || kyber_params::check_k(k))
@@ -96,7 +96,7 @@ poly_vec_add_to(std::span<const field::zq_t, k * ntt::N> src,
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
 // routine subtracts it to another polynomial vector of same dimension
 template<size_t k>
-static inline void
+static inline constexpr void
 poly_vec_sub_from(std::span<const field::zq_t, k * ntt::N> src,
                   std::span<field::zq_t, k * ntt::N> dst)
   requires((k == 1) || kyber_params::check_k(k))
@@ -153,7 +153,7 @@ poly_vec_decode(std::span<const uint8_t, k * 32 * l> src,
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are compressed, while mutating input.
 template<size_t k, size_t d>
-static inline void
+static inline constexpr void
 poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {
@@ -168,7 +168,7 @@ poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
 // Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
 // k * 256 coefficients are decompressed, while mutating input.
 template<size_t k, size_t d>
-static inline void
+static inline constexpr void
 poly_vec_decompress(std::span<field::zq_t, k * ntt::N> vec)
   requires(kyber_params::check_k(k))
 {

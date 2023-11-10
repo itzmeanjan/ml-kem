@@ -37,12 +37,12 @@ parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
                           (static_cast<uint16_t>(buf[off + 1] >> 4));
 
       if (d1 < field::Q) {
-        poly[coeff_idx] = field::zq_t::from_canonical(d1);
+        poly[coeff_idx] = field::zq_t(d1);
         coeff_idx++;
       }
 
       if ((d2 < field::Q) && (coeff_idx < n)) {
-        poly[coeff_idx] = field::zq_t::from_canonical(d2);
+        poly[coeff_idx] = field::zq_t(d2);
         coeff_idx++;
       }
     }
@@ -76,7 +76,7 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat,
         xof_in[33] = static_cast<uint8_t>(i);
       }
 
-      shake128::shake128_t hasher{};
+      shake128::shake128_t hasher;
       hasher.absorb(xof_in);
       hasher.finalize();
 
@@ -113,10 +113,10 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
       const uint8_t t1 = (word >> 1) & mask8;
       const uint8_t t2 = t0 + t1;
 
-      poly[poff + 0] = field::zq_t::from_canonical((t2 >> 0) & mask2) -
-                       field::zq_t::from_canonical((t2 >> 2) & mask2);
-      poly[poff + 1] = field::zq_t::from_canonical((t2 >> 4) & mask2) -
-                       field::zq_t::from_canonical((t2 >> 6) & mask2);
+      poly[poff + 0] =
+        field::zq_t((t2 >> 0) & mask2) - field::zq_t((t2 >> 2) & mask2);
+      poly[poff + 1] =
+        field::zq_t((t2 >> 4) & mask2) - field::zq_t((t2 >> 6) & mask2);
     }
   } else {
     static_assert(eta == 3, "η must be 3 !");
@@ -138,14 +138,14 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
       const uint32_t t2 = (word >> 2) & mask24;
       const uint32_t t3 = t0 + t1 + t2;
 
-      poly[poff + 0] = field::zq_t::from_canonical((t3 >> 0) & mask3) -
-                       field::zq_t::from_canonical((t3 >> 3) & mask3);
-      poly[poff + 1] = field::zq_t::from_canonical((t3 >> 6) & mask3) -
-                       field::zq_t::from_canonical((t3 >> 9) & mask3);
-      poly[poff + 2] = field::zq_t::from_canonical((t3 >> 12) & mask3) -
-                       field::zq_t::from_canonical((t3 >> 15) & mask3);
-      poly[poff + 3] = field::zq_t::from_canonical((t3 >> 18) & mask3) -
-                       field::zq_t::from_canonical((t3 >> 21) & mask3);
+      poly[poff + 0] =
+        field::zq_t((t3 >> 0) & mask3) - field::zq_t((t3 >> 3) & mask3);
+      poly[poff + 1] =
+        field::zq_t((t3 >> 6) & mask3) - field::zq_t((t3 >> 9) & mask3);
+      poly[poff + 2] =
+        field::zq_t((t3 >> 12) & mask3) - field::zq_t((t3 >> 15) & mask3);
+      poly[poff + 3] =
+        field::zq_t((t3 >> 18) & mask3) - field::zq_t((t3 >> 21) & mask3);
     }
   }
 }
@@ -169,7 +169,7 @@ generate_vector(std::span<field::zq_t, k * ntt::N> vec,
 
     prf_in[32] = nonce + static_cast<uint8_t>(i);
 
-    shake256::shake256_t hasher{};
+    shake256::shake256_t hasher;
     hasher.absorb(prf_in);
     hasher.finalize();
     hasher.squeeze(prf_out);

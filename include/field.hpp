@@ -33,6 +33,7 @@ public:
     this->v = barrett_reduce(static_cast<uint32_t>(a));
   }
 
+  // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   inline constexpr uint32_t raw() const { return this->v; }
 
   // Returns prime field element 1.
@@ -65,7 +66,9 @@ public:
   // Modulo multiplication of two Zq elements.
   inline constexpr zq_t operator*(const zq_t rhs) const
   {
-    return zq_t(this->v * rhs.v);
+    auto res = zq_t();
+    res.v = barrett_reduce(this->v * rhs.v);
+    return res;
   }
 
   // Compound modulo multiplication of two Zq elements.

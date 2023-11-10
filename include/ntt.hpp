@@ -13,12 +13,12 @@ constexpr size_t N = 1 << LOG2N;
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-constexpr auto ζ = field::zq_t::from_canonical(17);
+constexpr auto ζ = field::zq_t(17);
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
 // Meaning (N/ 2) * 3303 = 1 mod q
-constexpr auto INV_N = field::zq_t::from_canonical(N / 2).inv();
+constexpr auto INV_N = field::zq_t(N / 2).inv();
 
 // Given a 64 -bit unsigned integer, this routine extracts specified many
 // contiguous bits from ( least significant bits ) LSB side & reverses their bit
@@ -102,7 +102,7 @@ constexpr std::array<field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
-inline void
+static inline constexpr void
 ntt(std::span<field::zq_t, N> poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
@@ -139,7 +139,7 @@ ntt(std::span<field::zq_t, N> poly)
 //
 // Implementation inspired from
 // https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
-inline void
+static inline constexpr void
 intt(std::span<field::zq_t, N> poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
@@ -184,7 +184,7 @@ intt(std::span<field::zq_t, N> poly)
 //
 // See page 6 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
-static inline void
+static inline constexpr void
 basemul(std::span<const field::zq_t, 2> f, // degree-1 polynomial
         std::span<const field::zq_t, 2> g, // degree-1 polynomial
         std::span<field::zq_t, 2> h,       // degree-1 polynomial
@@ -218,7 +218,7 @@ basemul(std::span<const field::zq_t, 2> f, // degree-1 polynomial
 // g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)
 //
 // h = f ◦ g
-inline void
+static inline constexpr void
 polymul(std::span<const field::zq_t, N> f, // degree-255 polynomial
         std::span<const field::zq_t, N> g, // degree-255 polynomial
         std::span<field::zq_t, N> h        // degree-255 polynomial

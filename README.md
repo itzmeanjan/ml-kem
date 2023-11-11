@@ -131,7 +131,7 @@ When benchmarking, ensure that you've disabled CPU frequency scaling, by followi
 > **Note**
 `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing Kyber KEM routines in terms of CPU cycles. Follow [this](https://github.com/google/benchmark/blob/main/docs/perf_counters.md) for more details.
 
-### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC-13.2.0 )
+### On *12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC-13.2.0 )*
 
 ```bash
 2023-11-10T23:09:58+05:30
@@ -184,7 +184,7 @@ kyber512/decap_stddev        0.051 us        0.051 us            8    243.229   
 kyber512/decap_cv             0.17 %          0.17 %             8      0.17%            0.17%
 ```
 
-### On 12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang-17.0.2 )
+### On *12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang-17.0.2 )*
 
 ```bash
 2023-11-10T23:08:58+05:30
@@ -235,6 +235,112 @@ kyber512/decap_mean           21.0 us         21.0 us            8    98.379k   
 kyber512/decap_median         21.0 us         21.0 us            8    98.279k       47.6444k/s
 kyber512/decap_stddev        0.079 us        0.087 us            8    464.746        197.312/s
 kyber512/decap_cv             0.38 %          0.41 %             8      0.47%            0.41%
+```
+
+### On *ARM Cortex-A72 i.e. Raspberry Pi 4B ( compiled with GCC-13.2.0 )*
+
+```bash
+2023-11-11T21:18:46+05:30
+Running ./build/perf.out
+Run on (4 X 1800 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x4)
+  L1 Instruction 48 KiB (x4)
+  L2 Unified 1024 KiB (x1)
+Load Average: 0.41, 0.53, 0.92
+Performance counters not supported.
+-----------------------------------------------------------------------------------
+Benchmark                        Time             CPU   Iterations items_per_second
+-----------------------------------------------------------------------------------
+kyber768/keygen_mean           155 us          155 us            8       6.43292k/s
+kyber768/keygen_median         156 us          156 us            8       6.43073k/s
+kyber768/keygen_stddev       0.297 us        0.297 us            8        12.3087/s
+kyber768/keygen_cv            0.19 %          0.19 %             8            0.19%
+kyber512/decap_mean            151 us          151 us            8       6.61595k/s
+kyber512/decap_median          151 us          151 us            8        6.6165k/s
+kyber512/decap_stddev        0.339 us        0.344 us            8        15.0375/s
+kyber512/decap_cv             0.22 %          0.23 %             8            0.23%
+kyber1024/encap_mean           268 us          268 us            8        3.7347k/s
+kyber1024/encap_median         268 us          268 us            8       3.73733k/s
+kyber1024/encap_stddev        1.09 us         1.10 us            8        15.2532/s
+kyber1024/encap_cv            0.41 %          0.41 %             8            0.41%
+kyber512/encap_mean            120 us          120 us            8       8.35549k/s
+kyber512/encap_median          120 us          120 us            8       8.36468k/s
+kyber512/encap_stddev        0.438 us        0.441 us            8        30.5954/s
+kyber512/encap_cv             0.37 %          0.37 %             8            0.37%
+kyber512/keygen_mean          95.3 us         95.3 us            8       10.4904k/s
+kyber512/keygen_median        95.3 us         95.3 us            8       10.4902k/s
+kyber512/keygen_stddev       0.244 us        0.249 us            8        27.3701/s
+kyber512/keygen_cv            0.26 %          0.26 %             8            0.26%
+kyber768/decap_mean            231 us          231 us            8       4.32281k/s
+kyber768/decap_median          231 us          231 us            8       4.32044k/s
+kyber768/decap_stddev        0.566 us        0.547 us            8        10.2382/s
+kyber768/decap_cv             0.24 %          0.24 %             8            0.24%
+kyber1024/decap_mean           322 us          322 us            8       3.10326k/s
+kyber1024/decap_median         322 us          322 us            8       3.10407k/s
+kyber1024/decap_stddev       0.654 us        0.641 us            8        6.17131/s
+kyber1024/decap_cv            0.20 %          0.20 %             8            0.20%
+kyber1024/keygen_mean          229 us          229 us            8       4.36296k/s
+kyber1024/keygen_median        229 us          229 us            8       4.35878k/s
+kyber1024/keygen_stddev      0.603 us        0.604 us            8        11.5268/s
+kyber1024/keygen_cv           0.26 %          0.26 %             8            0.26%
+kyber768/encap_mean            188 us          188 us            8       5.31972k/s
+kyber768/encap_median          188 us          188 us            8       5.32499k/s
+kyber768/encap_stddev        0.830 us        0.820 us            8        23.1347/s
+kyber768/encap_cv             0.44 %          0.44 %             8            0.43%
+```
+
+### On *ARM Cortex-A72 i.e. Raspberry Pi 4B ( compiled with Clang-17.0.2 )*
+
+```bash
+2023-11-11T21:22:46+05:30
+Running ./build/perf.out
+Run on (4 X 1800 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x4)
+  L1 Instruction 48 KiB (x4)
+  L2 Unified 1024 KiB (x1)
+Load Average: 0.23, 0.31, 0.73
+Performance counters not supported.
+-----------------------------------------------------------------------------------
+Benchmark                        Time             CPU   Iterations items_per_second
+-----------------------------------------------------------------------------------
+kyber512/encap_mean            142 us          142 us            8       7.04773k/s
+kyber512/encap_median          142 us          142 us            8       7.05298k/s
+kyber512/encap_stddev        0.258 us        0.255 us            8        12.6454/s
+kyber512/encap_cv             0.18 %          0.18 %             8            0.18%
+kyber1024/encap_mean           346 us          346 us            8       2.89147k/s
+kyber1024/encap_median         346 us          346 us            8       2.89213k/s
+kyber1024/encap_stddev       0.953 us        0.925 us            8        7.72001/s
+kyber1024/encap_cv            0.28 %          0.27 %             8            0.27%
+kyber768/encap_mean            231 us          231 us            8       4.33791k/s
+kyber768/encap_median          231 us          231 us            8       4.33577k/s
+kyber768/encap_stddev        0.386 us        0.398 us            8        7.48937/s
+kyber768/encap_cv             0.17 %          0.17 %             8            0.17%
+kyber1024/decap_mean           389 us          389 us            8       2.57145k/s
+kyber1024/decap_median         389 us          389 us            8       2.57121k/s
+kyber1024/decap_stddev       0.639 us        0.643 us            8        4.25513/s
+kyber1024/decap_cv            0.16 %          0.17 %             8            0.17%
+kyber768/decap_mean            265 us          265 us            8        3.7685k/s
+kyber768/decap_median          265 us          265 us            8       3.76977k/s
+kyber768/decap_stddev        0.361 us        0.360 us            8        5.11411/s
+kyber768/decap_cv             0.14 %          0.14 %             8            0.14%
+kyber512/keygen_mean           111 us          111 us            8        8.9816k/s
+kyber512/keygen_median         111 us          111 us            8       8.97711k/s
+kyber512/keygen_stddev       0.185 us        0.180 us            8        14.5127/s
+kyber512/keygen_cv            0.17 %          0.16 %             8            0.16%
+kyber1024/keygen_mean          295 us          295 us            8       3.39431k/s
+kyber1024/keygen_median        295 us          295 us            8       3.39511k/s
+kyber1024/keygen_stddev      0.904 us        0.901 us            8        10.3735/s
+kyber1024/keygen_cv           0.31 %          0.31 %             8            0.31%
+kyber768/keygen_mean           188 us          188 us            8       5.32569k/s
+kyber768/keygen_median         188 us          188 us            8       5.32381k/s
+kyber768/keygen_stddev       0.389 us        0.392 us            8        11.1272/s
+kyber768/keygen_cv            0.21 %          0.21 %             8            0.21%
+kyber512/decap_mean            169 us          169 us            8       5.92576k/s
+kyber512/decap_median          169 us          169 us            8       5.92732k/s
+kyber512/decap_stddev        0.325 us        0.327 us            8        11.4476/s
+kyber512/decap_cv             0.19 %          0.19 %             8            0.19%
 ```
 
 ## Usage
@@ -361,4 +467,5 @@ prng::prng_t prng0;
 prng::prng_t prng1{seed};
 ```
 
-> **Note** Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.
+> **Note**
+Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.

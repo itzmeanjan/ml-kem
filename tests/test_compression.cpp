@@ -44,8 +44,8 @@ test_zq_compression()
     const auto b = kyber_utils::compress<d>(a);
     const auto c = kyber_utils::decompress<d>(b);
 
-    const auto a_canon = a.to_canonical();
-    const auto c_canon = c.to_canonical();
+    const auto a_canon = a.raw();
+    const auto c_canon = c.raw();
 
     const uint32_t br0[]{ static_cast<uint16_t>(field::Q - c_canon), c_canon };
     const bool flg0 = c_canon <= (field::Q >> 1);

@@ -44,8 +44,7 @@ check_k(const size_t k)
 consteval bool
 check_l(const size_t l)
 {
-  return (l == 1) || (l == 4) || (l == 5) || (l == 10) || (l == 11) ||
-         (l == 12);
+  return (l == 1) || (l == 4) || (l == 5) || (l == 10) || (l == 11) || (l == 12);
 }
 
 // Compile-time check to ensure that operand matrices are having compatible
@@ -77,11 +76,7 @@ check_keygen_params(const size_t k, const size_t eta1)
 // See algorithm 5 and table 1 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 consteval bool
-check_encrypt_params(const size_t k,
-                     const size_t η1,
-                     const size_t η2,
-                     const size_t du,
-                     const size_t dv)
+check_encrypt_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
   bool flg0 = (k == 2) && (η1 == 3) && (η2 == 2) && (du == 10) && (dv == 4);
   bool flg1 = (k == 3) && (η1 == 2) && (η2 == 2) && (du == 10) && (dv == 4);
@@ -111,11 +106,7 @@ check_decrypt_params(const size_t k, const size_t du, const size_t dv)
 // See algorithm 8 and table 1 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 consteval bool
-check_encap_params(const size_t k,
-                   const size_t η1,
-                   const size_t η2,
-                   const size_t du,
-                   const size_t dv)
+check_encap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
   return check_encrypt_params(k, η1, η2, du, dv);
 }
@@ -126,11 +117,7 @@ check_encap_params(const size_t k,
 // See algorithm 9 and table 1 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 consteval bool
-check_decap_params(const size_t k,
-                   const size_t η1,
-                   const size_t η2,
-                   const size_t du,
-                   const size_t dv)
+check_decap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
   return check_encap_params(k, η1, η2, du, dv);
 }

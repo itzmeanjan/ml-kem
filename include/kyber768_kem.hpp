@@ -57,8 +57,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
 inline shake256::shake256_t
-decapsulate(std::span<const uint8_t, SKEY_LEN> seckey,
-            std::span<const uint8_t, CIPHER_LEN> cipher)
+decapsulate(std::span<const uint8_t, SKEY_LEN> seckey, std::span<const uint8_t, CIPHER_LEN> cipher)
 {
   return kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher);
 }

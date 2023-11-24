@@ -60,7 +60,7 @@ cmake version 3.25.1
 > [!NOTE]
 > If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
 
-> ![TIP]
+> [!TIP]
 > Git submodule based dependencies will mostly be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init` from inside the root of this repository.
 
 ## Testing

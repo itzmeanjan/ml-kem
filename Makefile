@@ -45,7 +45,7 @@ $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
 test: $(TEST_BINARY)
-	./$<
+	./$< --gtest_shuffle --gtest_random_seed=0
 
 $(BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

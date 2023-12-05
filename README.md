@@ -21,7 +21,7 @@ Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
 > [!NOTE]
 > *IND-CCA2-secure Kyber KEM* can be used for synchronous secure communication such as TLS.
 
-Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3` and `subtle` are two dependencies of this library, which are pinned to specific commit, using git submodule.
+Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3` and `subtle` are two dependencies of this library, which are pinned to specific git commits, using git submodule.
 
 > [!NOTE]
 > Find Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
@@ -75,33 +75,34 @@ make -j
 ```
 
 ```bash
+Note: Randomizing tests' orders with a seed of 61247 .
 [==========] Running 10 tests from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 10 tests from KyberKEM
-[ RUN      ] KyberKEM.CompressDecompressZq
-[       OK ] KyberKEM.CompressDecompressZq (97 ms)
 [ RUN      ] KyberKEM.ArithmeticOverZq
-[       OK ] KyberKEM.ArithmeticOverZq (143 ms)
-[ RUN      ] KyberKEM.Kyber512KeygenEncapsDecaps
-[       OK ] KyberKEM.Kyber512KeygenEncapsDecaps (0 ms)
-[ RUN      ] KyberKEM.Kyber768KeygenEncapsDecaps
-[       OK ] KyberKEM.Kyber768KeygenEncapsDecaps (0 ms)
-[ RUN      ] KyberKEM.Kyber1024KeygenEncapsDecaps
-[       OK ] KyberKEM.Kyber1024KeygenEncapsDecaps (0 ms)
-[ RUN      ] KyberKEM.Kyber512KnownAnswerTests
-[       OK ] KyberKEM.Kyber512KnownAnswerTests (6 ms)
-[ RUN      ] KyberKEM.Kyber768KnownAnswerTests
-[       OK ] KyberKEM.Kyber768KnownAnswerTests (10 ms)
-[ RUN      ] KyberKEM.Kyber1024KnownAnswerTests
-[       OK ] KyberKEM.Kyber1024KnownAnswerTests (16 ms)
+[       OK ] KyberKEM.ArithmeticOverZq (116 ms)
 [ RUN      ] KyberKEM.NumberTheoreticTransform
 [       OK ] KyberKEM.NumberTheoreticTransform (0 ms)
+[ RUN      ] KyberKEM.Kyber768KnownAnswerTests
+[       OK ] KyberKEM.Kyber768KnownAnswerTests (8 ms)
+[ RUN      ] KyberKEM.Kyber512KnownAnswerTests
+[       OK ] KyberKEM.Kyber512KnownAnswerTests (5 ms)
+[ RUN      ] KyberKEM.CompressDecompressZq
+[       OK ] KyberKEM.CompressDecompressZq (94 ms)
+[ RUN      ] KyberKEM.Kyber1024KnownAnswerTests
+[       OK ] KyberKEM.Kyber1024KnownAnswerTests (13 ms)
+[ RUN      ] KyberKEM.Kyber768KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber768KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.Kyber512KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber512KeygenEncapsDecaps (0 ms)
 [ RUN      ] KyberKEM.PolynomialSerialization
 [       OK ] KyberKEM.PolynomialSerialization (0 ms)
-[----------] 10 tests from KyberKEM (275 ms total)
+[ RUN      ] KyberKEM.Kyber1024KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber1024KeygenEncapsDecaps (0 ms)
+[----------] 10 tests from KyberKEM (238 ms total)
 
 [----------] Global test environment tear-down
-[==========] 10 tests from 1 test suite ran. (275 ms total)
+[==========] 10 tests from 1 test suite ran. (238 ms total)
 [  PASSED  ] 10 tests.
 ```
 
@@ -126,213 +127,213 @@ make perf       # If you have built google-benchmark library with libPFM support
 ### On *12th Gen Intel(R) Core(TM) i7-1260P ( compiled with GCC-13.2.0 )*
 
 ```bash
-2023-11-10T23:09:58+05:30
+2023-12-05T22:33:52+04:00
 Running ./build/perf.out
-Run on (16 X 3475.61 MHz CPU s)
+Run on (16 X 504.568 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 0.58, 0.37, 0.37
+Load Average: 0.44, 0.51, 0.51
 ----------------------------------------------------------------------------------------------
 Benchmark                        Time             CPU   Iterations     CYCLES items_per_second
 ----------------------------------------------------------------------------------------------
-kyber768/keygen_mean          32.8 us         32.8 us            8    153.61k       30.4661k/s
-kyber768/keygen_median        32.8 us         32.8 us            8   153.499k       30.5186k/s
-kyber768/keygen_stddev       0.112 us        0.112 us            8    370.822        103.635/s
-kyber768/keygen_cv            0.34 %          0.34 %             8      0.24%            0.34%
-kyber768/encap_mean           39.7 us         39.7 us            8   185.442k       25.1981k/s
-kyber768/encap_median         39.7 us         39.7 us            8   185.491k       25.2125k/s
-kyber768/encap_stddev        0.252 us        0.250 us            8     571.21        158.491/s
-kyber768/encap_cv             0.63 %          0.63 %             8      0.31%            0.63%
-kyber512/encap_mean           25.0 us         25.0 us            8   116.878k       40.0448k/s
-kyber512/encap_median         25.0 us         25.0 us            8   116.902k       40.0477k/s
-kyber512/encap_stddev        0.043 us        0.042 us            8    189.697        68.0994/s
-kyber512/encap_cv             0.17 %          0.17 %             8      0.16%            0.17%
-kyber768/decap_mean           47.8 us         47.8 us            8    223.57k       20.9403k/s
-kyber768/decap_median         47.8 us         47.8 us            8   223.666k       20.9417k/s
-kyber768/decap_stddev        0.061 us        0.059 us            8    319.863        26.0114/s
-kyber768/decap_cv             0.13 %          0.12 %             8      0.14%            0.12%
-kyber1024/encap_mean          56.7 us         56.7 us            8   264.067k       17.6263k/s
-kyber1024/encap_median        56.8 us         56.8 us            8   263.945k        17.617k/s
-kyber1024/encap_stddev       0.333 us        0.334 us            8    605.632        103.857/s
-kyber1024/encap_cv            0.59 %          0.59 %             8      0.23%            0.59%
-kyber1024/decap_mean          66.4 us         66.4 us            8   311.206k       15.0527k/s
-kyber1024/decap_median        66.4 us         66.4 us            8   311.099k        15.062k/s
-kyber1024/decap_stddev       0.162 us        0.160 us            8     569.95         36.147/s
-kyber1024/decap_cv            0.24 %          0.24 %             8      0.18%            0.24%
-kyber1024/keygen_mean         49.3 us         49.3 us            8   229.629k       20.2711k/s
-kyber1024/keygen_median       49.1 us         49.1 us            8   229.512k        20.367k/s
-kyber1024/keygen_stddev      0.494 us        0.494 us            8    417.077        200.907/s
-kyber1024/keygen_cv           1.00 %          1.00 %             8      0.18%            0.99%
-kyber512/keygen_mean          20.1 us         20.1 us            8   93.7752k       49.8383k/s
-kyber512/keygen_median        20.1 us         20.1 us            8    93.788k       49.8088k/s
-kyber512/keygen_stddev       0.070 us        0.070 us            8    424.419        174.601/s
-kyber512/keygen_cv            0.35 %          0.35 %             8      0.45%            0.35%
-kyber512/decap_mean           30.9 us         30.9 us            8   144.779k       32.3551k/s
-kyber512/decap_median         30.9 us         30.9 us            8   144.761k       32.3463k/s
-kyber512/decap_stddev        0.051 us        0.051 us            8    243.229        53.6646/s
-kyber512/decap_cv             0.17 %          0.17 %             8      0.17%            0.17%
+kyber512/keygen_mean          14.4 us         14.4 us            8   67.3437k       69.4709k/s
+kyber512/keygen_median        14.4 us         14.4 us            8   67.4082k       69.3937k/s
+kyber512/keygen_stddev       0.042 us        0.043 us            8    176.213        210.232/s
+kyber512/keygen_cv            0.29 %          0.30 %             8      0.26%            0.30%
+kyber1024/decap_mean          48.5 us         48.5 us            8    226.76k       20.6092k/s
+kyber1024/decap_median        48.5 us         48.5 us            8   226.561k       20.6251k/s
+kyber1024/decap_stddev       0.165 us        0.157 us            8    426.061        66.8334/s
+kyber1024/decap_cv            0.34 %          0.32 %             8      0.19%            0.32%
+kyber512/decap_mean           20.7 us         20.6 us            8   96.5275k       48.4359k/s
+kyber512/decap_median         20.6 us         20.6 us            8   96.3069k       48.5757k/s
+kyber512/decap_stddev        0.134 us        0.135 us            8    582.227         313.68/s
+kyber512/decap_cv             0.65 %          0.65 %             8      0.60%            0.65%
+kyber768/keygen_mean          24.7 us         24.7 us            8     114.9k       40.5314k/s
+kyber768/keygen_median        24.6 us         24.6 us            8   115.106k       40.6451k/s
+kyber768/keygen_stddev       0.177 us        0.169 us            8    687.033        274.976/s
+kyber768/keygen_cv            0.72 %          0.69 %             8      0.60%            0.68%
+kyber768/decap_mean           33.3 us         33.2 us            8    155.52k       30.0789k/s
+kyber768/decap_median         33.2 us         33.2 us            8    155.26k       30.0966k/s
+kyber768/decap_stddev        0.147 us        0.139 us            8    552.726        125.078/s
+kyber768/decap_cv             0.44 %          0.42 %             8      0.36%            0.42%
+kyber1024/encap_mean          44.3 us         44.3 us            8   206.579k       22.5924k/s
+kyber1024/encap_median        44.3 us         44.3 us            8   206.455k       22.5788k/s
+kyber1024/encap_stddev       0.147 us        0.145 us            8    549.686        74.1456/s
+kyber1024/encap_cv            0.33 %          0.33 %             8      0.27%            0.33%
+kyber512/encap_mean           18.0 us         18.0 us            8    84.133k       55.5064k/s
+kyber512/encap_median         18.0 us         18.0 us            8   84.1549k       55.5051k/s
+kyber512/encap_stddev        0.064 us        0.061 us            8    151.114        186.754/s
+kyber512/encap_cv             0.36 %          0.34 %             8      0.18%            0.34%
+kyber768/encap_mean           29.7 us         29.7 us            8   138.837k       33.6446k/s
+kyber768/encap_median         29.7 us         29.7 us            8   138.648k       33.7164k/s
+kyber768/encap_stddev        0.161 us        0.158 us            8    633.267        178.415/s
+kyber768/encap_cv             0.54 %          0.53 %             8      0.46%            0.53%
+kyber1024/keygen_mean         38.8 us         38.8 us            8   180.897k       25.7986k/s
+kyber1024/keygen_median       38.9 us         38.8 us            8   181.344k       25.7401k/s
+kyber1024/keygen_stddev      0.268 us        0.267 us            8   1.09543k        179.632/s
+kyber1024/keygen_cv           0.69 %          0.69 %             8      0.61%            0.70%
 ```
 
 ### On *12th Gen Intel(R) Core(TM) i7-1260P ( compiled with Clang-17.0.2 )*
 
 ```bash
-2023-11-10T23:08:58+05:30
+2023-12-05T22:32:40+04:00
 Running ./build/perf.out
-Run on (16 X 452.225 MHz CPU s)
+Run on (16 X 1113.91 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 0.20, 0.25, 0.33
+Load Average: 0.70, 0.54, 0.52
 ----------------------------------------------------------------------------------------------
 Benchmark                        Time             CPU   Iterations     CYCLES items_per_second
 ----------------------------------------------------------------------------------------------
-kyber768/decap_mean           32.9 us         32.9 us            8   154.408k       30.3581k/s
-kyber768/decap_median         33.0 us         33.0 us            8   154.456k       30.3446k/s
-kyber768/decap_stddev        0.142 us        0.141 us            8    670.058        130.207/s
-kyber768/decap_cv             0.43 %          0.43 %             8      0.43%            0.43%
-kyber768/keygen_mean          23.0 us         23.0 us            8   107.701k       43.5071k/s
-kyber768/keygen_median        23.0 us         23.0 us            8   107.814k       43.4851k/s
-kyber768/keygen_stddev       0.055 us        0.061 us            8    343.297        116.603/s
-kyber768/keygen_cv            0.24 %          0.27 %             8      0.32%            0.27%
-kyber1024/keygen_mean         35.8 us         35.8 us            8   167.758k       27.9348k/s
-kyber1024/keygen_median       35.7 us         35.7 us            8   167.493k       27.9923k/s
-kyber1024/keygen_stddev      0.516 us        0.516 us            8   2.34183k          402.6/s
-kyber1024/keygen_cv           1.44 %          1.44 %             8      1.40%            1.44%
-kyber768/encap_mean           28.3 us         28.2 us            8   132.394k       35.3991k/s
-kyber768/encap_median         28.2 us         28.2 us            8   132.309k        35.425k/s
-kyber768/encap_stddev        0.099 us        0.098 us            8    448.832         122.72/s
-kyber768/encap_cv             0.35 %          0.35 %             8      0.34%            0.35%
-kyber1024/decap_mean          49.4 us         49.4 us            8   230.411k       20.2582k/s
-kyber1024/decap_median        49.2 us         49.2 us            8   230.322k       20.3074k/s
-kyber1024/decap_stddev       0.376 us        0.379 us            8   2.14278k        154.659/s
-kyber1024/decap_cv            0.76 %          0.77 %             8      0.93%            0.76%
-kyber1024/encap_mean          42.5 us         42.5 us            8   198.951k        23.548k/s
-kyber1024/encap_median        42.4 us         42.4 us            8   198.595k       23.5846k/s
-kyber1024/encap_stddev       0.253 us        0.241 us            8   1.14419k        132.681/s
-kyber1024/encap_cv            0.60 %          0.57 %             8      0.58%            0.56%
-kyber512/keygen_mean          13.9 us         13.9 us            8   65.0898k       72.0204k/s
-kyber512/keygen_median        13.9 us         13.9 us            8   65.0964k       71.9964k/s
-kyber512/keygen_stddev       0.133 us        0.130 us            8    605.256        673.997/s
-kyber512/keygen_cv            0.96 %          0.93 %             8      0.93%            0.94%
-kyber512/encap_mean           17.6 us         17.6 us            8   82.6474k       56.6978k/s
-kyber512/encap_median         17.6 us         17.6 us            8   82.6171k        56.724k/s
-kyber512/encap_stddev        0.105 us        0.107 us            8    515.213        342.806/s
-kyber512/encap_cv             0.59 %          0.60 %             8      0.62%            0.60%
-kyber512/decap_mean           21.0 us         21.0 us            8    98.379k       47.6137k/s
-kyber512/decap_median         21.0 us         21.0 us            8    98.279k       47.6444k/s
-kyber512/decap_stddev        0.079 us        0.087 us            8    464.746        197.312/s
-kyber512/decap_cv             0.38 %          0.41 %             8      0.47%            0.41%
+kyber1024/encap_mean          39.4 us         39.4 us            8   184.447k       25.3726k/s
+kyber1024/encap_median        39.4 us         39.4 us            8   184.349k       25.4044k/s
+kyber1024/encap_stddev       0.111 us        0.110 us            8    666.498        70.9216/s
+kyber1024/encap_cv            0.28 %          0.28 %             8      0.36%            0.28%
+kyber768/encap_mean           25.2 us         25.2 us            8   118.269k       39.6068k/s
+kyber768/encap_median         25.2 us         25.2 us            8   118.098k       39.6763k/s
+kyber768/encap_stddev        0.190 us        0.191 us            8    944.954        296.817/s
+kyber768/encap_cv             0.75 %          0.76 %             8      0.80%            0.75%
+kyber768/decap_mean           27.4 us         27.4 us            8   128.276k       36.4705k/s
+kyber768/decap_median         27.4 us         27.4 us            8   128.023k       36.5011k/s
+kyber768/decap_stddev        0.148 us        0.147 us            8    725.711        194.118/s
+kyber768/decap_cv             0.54 %          0.54 %             8      0.57%            0.53%
+kyber512/keygen_mean          11.7 us         11.7 us            8   54.4158k       85.6074k/s
+kyber512/keygen_median        11.6 us         11.6 us            8   54.4761k       85.8637k/s
+kyber512/keygen_stddev       0.157 us        0.157 us            8    230.812        1.1305k/s
+kyber512/keygen_cv            1.35 %          1.35 %             8      0.42%            1.32%
+kyber1024/keygen_mean         31.2 us         31.2 us            8   146.117k       32.0219k/s
+kyber1024/keygen_median       31.3 us         31.3 us            8   146.447k       31.9462k/s
+kyber1024/keygen_stddev      0.443 us        0.443 us            8   2.14262k        460.613/s
+kyber1024/keygen_cv           1.42 %          1.42 %             8      1.47%            1.44%
+kyber512/decap_mean           16.8 us         16.8 us            8    78.599k       59.5481k/s
+kyber512/decap_median         16.8 us         16.8 us            8   78.6311k       59.5517k/s
+kyber512/decap_stddev        0.154 us        0.154 us            8    750.744        545.456/s
+kyber512/decap_cv             0.92 %          0.92 %             8      0.96%            0.92%
+kyber512/encap_mean           15.4 us         15.4 us            8   71.9738k       65.0018k/s
+kyber512/encap_median         15.3 us         15.3 us            8   71.6988k       65.2546k/s
+kyber512/encap_stddev        0.172 us        0.172 us            8    790.241        725.525/s
+kyber512/encap_cv             1.12 %          1.12 %             8      1.10%            1.12%
+kyber768/keygen_mean          20.5 us         20.5 us            8   95.9542k        48.737k/s
+kyber768/keygen_median        20.5 us         20.5 us            8   95.9397k       48.6711k/s
+kyber768/keygen_stddev       0.096 us        0.096 us            8    523.379        227.911/s
+kyber768/keygen_cv            0.47 %          0.47 %             8      0.55%            0.47%
+kyber1024/decap_mean          41.8 us         41.8 us            8   194.826k       23.9134k/s
+kyber1024/decap_median        41.7 us         41.7 us            8   194.774k       24.0016k/s
+kyber1024/decap_stddev       0.526 us        0.523 us            8    573.604        291.732/s
+kyber1024/decap_cv            1.26 %          1.25 %             8      0.29%            1.22%
 ```
 
 ### On *ARM Cortex-A72 i.e. Raspberry Pi 4B ( compiled with GCC-13.2.0 )*
 
 ```bash
-2023-11-11T21:18:46+05:30
+2023-12-06T00:37:57+05:30
 Running ./build/perf.out
 Run on (4 X 1800 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x4)
   L1 Instruction 48 KiB (x4)
   L2 Unified 1024 KiB (x1)
-Load Average: 0.41, 0.53, 0.92
+Load Average: 0.69, 1.28, 1.13
 Performance counters not supported.
 -----------------------------------------------------------------------------------
 Benchmark                        Time             CPU   Iterations items_per_second
 -----------------------------------------------------------------------------------
-kyber768/keygen_mean           155 us          155 us            8       6.43292k/s
-kyber768/keygen_median         156 us          156 us            8       6.43073k/s
-kyber768/keygen_stddev       0.297 us        0.297 us            8        12.3087/s
-kyber768/keygen_cv            0.19 %          0.19 %             8            0.19%
-kyber512/decap_mean            151 us          151 us            8       6.61595k/s
-kyber512/decap_median          151 us          151 us            8        6.6165k/s
-kyber512/decap_stddev        0.339 us        0.344 us            8        15.0375/s
-kyber512/decap_cv             0.22 %          0.23 %             8            0.23%
-kyber1024/encap_mean           268 us          268 us            8        3.7347k/s
-kyber1024/encap_median         268 us          268 us            8       3.73733k/s
-kyber1024/encap_stddev        1.09 us         1.10 us            8        15.2532/s
-kyber1024/encap_cv            0.41 %          0.41 %             8            0.41%
-kyber512/encap_mean            120 us          120 us            8       8.35549k/s
-kyber512/encap_median          120 us          120 us            8       8.36468k/s
-kyber512/encap_stddev        0.438 us        0.441 us            8        30.5954/s
-kyber512/encap_cv             0.37 %          0.37 %             8            0.37%
-kyber512/keygen_mean          95.3 us         95.3 us            8       10.4904k/s
-kyber512/keygen_median        95.3 us         95.3 us            8       10.4902k/s
-kyber512/keygen_stddev       0.244 us        0.249 us            8        27.3701/s
-kyber512/keygen_cv            0.26 %          0.26 %             8            0.26%
-kyber768/decap_mean            231 us          231 us            8       4.32281k/s
-kyber768/decap_median          231 us          231 us            8       4.32044k/s
-kyber768/decap_stddev        0.566 us        0.547 us            8        10.2382/s
-kyber768/decap_cv             0.24 %          0.24 %             8            0.24%
-kyber1024/decap_mean           322 us          322 us            8       3.10326k/s
-kyber1024/decap_median         322 us          322 us            8       3.10407k/s
-kyber1024/decap_stddev       0.654 us        0.641 us            8        6.17131/s
-kyber1024/decap_cv            0.20 %          0.20 %             8            0.20%
-kyber1024/keygen_mean          229 us          229 us            8       4.36296k/s
-kyber1024/keygen_median        229 us          229 us            8       4.35878k/s
-kyber1024/keygen_stddev      0.603 us        0.604 us            8        11.5268/s
-kyber1024/keygen_cv           0.26 %          0.26 %             8            0.26%
-kyber768/encap_mean            188 us          188 us            8       5.31972k/s
-kyber768/encap_median          188 us          188 us            8       5.32499k/s
-kyber768/encap_stddev        0.830 us        0.820 us            8        23.1347/s
-kyber768/encap_cv             0.44 %          0.44 %             8            0.43%
+kyber1024/encap_mean           220 us          220 us           10       4.53661k/s
+kyber1024/encap_median         220 us          220 us           10       4.53843k/s
+kyber1024/encap_stddev       0.775 us        0.776 us           10        15.9613/s
+kyber1024/encap_cv            0.35 %          0.35 %            10            0.35%
+kyber768/encap_mean            147 us          146 us           10       6.82666k/s
+kyber768/encap_median          146 us          146 us           10       6.82827k/s
+kyber768/encap_stddev        0.370 us        0.357 us           10        16.6515/s
+kyber768/encap_cv             0.25 %          0.24 %            10            0.24%
+kyber1024/keygen_mean          189 us          189 us           10       5.30215k/s
+kyber1024/keygen_median        188 us          188 us           10       5.30614k/s
+kyber1024/keygen_stddev      0.588 us        0.590 us           10        16.5559/s
+kyber1024/keygen_cv           0.31 %          0.31 %            10            0.31%
+kyber512/decap_mean            106 us          106 us           10       9.45067k/s
+kyber512/decap_median          106 us          106 us           10       9.45608k/s
+kyber512/decap_stddev        0.243 us        0.250 us           10        22.2866/s
+kyber512/decap_cv             0.23 %          0.24 %            10            0.24%
+kyber768/decap_mean            169 us          169 us           10       5.91167k/s
+kyber768/decap_median          169 us          169 us           10       5.91724k/s
+kyber768/decap_stddev        0.639 us        0.623 us           10        21.6423/s
+kyber768/decap_cv             0.38 %          0.37 %            10            0.37%
+kyber512/encap_mean           89.0 us         89.0 us           10        11.236k/s
+kyber512/encap_median         89.0 us         89.0 us           10       11.2376k/s
+kyber512/encap_stddev        0.216 us        0.222 us           10        28.0647/s
+kyber512/encap_cv             0.24 %          0.25 %            10            0.25%
+kyber768/keygen_mean           119 us          119 us           10       8.37056k/s
+kyber768/keygen_median         119 us          119 us           10       8.38088k/s
+kyber768/keygen_stddev       0.623 us        0.615 us           10        42.9127/s
+kyber768/keygen_cv            0.52 %          0.51 %            10            0.51%
+kyber1024/decap_mean           249 us          249 us           10       4.02233k/s
+kyber1024/decap_median         249 us          249 us           10       4.02281k/s
+kyber1024/decap_stddev       0.721 us        0.706 us           10        11.4051/s
+kyber1024/decap_cv            0.29 %          0.28 %            10            0.28%
+kyber512/keygen_mean          70.1 us         70.0 us           10       14.2774k/s
+kyber512/keygen_median        70.1 us         70.1 us           10       14.2713k/s
+kyber512/keygen_stddev       0.198 us        0.196 us           10        40.0484/s
+kyber512/keygen_cv            0.28 %          0.28 %            10            0.28%
 ```
 
 ### On *ARM Cortex-A72 i.e. Raspberry Pi 4B ( compiled with Clang-17.0.2 )*
 
 ```bash
-2023-11-11T21:22:46+05:30
+2023-12-06T00:36:20+05:30
 Running ./build/perf.out
 Run on (4 X 1800 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x4)
   L1 Instruction 48 KiB (x4)
   L2 Unified 1024 KiB (x1)
-Load Average: 0.23, 0.31, 0.73
+Load Average: 0.73, 1.55, 1.20
 Performance counters not supported.
 -----------------------------------------------------------------------------------
 Benchmark                        Time             CPU   Iterations items_per_second
 -----------------------------------------------------------------------------------
-kyber512/encap_mean            142 us          142 us            8       7.04773k/s
-kyber512/encap_median          142 us          142 us            8       7.05298k/s
-kyber512/encap_stddev        0.258 us        0.255 us            8        12.6454/s
-kyber512/encap_cv             0.18 %          0.18 %             8            0.18%
-kyber1024/encap_mean           346 us          346 us            8       2.89147k/s
-kyber1024/encap_median         346 us          346 us            8       2.89213k/s
-kyber1024/encap_stddev       0.953 us        0.925 us            8        7.72001/s
-kyber1024/encap_cv            0.28 %          0.27 %             8            0.27%
-kyber768/encap_mean            231 us          231 us            8       4.33791k/s
-kyber768/encap_median          231 us          231 us            8       4.33577k/s
-kyber768/encap_stddev        0.386 us        0.398 us            8        7.48937/s
-kyber768/encap_cv             0.17 %          0.17 %             8            0.17%
-kyber1024/decap_mean           389 us          389 us            8       2.57145k/s
-kyber1024/decap_median         389 us          389 us            8       2.57121k/s
-kyber1024/decap_stddev       0.639 us        0.643 us            8        4.25513/s
-kyber1024/decap_cv            0.16 %          0.17 %             8            0.17%
-kyber768/decap_mean            265 us          265 us            8        3.7685k/s
-kyber768/decap_median          265 us          265 us            8       3.76977k/s
-kyber768/decap_stddev        0.361 us        0.360 us            8        5.11411/s
-kyber768/decap_cv             0.14 %          0.14 %             8            0.14%
-kyber512/keygen_mean           111 us          111 us            8        8.9816k/s
-kyber512/keygen_median         111 us          111 us            8       8.97711k/s
-kyber512/keygen_stddev       0.185 us        0.180 us            8        14.5127/s
-kyber512/keygen_cv            0.17 %          0.16 %             8            0.16%
-kyber1024/keygen_mean          295 us          295 us            8       3.39431k/s
-kyber1024/keygen_median        295 us          295 us            8       3.39511k/s
-kyber1024/keygen_stddev      0.904 us        0.901 us            8        10.3735/s
-kyber1024/keygen_cv           0.31 %          0.31 %             8            0.31%
-kyber768/keygen_mean           188 us          188 us            8       5.32569k/s
-kyber768/keygen_median         188 us          188 us            8       5.32381k/s
-kyber768/keygen_stddev       0.389 us        0.392 us            8        11.1272/s
-kyber768/keygen_cv            0.21 %          0.21 %             8            0.21%
-kyber512/decap_mean            169 us          169 us            8       5.92576k/s
-kyber512/decap_median          169 us          169 us            8       5.92732k/s
-kyber512/decap_stddev        0.325 us        0.327 us            8        11.4476/s
-kyber512/decap_cv             0.19 %          0.19 %             8            0.19%
+kyber1024/encap_mean           297 us          297 us           10       3.36489k/s
+kyber1024/encap_median         297 us          297 us           10       3.36366k/s
+kyber1024/encap_stddev        1.08 us         1.09 us           10        12.2899/s
+kyber1024/encap_cv            0.36 %          0.37 %            10            0.37%
+kyber1024/keygen_mean          254 us          254 us           10       3.93546k/s
+kyber1024/keygen_median        254 us          254 us           10       3.93845k/s
+kyber1024/keygen_stddev       1.05 us         1.05 us           10        16.2184/s
+kyber1024/keygen_cv           0.41 %          0.41 %            10            0.41%
+kyber512/decap_mean            129 us          129 us           10       7.72535k/s
+kyber512/decap_median          130 us          129 us           10       7.72301k/s
+kyber512/decap_stddev        0.293 us        0.284 us           10        16.9731/s
+kyber512/decap_cv             0.23 %          0.22 %            10            0.22%
+kyber768/encap_mean            193 us          193 us           10       5.16967k/s
+kyber768/encap_median          193 us          193 us           10       5.17074k/s
+kyber768/encap_stddev        0.416 us        0.426 us           10        11.3712/s
+kyber768/encap_cv             0.22 %          0.22 %            10            0.22%
+kyber1024/decap_mean           320 us          320 us           10       3.12381k/s
+kyber1024/decap_median         320 us          320 us           10       3.12274k/s
+kyber1024/decap_stddev       0.813 us        0.805 us           10        7.85819/s
+kyber1024/decap_cv            0.25 %          0.25 %            10            0.25%
+kyber768/decap_mean            211 us          211 us           10       4.73723k/s
+kyber768/decap_median          211 us          211 us           10       4.73735k/s
+kyber768/decap_stddev        0.374 us        0.391 us           10        8.77749/s
+kyber768/decap_cv             0.18 %          0.19 %            10            0.19%
+kyber512/encap_mean            116 us          116 us           10       8.59258k/s
+kyber512/encap_median          116 us          116 us           10       8.59042k/s
+kyber512/encap_stddev        0.222 us        0.216 us           10        15.9794/s
+kyber512/encap_cv             0.19 %          0.19 %            10            0.19%
+kyber512/keygen_mean          92.6 us         92.6 us           10       10.7953k/s
+kyber512/keygen_median        92.4 us         92.4 us           10       10.8198k/s
+kyber512/keygen_stddev       0.692 us        0.695 us           10        79.7935/s
+kyber512/keygen_cv            0.75 %          0.75 %            10            0.74%
+kyber768/keygen_mean           159 us          159 us           10       6.29988k/s
+kyber768/keygen_median         159 us          159 us           10       6.30371k/s
+kyber768/keygen_stddev       0.714 us        0.712 us           10         28.124/s
+kyber768/keygen_cv            0.45 %          0.45 %            10            0.45%
 ```
 
 ## Usage

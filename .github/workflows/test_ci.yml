@@ -1,4 +1,4 @@
-name: Test Kyber KEM using CI
+name: Test Kyber Key Encapsulation Mechanism
 
 on:
   push:
@@ -8,23 +8,22 @@ on:
 
 jobs:
   build:
-
-    runs-on: ubuntu-22.04
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
     - uses: actions/checkout@v3
-    - name: Setup Compiler
-      run: |
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 10
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 9
-    - name: Fetch Dependency
-      run: git submodule update --init
-    - name: Get CMake
-      run: sudo apt-get install cmake
+    # From https://github.com/marketplace/actions/actions-setup-cmake
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.13
+      with:
+        cmake-version: 'latest'
     - name: Setup Google-Test
       run: |
         pushd ~
-        git clone https://github.com/google/googletest.git -b v1.13.0
+        git clone https://github.com/google/googletest.git -b v1.14.0
         pushd googletest
         mkdir build
         pushd build
@@ -34,7 +33,5 @@ jobs:
         popd
         popd
         popd
-    - name: Execute Tests
-      run: make
-    - name: Cleanup
-      run: make clean
+    - name: Execute Tests on ${{matrix.os}}
+      run: make -j

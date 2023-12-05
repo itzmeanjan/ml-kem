@@ -26,14 +26,10 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 3;
-      arr[i] = (static_cast<uint8_t>(poly[off + 7].raw() & one) << 7) |
-               (static_cast<uint8_t>(poly[off + 6].raw() & one) << 6) |
-               (static_cast<uint8_t>(poly[off + 5].raw() & one) << 5) |
-               (static_cast<uint8_t>(poly[off + 4].raw() & one) << 4) |
-               (static_cast<uint8_t>(poly[off + 3].raw() & one) << 3) |
-               (static_cast<uint8_t>(poly[off + 2].raw() & one) << 2) |
-               (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) |
-               (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0);
+      arr[i] = (static_cast<uint8_t>(poly[off + 7].raw() & one) << 7) | (static_cast<uint8_t>(poly[off + 6].raw() & one) << 6) |
+               (static_cast<uint8_t>(poly[off + 5].raw() & one) << 5) | (static_cast<uint8_t>(poly[off + 4].raw() & one) << 4) |
+               (static_cast<uint8_t>(poly[off + 3].raw() & one) << 3) | (static_cast<uint8_t>(poly[off + 2].raw() & one) << 2) |
+               (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) | (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0);
     }
   } else if constexpr (l == 4) {
     constexpr size_t itr_cnt = ntt::N >> 1;
@@ -65,11 +61,9 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
       const auto t7 = poly[poff + 7].raw();
 
       arr[boff + 0] = (static_cast<uint8_t>(t1 & mask3) << 5) | (static_cast<uint8_t>(t0 & mask5) << 0);
-      arr[boff + 1] = (static_cast<uint8_t>(t3 & mask1) << 7) | (static_cast<uint8_t>(t2 & mask5) << 2) |
-                      static_cast<uint8_t>((t1 >> 3) & mask2);
+      arr[boff + 1] = (static_cast<uint8_t>(t3 & mask1) << 7) | (static_cast<uint8_t>(t2 & mask5) << 2) | static_cast<uint8_t>((t1 >> 3) & mask2);
       arr[boff + 2] = (static_cast<uint8_t>(t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 1) & mask4);
-      arr[boff + 3] = (static_cast<uint8_t>(t6 & mask2) << 6) | (static_cast<uint8_t>(t5 & mask5) << 1) |
-                      static_cast<uint8_t>((t4 >> 4) & mask1);
+      arr[boff + 3] = (static_cast<uint8_t>(t6 & mask2) << 6) | (static_cast<uint8_t>(t5 & mask5) << 1) | static_cast<uint8_t>((t4 >> 4) & mask1);
       arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3);
     }
   } else if constexpr (l == 10) {
@@ -201,16 +195,12 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
       const size_t boff = i * 5;
 
       const auto t0 = static_cast<uint16_t>(arr[boff + 0] & mask5);
-      const auto t1 =
-        static_cast<uint16_t>((arr[boff + 1] & mask2) << 3) | static_cast<uint16_t>((arr[boff + 0] >> 5) & mask3);
+      const auto t1 = static_cast<uint16_t>((arr[boff + 1] & mask2) << 3) | static_cast<uint16_t>((arr[boff + 0] >> 5) & mask3);
       const auto t2 = static_cast<uint16_t>((arr[boff + 1] >> 2) & mask5);
-      const auto t3 =
-        static_cast<uint16_t>((arr[boff + 2] & mask4) << 1) | static_cast<uint16_t>((arr[boff + 1] >> 7) & mask1);
-      const auto t4 =
-        static_cast<uint16_t>((arr[boff + 3] & mask1) << 4) | static_cast<uint16_t>((arr[boff + 2] >> 4) & mask4);
+      const auto t3 = static_cast<uint16_t>((arr[boff + 2] & mask4) << 1) | static_cast<uint16_t>((arr[boff + 1] >> 7) & mask1);
+      const auto t4 = static_cast<uint16_t>((arr[boff + 3] & mask1) << 4) | static_cast<uint16_t>((arr[boff + 2] >> 4) & mask4);
       const auto t5 = static_cast<uint16_t>((arr[boff + 3] >> 1) & mask5);
-      const auto t6 =
-        static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) | static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
+      const auto t6 = static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) | static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
       const auto t7 = static_cast<uint16_t>((arr[boff + 4] >> 3) & mask5);
 
       poly[poff + 0] = field::zq_t(t0);
@@ -258,12 +248,10 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
 
       const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask3) << 8) | static_cast<uint16_t>(arr[boff + 0]);
       const auto t1 = (static_cast<uint16_t>(arr[boff + 2] & mask6) << 5) | static_cast<uint16_t>(arr[boff + 1] >> 3);
-      const auto t2 = (static_cast<uint16_t>(arr[boff + 4] & mask1) << 10) |
-                      (static_cast<uint16_t>(arr[boff + 3]) << 2) | static_cast<uint16_t>(arr[boff + 2] >> 6);
+      const auto t2 = (static_cast<uint16_t>(arr[boff + 4] & mask1) << 10) | (static_cast<uint16_t>(arr[boff + 3]) << 2) | static_cast<uint16_t>(arr[boff + 2] >> 6);
       const auto t3 = (static_cast<uint16_t>(arr[boff + 5] & mask4) << 7) | static_cast<uint16_t>(arr[boff + 4] >> 1);
       const auto t4 = (static_cast<uint16_t>(arr[boff + 6] & mask7) << 4) | static_cast<uint16_t>(arr[boff + 5] >> 4);
-      const auto t5 = (static_cast<uint16_t>(arr[boff + 8] & mask2) << 9) |
-                      (static_cast<uint16_t>(arr[boff + 7]) << 1) | static_cast<uint16_t>(arr[boff + 6] >> 7);
+      const auto t5 = (static_cast<uint16_t>(arr[boff + 8] & mask2) << 9) | (static_cast<uint16_t>(arr[boff + 7]) << 1) | static_cast<uint16_t>(arr[boff + 6] >> 7);
       const auto t6 = (static_cast<uint16_t>(arr[boff + 9] & mask5) << 6) | static_cast<uint16_t>(arr[boff + 8] >> 2);
       const auto t7 = (static_cast<uint16_t>(arr[boff + 10]) << 3) | static_cast<uint16_t>(arr[boff + 9] >> 5);
 

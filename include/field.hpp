@@ -23,24 +23,36 @@ constexpr size_t RADIX_BIT_WIDTH = std::bit_width(Q);
 constexpr uint32_t R = (1u << (2 * RADIX_BIT_WIDTH)) / Q;
 
 // Prime field Zq | q = 3329, with arithmetic operations defined over it.
+//
+// This implementation collects inspiration from
+// https://github.com/itzmeanjan/dilithium/blob/3fe6ab61d2d70c1a0b71fc6ed4449f64da08b020/include/field.hpp.
 struct zq_t
 {
 public:
-  // Given a 16 -bit unsigned integer `a`, this function constructs a Zq
-  // element, such that `a` is reduced modulo Q.
-  inline constexpr zq_t(const uint16_t a = 0u) { this->v = barrett_reduce(static_cast<uint32_t>(a)); }
+  // Returns prime field element 0.
+  inline constexpr zq_t() = default;
+
+  // Constructs field element s.t. input is already reduced by prime modulo Q.
+  inline constexpr zq_t(const uint16_t a) { this->v = a; }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   inline constexpr uint32_t raw() const { return this->v; }
 
-  // Returns prime field element 1.
-  static inline constexpr zq_t one() { return zq_t(1u); }
-
   // Returns prime field element 0.
   static inline constexpr zq_t zero() { return zq_t(); }
 
+  // Returns prime field element 1.
+  static inline constexpr zq_t one() { return zq_t(1u); }
+
   // Modulo addition of two Zq elements.
-  inline constexpr zq_t operator+(const zq_t rhs) const { return zq_t(this->v + rhs.v); }
+  inline constexpr zq_t operator+(const zq_t rhs) const
+  {
+    const uint32_t t0 = this->v + rhs.v;
+    const auto mask = -static_cast<uint32_t>(t0 >= Q);
+    const uint32_t t1 = t0 - (mask & Q);
+
+    return zq_t(t1);
+  }
 
   // Compound modulo addition of two Zq elements.
   inline constexpr void operator+=(const zq_t rhs) { *this = *this + rhs; }
@@ -66,16 +78,24 @@ public:
   inline constexpr void operator*=(const zq_t rhs) { *this = *this * rhs; }
 
   // Modulo exponentiation of Zq element.
-  inline constexpr zq_t operator^(const size_t exp) const
+  //
+  // Taken from
+  // https://github.com/itzmeanjan/dilithium/blob/3fe6ab61d2d70c1a0b71fc6ed4449f64da08b020/include/field.hpp#L144-L167.
+  inline constexpr zq_t operator^(const size_t n) const
   {
-    auto res = zq_t::one();
-    const size_t bw = std::bit_width(exp);
+    zq_t base = *this;
 
-    for (int64_t i = bw - 1; i >= 0; i--) {
-      res = res * res;
-      if ((exp >> i) & 1ul) {
-        res = res * *this;
-      }
+    const zq_t br[]{ zq_t(1), base };
+    zq_t res = br[n & 0b1ul];
+
+    const size_t zeros = std::countl_zero(n);
+    const size_t till = 64ul - zeros;
+
+    for (size_t i = 1; i < till; i++) {
+      base = base * base;
+
+      const zq_t br[]{ zq_t(1), base };
+      res = res * br[(n >> i) & 0b1ul];
     }
 
     return res;
@@ -103,7 +123,7 @@ public:
     uint16_t res = 0;
     prng.read(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
 
-    return zq_t(res);
+    return zq_t(barrett_reduce(static_cast<uint32_t>(res)));
   }
 
 private:
@@ -123,8 +143,8 @@ private:
     const uint32_t t2 = t1 * Q;
     const uint32_t t = v - t2;
 
-    const bool flg = t >= Q;
-    const uint32_t t_prime = t - flg * Q;
+    const auto mask = -static_cast<uint32_t>(t >= Q);
+    const uint32_t t_prime = t - (mask & Q);
 
     return t_prime;
   }

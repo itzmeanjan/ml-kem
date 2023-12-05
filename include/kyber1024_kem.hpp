@@ -28,10 +28,7 @@ constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len<k, du, dv>();
 // secret key is 3168 -bytes, given 32 -bytes seed d ( used in CPA-PKE ) and 32
 // -bytes seed z ( used in CCA-KEM ).
 inline void
-keygen(std::span<const uint8_t, 32> d,
-       std::span<const uint8_t, 32> z,
-       std::span<uint8_t, PKEY_LEN> pubkey,
-       std::span<uint8_t, SKEY_LEN> seckey)
+keygen(std::span<const uint8_t, 32> d, std::span<const uint8_t, 32> z, std::span<uint8_t, PKEY_LEN> pubkey, std::span<uint8_t, SKEY_LEN> seckey)
 {
   kem::keygen<k, η1>(d, z, pubkey, seckey);
 }
@@ -44,9 +41,7 @@ keygen(std::span<const uint8_t, 32> d,
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
 inline shake256::shake256_t
-encapsulate(std::span<const uint8_t, 32> m,
-            std::span<const uint8_t, PKEY_LEN> pubkey,
-            std::span<uint8_t, CIPHER_LEN> cipher)
+encapsulate(std::span<const uint8_t, 32> m, std::span<const uint8_t, PKEY_LEN> pubkey, std::span<uint8_t, CIPHER_LEN> cipher)
 {
   return kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher);
 }

@@ -124,8 +124,7 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
       const size_t boff = i * 3;
       const size_t poff = i << 2;
 
-      const uint32_t word = (static_cast<uint32_t>(prf[boff + 2]) << 16) | (static_cast<uint32_t>(prf[boff + 1]) << 8) |
-                            static_cast<uint32_t>(prf[boff + 0]);
+      const uint32_t word = (static_cast<uint32_t>(prf[boff + 2]) << 16) | (static_cast<uint32_t>(prf[boff + 1]) << 8) | static_cast<uint32_t>(prf[boff + 0]);
 
       const uint32_t t0 = (word >> 0) & mask24;
       const uint32_t t1 = (word >> 1) & mask24;

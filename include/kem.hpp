@@ -144,8 +144,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline shake256::shake256_t
-decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey,
-            std::span<const uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
+decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey, std::span<const uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
   requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;

@@ -48,7 +48,7 @@ public:
   inline constexpr zq_t operator+(const zq_t rhs) const
   {
     const uint32_t t0 = this->v + rhs.v;
-    const uint32_t mask = (-static_cast<uint32_t>(t0 >= Q));
+    const auto mask = -static_cast<uint32_t>(t0 >= Q);
     const uint32_t t1 = t0 - (mask & Q);
 
     return zq_t(t1);
@@ -143,8 +143,8 @@ private:
     const uint32_t t2 = t1 * Q;
     const uint32_t t = v - t2;
 
-    const bool flg = t >= Q;
-    const uint32_t t_prime = t - flg * Q;
+    const auto mask = -static_cast<uint32_t>(t >= Q);
+    const uint32_t t_prime = t - (mask & Q);
 
     return t_prime;
   }

@@ -35,8 +35,7 @@ $(BUILD_DIR):
 $(SHA3_INC_DIR):
 	git submodule update --init
 
-$(SUBTLE_INC_DIR):
-	git submodule update --init
+$(SUBTLE_INC_DIR): $(SHA3_INC_DIR)
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

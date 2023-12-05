@@ -415,10 +415,10 @@ Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include
 > [!NOTE]
 > Kyber parameter sets are selected from table 1 of Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf.
 
-See example [program](./example/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
+See example [program](./examples/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
 
 ```bash
-g++ -std=c++20 -Wall -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/kyber512_kem.cpp && ./a.out
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/kyber512_kem.cpp && ./a.out
 ```
 
 ```bash
@@ -430,31 +430,8 @@ cipher        : bcee459c896ea378dcc458a532c35c029eff6b8cf8adc83f484fb6f9bfe32612
 shared secret : 508ac79bf97e90d75267159ba5189b73c48ab41a91aec0f32edd6cd1e66465b5
 ```
 
----
-
-## Important Implementation Note
-
-You'll notice Kyber KEM API accepts 32 -bytes seeds ( `d`, `z` for key generation and `m` for encapsulation ) for all three concrete instantiations ( i.e. Kyber{512, 768, 1024} ) - this is what you, as an user of Kyber KEM API, need to ensure that you call those routines with uniformly random sampled seeds.
-
-I provide you with a PRNG implementation, which lives in [include/prng.hpp](./include/prng.hpp). Before you start using that, I want you to take a moment and understand what can be the implication of using the default constructor of `prng::prng_t`.
-
-- In case default constructor is used, `std::random_device` is requested for 32 random bytes ( in form of eight `uint32_t`s ), which is hashed using SHAKE256 Xof. When you request ( using `read()` function ) arbitrary many random bytes from that initialized PRNG, it's actually squeezed out from SHAKE256 Xof state. Now one thing to note here is `std::random_device` itself is not guaranteed to provide you with system randomness in all possible usecases/ targets. It's an implementation defined behaviour. So it's better to be careful. Read https://en.cppreference.com/w/cpp/numeric/random/random_device/random_device 's notes section. 
-- But there's another way of using `prng::prng_t` - you can use its explicit constructor for creating a PRNG by hashing N -many random bytes, supplied as input. These N bytes input can be presampled from any secure randomness source that you may have access to. After that same underlying SHAKE256 Xof is used for squeezing arbitrary many bytes arbitrary many times from PRNG.
-
-```cpp
-#include "prng.hpp"
-
-// Prefer N to be >= 32
-constexpr size_t slen = 32; // = N bytes
-std::array<uint8_t, slen> seed{};
-
-// fill `seed` with N many random bytes
-
-// default initialization ( recommended only if you're sure that target system provides you with reliable randomness source when using `std::random_device` )
-prng::prng_t prng0;
-// explicit initialization ( safer alternative )
-prng::prng_t prng1{seed};
-```
+> [!CAUTION]
+> Before you consider using Psuedo Random Number Generator which comes with this library implementation, I strongly advice you to go through [include/prng.hpp](./include/prng.hpp).
 
 > [!NOTE]
 > Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.

@@ -4,3 +4,6 @@
 [submodule "subtle"]
 	path = subtle
 	url = https://github.com/itzmeanjan/subtle.git
+[submodule "dudect"]
+	path = dudect
+	url = https://github.com/oreparaz/dudect.git

@@ -1,8 +1,6 @@
+#include "bench_helper.hpp"
 #include "kem.hpp"
-#include "utils.hpp"
-#include <algorithm>
 #include <benchmark/benchmark.h>
-#include <vector>
 
 // Benchmarking IND-CCA2-secure Kyber KEM key generation algorithm
 template<size_t k, size_t eta1>
@@ -148,16 +146,16 @@ bench_decapsulate(benchmark::State& state)
 // Register for benchmarking IND-CCA2-secure Kyber Key Encapsulation Mechanism
 
 // Kyber512
-BENCHMARK(bench_keygen<2, 3>)->Name("kyber512/keygen");
-BENCHMARK(bench_encapsulate<2, 3, 2, 10, 4>)->Name("kyber512/encap");
-BENCHMARK(bench_decapsulate<2, 3, 2, 10, 4>)->Name("kyber512/decap");
+BENCHMARK(bench_keygen<2, 3>)->Name("kyber512/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<2, 3, 2, 10, 4>)->Name("kyber512/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<2, 3, 2, 10, 4>)->Name("kyber512/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 
 // Kyber768
-BENCHMARK(bench_keygen<3, 2>)->Name("kyber768/keygen");
-BENCHMARK(bench_encapsulate<3, 2, 2, 10, 4>)->Name("kyber768/encap");
-BENCHMARK(bench_decapsulate<3, 2, 2, 10, 4>)->Name("kyber768/decap");
+BENCHMARK(bench_keygen<3, 2>)->Name("kyber768/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<3, 2, 2, 10, 4>)->Name("kyber768/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<3, 2, 2, 10, 4>)->Name("kyber768/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 
 // Kyber1024
-BENCHMARK(bench_keygen<4, 2>)->Name("kyber1024/keygen");
-BENCHMARK(bench_encapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/encap");
-BENCHMARK(bench_decapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/decap");
+BENCHMARK(bench_keygen<4, 2>)->Name("kyber1024/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<4, 2, 2, 11, 5>)->Name("kyber1024/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);

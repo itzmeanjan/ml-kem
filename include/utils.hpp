@@ -54,31 +54,25 @@ from_hex(std::string_view bytes)
 }
 
 // Compile-time compute IND-CCA-secure Kyber KEM public key length ( in bytes )
-template<size_t k>
 static inline constexpr size_t
-get_kem_public_key_len()
-  requires(kyber_params::check_k(k))
+get_kem_public_key_len(const size_t k)
 {
   return k * 12 * 32 + 32;
 }
 
 // Compile-time compute IND-CCA-secure Kyber KEM secret key length ( in bytes )
-template<size_t k>
 static inline constexpr size_t
-get_kem_secret_key_len()
-  requires(kyber_params::check_k(k))
+get_kem_secret_key_len(const size_t k)
 {
-  constexpr size_t t0 = k * 12 * 32;
-  constexpr size_t t1 = get_kem_public_key_len<k>();
+  const size_t t0 = k * 12 * 32;
+  const size_t t1 = get_kem_public_key_len(k);
 
   return t0 + t1 + 32 + 32;
 }
 
 // Compile-time compute IND-CCA-secure Kyber KEM cipher text length ( in bytes )
-template<size_t k, size_t du, size_t dv>
 static inline constexpr size_t
-get_kem_cipher_len()
-  requires(kyber_params::check_decrypt_params(k, du, dv))
+get_kem_cipher_len(size_t k, size_t du, size_t dv)
 {
   return k * du * 32 + dv * 32;
 }

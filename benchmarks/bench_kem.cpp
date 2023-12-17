@@ -8,8 +8,8 @@ void
 bench_keygen(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
+  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
 
   std::vector<uint8_t> d(slen);
   std::vector<uint8_t> z(slen);
@@ -44,9 +44,9 @@ void
 bench_encapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
+  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len(k, du, dv);
   constexpr size_t klen = 32;
 
   std::vector<uint8_t> d(slen);
@@ -94,9 +94,9 @@ void
 bench_decapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
+  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len(k, du, dv);
   constexpr size_t klen = 32;
 
   std::vector<uint8_t> d(slen);

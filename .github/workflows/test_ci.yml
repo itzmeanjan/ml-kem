@@ -35,3 +35,7 @@ jobs:
         popd
     - name: Execute Tests on ${{matrix.os}}
       run: make -j
+    - name: Execute Tests with AddressSanitizer on ${{matrix.os}}
+      run: make asan_test -j
+    - name: Execute Tests with UndefinedBehaviourSanitizer on ${{matrix.os}}
+      run: make ubsan_test -j

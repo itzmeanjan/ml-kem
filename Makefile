@@ -25,12 +25,11 @@ DUDECT_TEST_DIR = $(TEST_DIR)/dudect
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 DUDECT_TEST_SOURCES := $(wildcard $(DUDECT_TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
-DUDECT_TEST_OBJECTS := $(addprefix $(DUDECT_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(DUDECT_TEST_SOURCES))))
 ASAN_TEST_OBJECTS := $(addprefix $(ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 UBSAN_TEST_OBJECTS := $(addprefix $(UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 TEST_LINK_FLAGS = -lgtest -lgtest_main
 TEST_BINARY = $(BUILD_DIR)/test.out
-DUDECT_TEST_BINARY = $(DUDECT_BUILD_DIR)/test.out
+DUDECT_TEST_BINARIES := $(addprefix $(DUDECT_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.out,$(DUDECT_TEST_SOURCES))))
 ASAN_TEST_BINARY = $(ASAN_BUILD_DIR)/test.out
 UBSAN_TEST_BINARY = $(UBSAN_BUILD_DIR)/test.out
 
@@ -66,9 +65,6 @@ $(SUBTLE_INC_DIR): $(SHA3_INC_DIR)
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
-$(DUDECT_BUILD_DIR)/%.o: $(DUDECT_TEST_DIR)/%.cpp $(DUDECT_BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR) $(DUDECT_INC_DIR)
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) -c $< -o $@
-
 $(ASAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(ASAN_BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(ASAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
@@ -78,8 +74,8 @@ $(UBSAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(UBSAN_BUILD_DIR) $(SHA3_INC_DIR) $(S
 $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-$(DUDECT_TEST_BINARY): $(DUDECT_TEST_OBJECTS)
-	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ -o $@
+$(DUDECT_BUILD_DIR)/%.out: $(DUDECT_TEST_DIR)/%.cpp $(DUDECT_BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR) $(DUDECT_INC_DIR)
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) $(LINK_FLAGS) $< -o $@
 
 $(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
 	$(CXX) $(ASAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
@@ -90,8 +86,8 @@ $(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
 test: $(TEST_BINARY)
 	./$< --gtest_shuffle --gtest_random_seed=0
 
-dudect_test: $(DUDECT_TEST_BINARY)
-	./$<
+dudect_test: $(DUDECT_TEST_BINARIES)
+	$(foreach binary,$^,./$(binary);)
 
 asan_test: $(ASAN_TEST_BINARY)
 	./$< --gtest_shuffle --gtest_random_seed=0

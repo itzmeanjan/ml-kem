@@ -4,7 +4,7 @@
 int
 main()
 {
-  if (test_kyber512_keygen() != DUDECT_NO_LEAKAGE_EVIDENCE_YET) {
+  if (test_kyber512_generate_vector() != DUDECT_NO_LEAKAGE_EVIDENCE_YET) {
     return EXIT_FAILURE;
   }
 

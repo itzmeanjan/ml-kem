@@ -3,9 +3,9 @@
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 #include "shake256.hpp"
-#include "subtle.hpp"
 #include "utils.hpp"
 #include <array>
+#include <cstdint>
 
 // IND-CCA2-secure Key Encapsulation Mechanism
 namespace kem {
@@ -189,14 +189,8 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
   // line 7-11 of algorithm 9, in constant-time
-  uint32_t flg = -1u;
-  for (size_t i = 0; i < ctlen; i++) {
-    flg &= subtle::ct_eq<uint8_t, uint32_t>(cipher[i], c_prime[i]);
-  }
-
-  for (size_t i = 0; i < 32; i++) {
-    kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
-  }
+  const uint32_t cond = kyber_utils::ct_byte_arr_eq(cipher, std::span<const uint8_t, ctlen>(c_prime));
+  kyber_utils::ct_cond_memcpy(cond, _kdf_in0, std::span<const uint8_t, _g_out0.size()>(_g_out0), std::span<const uint8_t, z.size()>(z));
 
   sha3_256::sha3_256_t h256;
   h256.absorb(cipher);

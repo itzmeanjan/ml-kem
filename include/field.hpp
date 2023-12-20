@@ -47,11 +47,8 @@ public:
   // Modulo addition of two Zq elements.
   inline constexpr zq_t operator+(const zq_t rhs) const
   {
-    const uint32_t t0 = this->v + rhs.v;
-    const auto mask = -static_cast<uint32_t>(t0 >= Q);
-    const uint32_t t1 = t0 - (mask & Q);
-
-    return zq_t(t1);
+    const uint32_t t = this->v + rhs.v;
+    return zq_t(reduce_once(t));
   }
 
   // Compound modulo addition of two Zq elements.
@@ -132,10 +129,8 @@ private:
   // Note, v is always kept in its canonical form i.e. v ∈ [0, Q).
   uint32_t v = 0u;
 
-  // Given a 32 -bit unsigned integer `v` such that `v` ∈ [0, Q*Q), this routine
-  // can be invoked for reducing `v` modulo Q, using barrett reduction
-  // technique, following algorithm description @
-  // https://www.nayuki.io/page/barrett-reduction-algorithm.
+  // Given a 32 -bit unsigned integer `v` such that `v` ∈ [0, Q*Q), this routine can be invoked for reducing `v` modulo Q, using
+  // barrett reduction technique, following algorithm description @ https://www.nayuki.io/page/barrett-reduction-algorithm.
   static inline constexpr uint32_t barrett_reduce(const uint32_t v)
   {
     const uint64_t t0 = static_cast<uint64_t>(v) * static_cast<uint64_t>(R);
@@ -143,10 +138,18 @@ private:
     const uint32_t t2 = t1 * Q;
     const uint32_t t = v - t2;
 
-    const auto mask = -static_cast<uint32_t>(t >= Q);
-    const uint32_t t_prime = t - (mask & Q);
+    return reduce_once(t);
+  }
 
-    return t_prime;
+  // Given a 32 -bit unsigned integer `v` such that `v` ∈ [0, 2*Q), this routine can be invoked for reducing `v` modulo prime Q.
+  static inline constexpr uint32_t reduce_once(const uint32_t v)
+  {
+    const uint32_t t0 = v - Q;
+    const uint32_t t1 = -(t0 >> 31);
+    const uint32_t t2 = Q & t1;
+    const uint32_t t3 = t0 + t2;
+
+    return t3;
   }
 };
 

@@ -12,20 +12,23 @@ namespace kyber_utils {
 //
 // See top of page 5 of Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+//
+// Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96c407b3cfc9f6e1749475b673794402c1/mlkem768.go#L395-L425.
 template<size_t d>
 static inline constexpr field::zq_t
 compress(const field::zq_t x)
   requires(kyber_params::check_d(d))
 {
-  constexpr uint16_t t0 = 1u << d;
-  constexpr uint32_t t1 = field::Q >> 1;
+  constexpr uint16_t mask = (1u << d) - 1;
 
-  const uint32_t t2 = x.raw() << d;
-  const uint32_t t3 = t2 + t1;
-  const uint16_t t4 = static_cast<uint16_t>(t3 / field::Q);
-  const uint16_t t5 = t4 & (t0 - 1);
+  const auto dividend = x.raw() << d;
+  const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * field::R) >> (field::RADIX_BIT_WIDTH * 2));
+  const auto remainder = dividend - quotient0 * field::Q;
 
-  return field::zq_t(t5);
+  const auto quotient1 = quotient0 + ((((field::Q / 2) - remainder) >> 31) & 1);
+  const auto quotient2 = quotient1 + (((field::Q + (field::Q / 2) - remainder) >> 31) & 1);
+
+  return field::zq_t(static_cast<uint16_t>(quotient2) & mask);
 }
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses

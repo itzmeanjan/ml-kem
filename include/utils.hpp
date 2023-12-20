@@ -17,7 +17,7 @@ namespace kyber_utils {
 // producing truth value (0xffffffff) in case of equality, otherwise it returns false value (0x00000000).
 template<size_t n>
 static inline uint32_t
-ct_byte_arr_eq(std::span<const uint8_t, n> bytes0, std::span<const uint8_t, n> bytes1)
+ct_memcmp(std::span<const uint8_t, n> bytes0, std::span<const uint8_t, n> bytes1)
 {
   uint32_t flag = -1u;
   for (size_t i = 0; i < n; i++) {

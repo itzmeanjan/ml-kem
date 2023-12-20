@@ -189,7 +189,7 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
   // line 7-11 of algorithm 9, in constant-time
-  const uint32_t cond = kyber_utils::ct_byte_arr_eq(cipher, std::span<const uint8_t, ctlen>(c_prime));
+  const uint32_t cond = kyber_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
   kyber_utils::ct_cond_memcpy(cond, _kdf_in0, std::span<const uint8_t, _g_out0.size()>(_g_out0), std::span<const uint8_t, z.size()>(z));
 
   sha3_256::sha3_256_t h256;

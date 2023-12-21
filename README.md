@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it constant-time but be informed that it is not yet audited. *If you consider using it in production, be careful !*
+> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) but be informed that it is not yet audited. *If you consider using it in production, be careful !*
 
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
@@ -10,7 +10,7 @@ Kyber is being standardized by NIST as post-quantum secure key encapsulation mec
 
 Kyber offers an *IND-CCA2-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
 
-Kyber Key Encapsulation Mechanism is built on top of *IND-CPA-secure Kyber Public Key Encryption*, where two communicating parties, both generating their key pairs, while publishing their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure Kyber PKE* - giving us the *IND-CCA2-secure KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 Xof in this context ) which is obtained by both of these parties as result of seeding SHAKE256 Xof with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE scheme.
+Kyber Key Encapsulation Mechanism is built on top of *IND-CPA-secure Kyber Public Key Encryption*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure Kyber PKE* - giving us the *IND-CCA2-secure KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 Xof in this context ) which is obtained by both of these parties as result of seeding SHAKE256 Xof with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE scheme.
 
 Algorithm | Input | Output
 --- | :-: | --:
@@ -18,13 +18,10 @@ KEM KeyGen | - | Public Key and Secret Key
 Encapsulation | Public Key | Cipher Text and SHAKE256 KDF
 Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
 
-Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3` and `subtle` are two dependencies of this library, which are pinned to specific git commits, using git submodule.
+Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3`, `subtle` and `dudect` (for timing leakage tests) are dependencies of this library, which are pinned to specific git commits, using git submodule.
 
 > [!NOTE]
 > Find Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
-
-> [!NOTE]
-> Find progress of NIST PQC standardization effort @ https://csrc.nist.gov/projects/post-quantum-cryptography.
 
 ## Prerequisites
 
@@ -74,35 +71,97 @@ make ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled
 ```
 
 ```bash
-Note: Randomizing tests' orders with a seed of 61247 .
+Note: Randomizing tests' orders with a seed of 50193 .
 [==========] Running 10 tests from 1 test suite.
 [----------] Global test environment set-up.
 [----------] 10 tests from KyberKEM
 [ RUN      ] KyberKEM.ArithmeticOverZq
-[       OK ] KyberKEM.ArithmeticOverZq (116 ms)
-[ RUN      ] KyberKEM.NumberTheoreticTransform
-[       OK ] KyberKEM.NumberTheoreticTransform (0 ms)
+[       OK ] KyberKEM.ArithmeticOverZq (126 ms)
+[ RUN      ] KyberKEM.Kyber768KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber768KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.Kyber512KeygenEncapsDecaps
+[       OK ] KyberKEM.Kyber512KeygenEncapsDecaps (0 ms)
 [ RUN      ] KyberKEM.Kyber768KnownAnswerTests
 [       OK ] KyberKEM.Kyber768KnownAnswerTests (8 ms)
 [ RUN      ] KyberKEM.Kyber512KnownAnswerTests
 [       OK ] KyberKEM.Kyber512KnownAnswerTests (5 ms)
 [ RUN      ] KyberKEM.CompressDecompressZq
-[       OK ] KyberKEM.CompressDecompressZq (94 ms)
+[       OK ] KyberKEM.CompressDecompressZq (98 ms)
 [ RUN      ] KyberKEM.Kyber1024KnownAnswerTests
 [       OK ] KyberKEM.Kyber1024KnownAnswerTests (13 ms)
-[ RUN      ] KyberKEM.Kyber768KeygenEncapsDecaps
-[       OK ] KyberKEM.Kyber768KeygenEncapsDecaps (0 ms)
-[ RUN      ] KyberKEM.Kyber512KeygenEncapsDecaps
-[       OK ] KyberKEM.Kyber512KeygenEncapsDecaps (0 ms)
+[ RUN      ] KyberKEM.NumberTheoreticTransform
+[       OK ] KyberKEM.NumberTheoreticTransform (0 ms)
 [ RUN      ] KyberKEM.PolynomialSerialization
 [       OK ] KyberKEM.PolynomialSerialization (0 ms)
 [ RUN      ] KyberKEM.Kyber1024KeygenEncapsDecaps
 [       OK ] KyberKEM.Kyber1024KeygenEncapsDecaps (0 ms)
-[----------] 10 tests from KyberKEM (238 ms total)
+[----------] 10 tests from KyberKEM (253 ms total)
 
 [----------] Global test environment tear-down
-[==========] 10 tests from 1 test suite ran. (238 ms total)
+[==========] 10 tests from 1 test suite ran. (253 ms total)
 [  PASSED  ] 10 tests.
+```
+
+In case you're interested in running timing leakage tests using `dudect`, execute following
+
+> ![NOTE]
+> `dudect` is integrated into this library implementation of Kyber KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
+
+```bash
+make dudect_test -j # Only on x86_64 machine
+                    # Each executable is run for at max 3 mins.
+```
+
+> ![TIP]
+> `dudect` documentation says if `t` statistic is < 10, we're *probably* good, yes **probably**. You may want to read `dudect` documentation @ https://github.com/oreparaz/dudect. Also you might find the original paper @ https://ia.cr/2016/1123 interesting.
+
+```bash
+meas:    0.10 M, max t:   +2.35, max tau: 7.27e-03, (5/tau)^2: 4.73e+05. For the moment, maybe constant time.
+meas:    0.12 M, max t:   +1.89, max tau: 5.57e-03, (5/tau)^2: 8.06e+05. For the moment, maybe constant time.
+meas:    3.10 M, max t:   +2.48, max tau: 1.41e-03, (5/tau)^2: 1.26e+07. For the moment, maybe constant time.
+meas:    2.07 M, max t:   +1.72, max tau: 1.20e-03, (5/tau)^2: 1.75e+07. For the moment, maybe constant time.
+meas:    2.10 M, max t:   +1.66, max tau: 1.14e-03, (5/tau)^2: 1.91e+07. For the moment, maybe constant time.
+meas:    6.01 M, max t:   +1.67, max tau: 6.82e-04, (5/tau)^2: 5.37e+07. For the moment, maybe constant time.
+meas:    7.31 M, max t:   +1.67, max tau: 6.18e-04, (5/tau)^2: 6.54e+07. For the moment, maybe constant time.
+meas:    7.96 M, max t:   +2.04, max tau: 7.22e-04, (5/tau)^2: 4.80e+07. For the moment, maybe constant time.
+meas:    9.41 M, max t:   +1.70, max tau: 5.54e-04, (5/tau)^2: 8.14e+07. For the moment, maybe constant time.
+meas:    9.89 M, max t:   +1.59, max tau: 5.05e-04, (5/tau)^2: 9.78e+07. For the moment, maybe constant time.
+meas:    0.99 M, max t:   +2.16, max tau: 2.18e-03, (5/tau)^2: 5.28e+06. For the moment, maybe constant time.
+meas:    0.14 M, max t:   +2.04, max tau: 5.44e-03, (5/tau)^2: 8.45e+05. For the moment, maybe constant time.
+meas:    2.31 M, max t:   +2.90, max tau: 1.90e-03, (5/tau)^2: 6.89e+06. For the moment, maybe constant time.
+meas:    3.03 M, max t:   +3.55, max tau: 2.04e-03, (5/tau)^2: 5.99e+06. For the moment, maybe constant time.
+meas:    3.56 M, max t:   +3.23, max tau: 1.71e-03, (5/tau)^2: 8.56e+06. For the moment, maybe constant time.
+meas:    4.18 M, max t:   +2.42, max tau: 1.18e-03, (5/tau)^2: 1.78e+07. For the moment, maybe constant time.
+meas:    7.16 M, max t:   +2.40, max tau: 8.96e-04, (5/tau)^2: 3.12e+07. For the moment, maybe constant time.
+meas:    8.25 M, max t:   +2.21, max tau: 7.68e-04, (5/tau)^2: 4.24e+07. For the moment, maybe constant time.
+meas:    9.20 M, max t:   +2.27, max tau: 7.48e-04, (5/tau)^2: 4.47e+07. For the moment, maybe constant time.
+meas:   10.23 M, max t:   +2.45, max tau: 7.66e-04, (5/tau)^2: 4.26e+07. For the moment, maybe constant time.
+meas:    6.93 M, max t:   +2.54, max tau: 9.65e-04, (5/tau)^2: 2.69e+07. For the moment, maybe constant time.
+meas:    7.49 M, max t:   +2.54, max tau: 9.30e-04, (5/tau)^2: 2.89e+07. For the moment, maybe constant time.
+meas:    8.04 M, max t:   +2.16, max tau: 7.61e-04, (5/tau)^2: 4.32e+07. For the moment, maybe constant time.
+meas:    8.57 M, max t:   +2.08, max tau: 7.10e-04, (5/tau)^2: 4.96e+07. For the moment, maybe constant time.
+meas:    9.15 M, max t:   +2.03, max tau: 6.72e-04, (5/tau)^2: 5.54e+07. For the moment, maybe constant time.
+meas:    0.15 M, max t:   +1.80, max tau: 4.60e-03, (5/tau)^2: 1.18e+06. For the moment, maybe constant time.
+meas:    8.04 M, max t:   +1.90, max tau: 6.70e-04, (5/tau)^2: 5.57e+07. For the moment, maybe constant time.
+meas:   10.31 M, max t:   +2.04, max tau: 6.35e-04, (5/tau)^2: 6.20e+07. For the moment, maybe constant time.
+meas:   10.38 M, max t:   +2.05, max tau: 6.35e-04, (5/tau)^2: 6.19e+07. For the moment, maybe constant time.
+meas:    9.19 M, max t:   +1.99, max tau: 6.56e-04, (5/tau)^2: 5.80e+07. For the moment, maybe constant time.
+meas:    9.24 M, max t:   +2.04, max tau: 6.69e-04, (5/tau)^2: 5.58e+07. For the moment, maybe constant time.
+meas:    1.02 M, max t:   +1.98, max tau: 1.97e-03, (5/tau)^2: 6.47e+06. For the moment, maybe constant time.
+meas:    2.10 M, max t:   +2.10, max tau: 1.45e-03, (5/tau)^2: 1.19e+07. For the moment, maybe constant time.
+meas:    1.40 M, max t:   +1.81, max tau: 1.52e-03, (5/tau)^2: 1.08e+07. For the moment, maybe constant time.
+meas:    1.41 M, max t:   +2.21, max tau: 1.86e-03, (5/tau)^2: 7.22e+06. For the moment, maybe constant time.
+meas:    1.81 M, max t:   +2.95, max tau: 2.19e-03, (5/tau)^2: 5.20e+06. For the moment, maybe constant time.
+meas:    2.54 M, max t:   +2.96, max tau: 1.86e-03, (5/tau)^2: 7.26e+06. For the moment, maybe constant time.
+meas:    3.15 M, max t:   +2.77, max tau: 1.56e-03, (5/tau)^2: 1.02e+07. For the moment, maybe constant time.
+meas:    4.94 M, max t:   +2.46, max tau: 1.11e-03, (5/tau)^2: 2.04e+07. For the moment, maybe constant time.
+meas:    0.91 M, max t:   +2.06, max tau: 2.17e-03, (5/tau)^2: 5.32e+06. For the moment, maybe constant time.
+meas:    1.21 M, max t:   +2.19, max tau: 1.99e-03, (5/tau)^2: 6.32e+06. For the moment, maybe constant time.
+meas:    1.44 M, max t:   +2.24, max tau: 1.87e-03, (5/tau)^2: 7.17e+06. For the moment, maybe constant time.
+meas:    8.74 M, max t:   +2.32, max tau: 7.87e-04, (5/tau)^2: 4.04e+07. For the moment, maybe constant time.
+meas:    9.65 M, max t:   +2.42, max tau: 7.80e-04, (5/tau)^2: 4.11e+07. For the moment, maybe constant time.
+meas:   10.57 M, max t:   +2.22, max tau: 6.82e-04, (5/tau)^2: 5.38e+07. For the moment, maybe constant time.
+meas:   11.71 M, max t:   +2.45, max tau: 7.16e-04, (5/tau)^2: 4.88e+07. For the moment, maybe constant time.
 ```
 
 ## Benchmarking

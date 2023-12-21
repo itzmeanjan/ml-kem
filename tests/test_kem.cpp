@@ -21,9 +21,9 @@ test_kyber_kem()
   requires(klen > 0)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len<k>();
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len<k>();
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len<k, du, dv>();
+  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = kyber_utils::get_kem_cipher_len(k, du, dv);
 
   std::vector<uint8_t> d(slen);
   std::vector<uint8_t> z(slen);

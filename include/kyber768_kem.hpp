@@ -15,13 +15,13 @@ constexpr size_t du = 10;
 constexpr size_t dv = 4;
 
 // = 1184 -bytes Kyber768 public key
-constexpr size_t PKEY_LEN = kyber_utils::get_kem_public_key_len<k>();
+constexpr size_t PKEY_LEN = kyber_utils::get_kem_public_key_len(k);
 
 // = 2400 -bytes Kyber768 secret key
-constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len<k>();
+constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len(k);
 
 // = 1088 -bytes Kyber768 cipher text length
-constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len<k, du, dv>();
+constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len(k, du, dv);
 
 // Computes a new Kyber768 KEM keypair s.t. public key is 1184 -bytes and secret
 // key is 2400 -bytes, given 32 -bytes seed d ( used in CPA-PKE ) and 32 -bytes

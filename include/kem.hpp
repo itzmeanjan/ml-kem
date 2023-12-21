@@ -3,9 +3,9 @@
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 #include "shake256.hpp"
-#include "subtle.hpp"
 #include "utils.hpp"
 #include <array>
+#include <cstdint>
 
 // IND-CCA2-secure Key Encapsulation Mechanism
 namespace kem {
@@ -29,8 +29,8 @@ template<size_t k, size_t eta1>
 static inline void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<const uint8_t, 32> z, // used in CCA-KEM
-       std::span<uint8_t, kyber_utils::get_kem_public_key_len<k>()> pubkey,
-       std::span<uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey)
+       std::span<uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
+       std::span<uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey)
   requires(kyber_params::check_keygen_params(k, eta1))
 {
   constexpr size_t skoff0 = k * 12 * 32;
@@ -76,8 +76,8 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline shake256::shake256_t
 encapsulate(std::span<const uint8_t, 32> m,
-            std::span<const uint8_t, kyber_utils::get_kem_public_key_len<k>()> pubkey,
-            std::span<uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
+            std::span<const uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
+            std::span<uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher)
   requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
 {
   std::array<uint8_t, 64> g_in{};
@@ -144,7 +144,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline shake256::shake256_t
-decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len<k>()> seckey, std::span<const uint8_t, kyber_utils::get_kem_cipher_len<k, du, dv>()> cipher)
+decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey, std::span<const uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher)
   requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;
@@ -189,14 +189,9 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len<k>()> s
   pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
   // line 7-11 of algorithm 9, in constant-time
-  uint32_t flg = -1u;
-  for (size_t i = 0; i < ctlen; i++) {
-    flg &= subtle::ct_eq<uint8_t, uint32_t>(cipher[i], c_prime[i]);
-  }
-
-  for (size_t i = 0; i < 32; i++) {
-    kdf_in[i] = subtle::ct_select(flg, g_out[i], z[i]);
-  }
+  using kdf_t = std::span<const uint8_t, 32>;
+  const uint32_t cond = kyber_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
+  kyber_utils::ct_cond_memcpy(cond, _kdf_in0, kdf_t(_g_out0), kdf_t(z));
 
   sha3_256::sha3_256_t h256;
   h256.absorb(cipher);

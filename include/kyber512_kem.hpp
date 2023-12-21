@@ -16,13 +16,13 @@ constexpr size_t du = 10;
 constexpr size_t dv = 4;
 
 // = 800 -bytes Kyber512 public key
-constexpr size_t PKEY_LEN = kyber_utils::get_kem_public_key_len<k>();
+constexpr size_t PKEY_LEN = kyber_utils::get_kem_public_key_len(k);
 
 // = 1632 -bytes Kyber512 secret key
-constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len<k>();
+constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len(k);
 
 // = 768 -bytes Kyber512 cipher text length
-constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len<k, du, dv>();
+constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len(k, du, dv);
 
 // Computes a new Kyber512 KEM keypair s.t. public key is 800 -bytes and secret
 // key is 1632 -bytes, given 32 -bytes seed d ( used in CPA-PKE ) and 32 -bytes

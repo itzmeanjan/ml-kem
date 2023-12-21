@@ -1,7 +1,4 @@
 #include "kyber512_kem.hpp"
-#include <array>
-#include <chrono>
-#include <cstdlib>
 
 #define DUDECT_IMPLEMENTATION
 #define DUDECT_VISIBLITY_STATIC
@@ -26,12 +23,19 @@ do_one_computation(uint8_t* const data)
   auto sigma = std::span<const uint8_t, SEED_LEN>(data + doff0, doff1 - doff0);
   const auto nonce = data[doff1];
 
+  // Generate new secret polynomial vector
   kyber_utils::generate_vector<kyber512_kem::k, kyber512_kem::η1>(poly_vec, sigma, nonce);
+  // Apply NTT on that secret vector
   kyber_utils::poly_vec_ntt<kyber512_kem::k>(poly_vec);
+  // Apply iNTT on bit-reversed NTT form secret polynomial vector
   kyber_utils::poly_vec_intt<kyber512_kem::k>(poly_vec);
+  // Compress coefficients of polynomial vector
   kyber_utils::poly_vec_compress<kyber512_kem::k, kyber512_kem::du>(poly_vec);
+  // Serialize polynomial vector into byte array
   kyber_utils::poly_vec_encode<kyber512_kem::k, kyber512_kem::du>(poly_vec, byte_arr);
+  // Recover coefficients of polynomial vector from byte array
   kyber_utils::poly_vec_decode<kyber512_kem::k, kyber512_kem::du>(byte_arr, poly_vec);
+  // Decompress coefficients of polynomial vector
   kyber_utils::poly_vec_decompress<kyber512_kem::k, kyber512_kem::du>(poly_vec);
 
   std::array<uint8_t, SEED_LEN> sink{};
@@ -40,6 +44,7 @@ do_one_computation(uint8_t* const data)
   using ctxt_t = std::span<const uint8_t, kyber512_kem::CIPHER_LEN>;
   using seed_t = std::span<const uint8_t, SEED_LEN>;
 
+  // Ensure Fujisaki-Okamoto transform, used during decapsulation, is constant-time
   const uint32_t cond = kyber_utils::ct_memcmp(ctxt_t(data + doff2, doff3 - doff2), ctxt_t(data + doff3, doff4 - doff3));
   kyber_utils::ct_cond_memcpy(cond, _sink, seed_t(data + doff4, doff5 - doff4), seed_t(data + doff5, doff6 - doff5));
 
@@ -47,7 +52,7 @@ do_one_computation(uint8_t* const data)
   return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) & // result of generating vector of polynomials
          (byte_arr[0] ^ byte_arr[byte_arr.size() - 1]) &                                 // result of serializing vector of polynomials
          (_sink[0] ^ _sink[_sink.size() - 1]) &                                          // result of conditional memcpy
-         static_cast<uint8_t>(cond);                                                     // result of constant-time memcmp
+         static_cast<uint8_t>(cond >> 24);                                               // result of constant-time memcmp
 }
 
 void
@@ -66,17 +71,13 @@ prepare_inputs(dudect_config_t* const c, uint8_t* const input_data, uint8_t* con
 dudect_state_t
 test_kyber512_kem()
 {
-  using namespace std::chrono_literals;
-
   constexpr size_t chunk_size = SEED_LEN +                 // bytes holding seed `sigma`
                                 1 +                        // single byte nonce
                                 kyber512_kem::CIPHER_LEN + // bytes holding received cipher text
                                 kyber512_kem::CIPHER_LEN + // bytes for locally computed cipher text
                                 SEED_LEN +                 // bytes for first source buffer to copy from
                                 SEED_LEN;                  // bytes for second source buffer to copy from
-
   constexpr size_t number_measurements = 1ul << 20;
-  const auto max_test_duration = 5min;
 
   dudect_config_t config = {
     chunk_size,
@@ -85,17 +86,9 @@ test_kyber512_kem()
   dudect_ctx_t ctx;
   dudect_init(&ctx, &config);
 
-  const auto begin_tp = std::chrono::steady_clock::now();
   dudect_state_t state = DUDECT_NO_LEAKAGE_EVIDENCE_YET;
-
   while (state == DUDECT_NO_LEAKAGE_EVIDENCE_YET) {
     state = dudect_main(&ctx);
-
-    const auto cur_tp = std::chrono::steady_clock::now();
-    const auto time_spent = std::chrono::duration_cast<std::chrono::minutes>(cur_tp - begin_tp);
-    if (time_spent >= max_test_duration) {
-      break;
-    }
   }
 
   dudect_free(&ctx);

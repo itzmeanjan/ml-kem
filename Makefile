@@ -87,7 +87,7 @@ test: $(TEST_BINARY)
 	./$< --gtest_shuffle --gtest_random_seed=0
 
 dudect_test: $(DUDECT_TEST_BINARIES)
-	$(foreach binary,$^,./$(binary);)
+	$(foreach binary,$^,timeout 3.0m ./$(binary);)
 
 asan_test: $(ASAN_TEST_BINARY)
 	./$< --gtest_shuffle --gtest_random_seed=0

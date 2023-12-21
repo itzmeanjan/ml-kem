@@ -104,7 +104,7 @@ Note: Randomizing tests' orders with a seed of 50193 .
 
 In case you're interested in running timing leakage tests using `dudect`, execute following
 
-> ![NOTE]
+> [!NOTE]
 > `dudect` is integrated into this library implementation of Kyber KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
 
 ```bash
@@ -112,7 +112,7 @@ make dudect_test -j # Only on x86_64 machine
                     # Each executable is run for at max 3 mins.
 ```
 
-> ![TIP]
+> [!TIP]
 > `dudect` documentation says if `t` statistic is < 10, we're *probably* good, yes **probably**. You may want to read `dudect` documentation @ https://github.com/oreparaz/dudect. Also you might find the original paper @ https://ia.cr/2016/1123 interesting.
 
 ```bash

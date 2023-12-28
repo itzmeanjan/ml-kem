@@ -1,5 +1,6 @@
 #include "bench_helper.hpp"
 #include "kem.hpp"
+#include "x86_64_cpu_ticks.hpp"
 #include <benchmark/benchmark.h>
 
 // Benchmarking IND-CCA2-secure Kyber KEM key generation algorithm
@@ -25,7 +26,15 @@ bench_keygen(benchmark::State& state)
   prng.read(_d);
   prng.read(_z);
 
+#ifdef __x86_64__
+  uint64_t total_ticks = 0ul;
+#endif
+
   for (auto _ : state) {
+#ifdef __x86_64__
+    const uint64_t start = cpu_ticks();
+#endif
+
     kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
 
     benchmark::DoNotOptimize(_d);
@@ -33,9 +42,19 @@ bench_keygen(benchmark::State& state)
     benchmark::DoNotOptimize(_pkey);
     benchmark::DoNotOptimize(_skey);
     benchmark::ClobberMemory();
+
+#ifdef __x86_64__
+    const uint64_t end = cpu_ticks();
+    total_ticks += (end - start);
+#endif
   }
 
   state.SetItemsProcessed(state.iterations());
+
+#ifdef __x86_64__
+  total_ticks /= static_cast<uint64_t>(state.iterations());
+  state.counters["rdtsc"] = static_cast<double>(total_ticks);
+#endif
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM encapsulation algorithm
@@ -73,7 +92,15 @@ bench_encapsulate(benchmark::State& state)
 
   prng.read(_m);
 
+#ifdef __x86_64__
+  uint64_t total_ticks = 0ul;
+#endif
+
   for (auto _ : state) {
+#ifdef __x86_64__
+    const uint64_t start = cpu_ticks();
+#endif
+
     auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
     benchmark::DoNotOptimize(skdf);
     skdf.squeeze(_sender_key);
@@ -83,9 +110,19 @@ bench_encapsulate(benchmark::State& state)
     benchmark::DoNotOptimize(_cipher);
     benchmark::DoNotOptimize(_sender_key);
     benchmark::ClobberMemory();
+
+#ifdef __x86_64__
+    const uint64_t end = cpu_ticks();
+    total_ticks += (end - start);
+#endif
   }
 
   state.SetItemsProcessed(state.iterations());
+
+#ifdef __x86_64__
+  total_ticks /= static_cast<uint64_t>(state.iterations());
+  state.counters["rdtsc"] = static_cast<double>(total_ticks);
+#endif
 }
 
 // Benchmarking IND-CCA2-secure Kyber KEM decapsulation algorithm
@@ -128,7 +165,15 @@ bench_decapsulate(benchmark::State& state)
   auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
   skdf.squeeze(_sender_key);
 
+#ifdef __x86_64__
+  uint64_t total_ticks = 0ul;
+#endif
+
   for (auto _ : state) {
+#ifdef __x86_64__
+    const uint64_t start = cpu_ticks();
+#endif
+
     auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher);
     benchmark::DoNotOptimize(rkdf);
     rkdf.squeeze(_receiver_key);
@@ -137,10 +182,20 @@ bench_decapsulate(benchmark::State& state)
     benchmark::DoNotOptimize(_cipher);
     benchmark::DoNotOptimize(_receiver_key);
     benchmark::ClobberMemory();
+
+#ifdef __x86_64__
+    const uint64_t end = cpu_ticks();
+    total_ticks += (end - start);
+#endif
   }
 
   state.SetItemsProcessed(state.iterations());
   assert(std::ranges::equal(_sender_key, _receiver_key));
+
+#ifdef __x86_64__
+  total_ticks /= static_cast<uint64_t>(state.iterations());
+  state.counters["rdtsc"] = static_cast<double>(total_ticks);
+#endif
 }
 
 // Register for benchmarking IND-CCA2-secure Kyber Key Encapsulation Mechanism

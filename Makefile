@@ -1,10 +1,10 @@
-CXX = clang++
+CXX ?= clang++
 CXX_FLAGS = -std=c++20
 WARN_FLAGS = -Wall -Wextra -pedantic
 OPT_FLAGS = -O3 -march=native
 LINK_FLAGS = -flto
 ASAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=address # From https://clang.llvm.org/docs/AddressSanitizer.html
-UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=undefined -fsanitize=nullability # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+UBSAN_FLAGS = -g -O1 -fno-omit-frame-pointer -fno-optimize-sibling-calls -fsanitize=undefined # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 
 SHA3_INC_DIR = ./sha3/include
 SUBTLE_INC_DIR = ./subtle/include
@@ -35,6 +35,7 @@ UBSAN_TEST_BINARY = $(UBSAN_BUILD_DIR)/test.out
 
 BENCHMARK_DIR = benchmarks
 BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
+BENCHMARK_HEADERS := $(wildcard $(BENCHMARK_DIR)/*.hpp)
 BENCHMARK_OBJECTS := $(addprefix $(BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(BENCHMARK_SOURCES))))
 BENCHMARK_LINK_FLAGS = -lbenchmark -lbenchmark_main -lpthread
 BENCHMARK_BINARY = $(BUILD_DIR)/bench.out
@@ -117,5 +118,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(KYBER_SOURCES) $(TEST_SOURCES) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES)
+format: $(KYBER_SOURCES) $(TEST_SOURCES) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^

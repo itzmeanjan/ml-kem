@@ -1,4 +1,5 @@
 #include "kyber512_kem.hpp"
+#include <cstdio>
 
 #define DUDECT_IMPLEMENTATION
 #define DUDECT_VISIBLITY_STATIC
@@ -92,6 +93,8 @@ test_kyber512_kem()
   }
 
   dudect_free(&ctx);
+
+  printf("Detected timing leakage in \"%s\", defined in file \"%s\"\n", __func__, __FILE_NAME__);
   return state;
 }
 

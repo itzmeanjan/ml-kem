@@ -92,6 +92,8 @@ test_kyber768_kem()
   }
 
   dudect_free(&ctx);
+
+  printf("Detected timing leakage in \"%s\", defined in file \"%s\"\n", __func__, __FILE_NAME__);
   return state;
 }
 

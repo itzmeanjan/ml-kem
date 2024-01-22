@@ -7,3 +7,6 @@
 [submodule "dudect"]
 	path = dudect
 	url = https://github.com/oreparaz/dudect.git
+[submodule "gtest-parallel"]
+	path = gtest-parallel
+	url = https://github.com/google/gtest-parallel.git

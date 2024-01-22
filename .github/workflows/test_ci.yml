@@ -14,12 +14,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
 
     steps:
-    - uses: actions/checkout@v3
-    # From https://github.com/marketplace/actions/actions-setup-cmake
-    - name: Setup CMake
-      uses: jwlawson/actions-setup-cmake@v1.13
-      with:
-        cmake-version: 'latest'
+    - uses: actions/checkout@v4
     - name: Setup Google-Test
       run: |
         pushd ~

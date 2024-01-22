@@ -32,6 +32,7 @@ TEST_BINARY = $(BUILD_DIR)/test.out
 DUDECT_TEST_BINARIES := $(addprefix $(DUDECT_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.out,$(DUDECT_TEST_SOURCES))))
 ASAN_TEST_BINARY = $(ASAN_BUILD_DIR)/test.out
 UBSAN_TEST_BINARY = $(UBSAN_BUILD_DIR)/test.out
+GTEST_PARALLEL = ./gtest-parallel/gtest-parallel
 
 BENCHMARK_DIR = benchmarks
 BENCHMARK_SOURCES := $(wildcard $(BENCHMARK_DIR)/*.cpp)
@@ -60,8 +61,13 @@ $(SHA3_INC_DIR):
 	git submodule update --init
 
 $(DUDECT_INC_DIR): $(SHA3_INC_DIR)
+	git submodule update --init
 
-$(SUBTLE_INC_DIR): $(SHA3_INC_DIR)
+$(SUBTLE_INC_DIR): $(DUDECT_INC_DIR)
+	git submodule update --init
+
+$(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
+	git submodule update --init
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
@@ -84,17 +90,17 @@ $(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
 $(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
 	$(CXX) $(UBSAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-test: $(TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+test: $(TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
 dudect_test: $(DUDECT_TEST_BINARIES)
-	$(foreach binary,$^,timeout 3.0m ./$(binary) &) wait
+	$(foreach binary,$^,timeout 3.0m ./$(binary);)
 
-asan_test: $(ASAN_TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+asan_test: $(ASAN_TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
-ubsan_test: $(UBSAN_TEST_BINARY)
-	./$< --gtest_shuffle --gtest_random_seed=0
+ubsan_test: $(UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
+	$(GTEST_PARALLEL) $< --print_test_times
 
 $(BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

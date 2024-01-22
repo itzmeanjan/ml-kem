@@ -60,11 +60,14 @@ $(BUILD_DIR):
 $(SHA3_INC_DIR):
 	git submodule update --init
 
-$(DUDECT_INC_DIR): $(SHA3_INC_DIR)
+$(DUDECT_INC_DIR):
+	git submodule update --init
 
-$(SUBTLE_INC_DIR): $(SHA3_INC_DIR)
+$(SUBTLE_INC_DIR):
+	git submodule update --init
 
-$(GTEST_PARALLEL): $(SHA3_INC_DIR)
+$(GTEST_PARALLEL):
+	git submodule update --init
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

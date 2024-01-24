@@ -28,7 +28,7 @@ do_one_computation(uint8_t* const data)
   kyber_utils::generate_vector<kyber512_kem::k, kyber512_kem::η1>(poly_vec, sigma, nonce);
   // Apply NTT on that secret vector
   kyber_utils::poly_vec_ntt<kyber512_kem::k>(poly_vec);
-  // Apply iNTT on bit-reversed NTT form secret polynomial vector
+  // Apply iNTT on bit-reversed NTT form of secret polynomial vector
   kyber_utils::poly_vec_intt<kyber512_kem::k>(poly_vec);
   // Compress coefficients of polynomial vector
   kyber_utils::poly_vec_compress<kyber512_kem::k, kyber512_kem::du>(poly_vec);
@@ -78,7 +78,7 @@ test_kyber512_kem()
                                 kyber512_kem::CIPHER_LEN + // bytes for locally computed cipher text
                                 SEED_LEN +                 // bytes for first source buffer to copy from
                                 SEED_LEN;                  // bytes for second source buffer to copy from
-  constexpr size_t number_measurements = 1ul << 20;
+  constexpr size_t number_measurements = 1e5;
 
   dudect_config_t config = {
     chunk_size,

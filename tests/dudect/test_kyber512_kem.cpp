@@ -50,9 +50,9 @@ do_one_computation(uint8_t* const data)
   kyber_utils::ct_cond_memcpy(cond, _sink, seed_t(data + doff4, doff5 - doff4), seed_t(data + doff5, doff6 - doff5));
 
   // Just so that optimizer doesn't remove above function calls !
-  return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) & // result of generating vector of polynomials
-         (byte_arr[0] ^ byte_arr[byte_arr.size() - 1]) &                                 // result of serializing vector of polynomials
-         (_sink[0] ^ _sink[_sink.size() - 1]) &                                          // result of conditional memcpy
+  return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) ^ // result of generating vector of polynomials
+         (byte_arr[0] ^ byte_arr[byte_arr.size() - 1]) ^                                 // result of serializing vector of polynomials
+         (_sink[0] ^ _sink[_sink.size() - 1]) ^                                          // result of conditional memcpy
          static_cast<uint8_t>(cond >> 24);                                               // result of constant-time memcmp
 }
 

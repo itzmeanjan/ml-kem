@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) but be informed that it is not yet audited. *If you consider using it in production, be careful !*
+> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, be careful !*
 
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
@@ -91,60 +91,37 @@ In case you're interested in running timing leakage tests using `dudect`, execut
 > `dudect` is integrated into this library implementation of Kyber KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
 
 ```bash
-make dudect_test -j # Only on x86_64 machine
-                    # Each executable is run for at max 3 mins.
+# Can only be built and run x86_64 machine.
+
+make dudect_test_build -j
+
+# Before running the constant-time tests, it's a good idea to put all CPU cores on "performance" mode.
+# You may find guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md helpful.
+
+timeout 10m taskset -c 0 ./build/dudect/test_kyber512_kem.out
+timeout 10m taskset -c 0 ./build/dudect/test_kyber768_kem.out
+timeout 10m taskset -c 0 ./build/dudect/test_kyber1024_kem.out
 ```
 
 > [!TIP]
 > `dudect` documentation says if `t` statistic is < 10, we're *probably* good, yes **probably**. You may want to read `dudect` documentation @ https://github.com/oreparaz/dudect. Also you might find the original paper @ https://ia.cr/2016/1123 interesting.
 
 ```bash
-meas:    0.10 M, max t:   +2.35, max tau: 7.27e-03, (5/tau)^2: 4.73e+05. For the moment, maybe constant time.
-meas:    0.12 M, max t:   +1.89, max tau: 5.57e-03, (5/tau)^2: 8.06e+05. For the moment, maybe constant time.
-meas:    3.10 M, max t:   +2.48, max tau: 1.41e-03, (5/tau)^2: 1.26e+07. For the moment, maybe constant time.
-meas:    2.07 M, max t:   +1.72, max tau: 1.20e-03, (5/tau)^2: 1.75e+07. For the moment, maybe constant time.
-meas:    2.10 M, max t:   +1.66, max tau: 1.14e-03, (5/tau)^2: 1.91e+07. For the moment, maybe constant time.
-meas:    6.01 M, max t:   +1.67, max tau: 6.82e-04, (5/tau)^2: 5.37e+07. For the moment, maybe constant time.
-meas:    7.31 M, max t:   +1.67, max tau: 6.18e-04, (5/tau)^2: 6.54e+07. For the moment, maybe constant time.
-meas:    7.96 M, max t:   +2.04, max tau: 7.22e-04, (5/tau)^2: 4.80e+07. For the moment, maybe constant time.
-meas:    9.41 M, max t:   +1.70, max tau: 5.54e-04, (5/tau)^2: 8.14e+07. For the moment, maybe constant time.
-meas:    9.89 M, max t:   +1.59, max tau: 5.05e-04, (5/tau)^2: 9.78e+07. For the moment, maybe constant time.
-meas:    0.99 M, max t:   +2.16, max tau: 2.18e-03, (5/tau)^2: 5.28e+06. For the moment, maybe constant time.
-meas:    0.14 M, max t:   +2.04, max tau: 5.44e-03, (5/tau)^2: 8.45e+05. For the moment, maybe constant time.
-meas:    2.31 M, max t:   +2.90, max tau: 1.90e-03, (5/tau)^2: 6.89e+06. For the moment, maybe constant time.
-meas:    3.03 M, max t:   +3.55, max tau: 2.04e-03, (5/tau)^2: 5.99e+06. For the moment, maybe constant time.
-meas:    3.56 M, max t:   +3.23, max tau: 1.71e-03, (5/tau)^2: 8.56e+06. For the moment, maybe constant time.
-meas:    4.18 M, max t:   +2.42, max tau: 1.18e-03, (5/tau)^2: 1.78e+07. For the moment, maybe constant time.
-meas:    7.16 M, max t:   +2.40, max tau: 8.96e-04, (5/tau)^2: 3.12e+07. For the moment, maybe constant time.
-meas:    8.25 M, max t:   +2.21, max tau: 7.68e-04, (5/tau)^2: 4.24e+07. For the moment, maybe constant time.
-meas:    9.20 M, max t:   +2.27, max tau: 7.48e-04, (5/tau)^2: 4.47e+07. For the moment, maybe constant time.
-meas:   10.23 M, max t:   +2.45, max tau: 7.66e-04, (5/tau)^2: 4.26e+07. For the moment, maybe constant time.
-meas:    6.93 M, max t:   +2.54, max tau: 9.65e-04, (5/tau)^2: 2.69e+07. For the moment, maybe constant time.
-meas:    7.49 M, max t:   +2.54, max tau: 9.30e-04, (5/tau)^2: 2.89e+07. For the moment, maybe constant time.
-meas:    8.04 M, max t:   +2.16, max tau: 7.61e-04, (5/tau)^2: 4.32e+07. For the moment, maybe constant time.
-meas:    8.57 M, max t:   +2.08, max tau: 7.10e-04, (5/tau)^2: 4.96e+07. For the moment, maybe constant time.
-meas:    9.15 M, max t:   +2.03, max tau: 6.72e-04, (5/tau)^2: 5.54e+07. For the moment, maybe constant time.
-meas:    0.15 M, max t:   +1.80, max tau: 4.60e-03, (5/tau)^2: 1.18e+06. For the moment, maybe constant time.
-meas:    8.04 M, max t:   +1.90, max tau: 6.70e-04, (5/tau)^2: 5.57e+07. For the moment, maybe constant time.
-meas:   10.31 M, max t:   +2.04, max tau: 6.35e-04, (5/tau)^2: 6.20e+07. For the moment, maybe constant time.
-meas:   10.38 M, max t:   +2.05, max tau: 6.35e-04, (5/tau)^2: 6.19e+07. For the moment, maybe constant time.
-meas:    9.19 M, max t:   +1.99, max tau: 6.56e-04, (5/tau)^2: 5.80e+07. For the moment, maybe constant time.
-meas:    9.24 M, max t:   +2.04, max tau: 6.69e-04, (5/tau)^2: 5.58e+07. For the moment, maybe constant time.
-meas:    1.02 M, max t:   +1.98, max tau: 1.97e-03, (5/tau)^2: 6.47e+06. For the moment, maybe constant time.
-meas:    2.10 M, max t:   +2.10, max tau: 1.45e-03, (5/tau)^2: 1.19e+07. For the moment, maybe constant time.
-meas:    1.40 M, max t:   +1.81, max tau: 1.52e-03, (5/tau)^2: 1.08e+07. For the moment, maybe constant time.
-meas:    1.41 M, max t:   +2.21, max tau: 1.86e-03, (5/tau)^2: 7.22e+06. For the moment, maybe constant time.
-meas:    1.81 M, max t:   +2.95, max tau: 2.19e-03, (5/tau)^2: 5.20e+06. For the moment, maybe constant time.
-meas:    2.54 M, max t:   +2.96, max tau: 1.86e-03, (5/tau)^2: 7.26e+06. For the moment, maybe constant time.
-meas:    3.15 M, max t:   +2.77, max tau: 1.56e-03, (5/tau)^2: 1.02e+07. For the moment, maybe constant time.
-meas:    4.94 M, max t:   +2.46, max tau: 1.11e-03, (5/tau)^2: 2.04e+07. For the moment, maybe constant time.
-meas:    0.91 M, max t:   +2.06, max tau: 2.17e-03, (5/tau)^2: 5.32e+06. For the moment, maybe constant time.
-meas:    1.21 M, max t:   +2.19, max tau: 1.99e-03, (5/tau)^2: 6.32e+06. For the moment, maybe constant time.
-meas:    1.44 M, max t:   +2.24, max tau: 1.87e-03, (5/tau)^2: 7.17e+06. For the moment, maybe constant time.
-meas:    8.74 M, max t:   +2.32, max tau: 7.87e-04, (5/tau)^2: 4.04e+07. For the moment, maybe constant time.
-meas:    9.65 M, max t:   +2.42, max tau: 7.80e-04, (5/tau)^2: 4.11e+07. For the moment, maybe constant time.
-meas:   10.57 M, max t:   +2.22, max tau: 6.82e-04, (5/tau)^2: 5.38e+07. For the moment, maybe constant time.
-meas:   11.71 M, max t:   +2.45, max tau: 7.16e-04, (5/tau)^2: 4.88e+07. For the moment, maybe constant time.
+...
+meas:   58.90 M, max t:   +2.61, max tau: 3.40e-04, (5/tau)^2: 2.16e+08. For the moment, maybe constant time.
+meas:   58.99 M, max t:   +2.65, max tau: 3.45e-04, (5/tau)^2: 2.10e+08. For the moment, maybe constant time.
+meas:   59.07 M, max t:   +2.65, max tau: 3.44e-04, (5/tau)^2: 2.11e+08. For the moment, maybe constant time.
+meas:   59.16 M, max t:   +2.63, max tau: 3.42e-04, (5/tau)^2: 2.13e+08. For the moment, maybe constant time.
+meas:   59.25 M, max t:   +2.68, max tau: 3.49e-04, (5/tau)^2: 2.06e+08. For the moment, maybe constant time.
+meas:   59.33 M, max t:   +2.65, max tau: 3.44e-04, (5/tau)^2: 2.12e+08. For the moment, maybe constant time.
+meas:   59.42 M, max t:   +2.75, max tau: 3.57e-04, (5/tau)^2: 1.96e+08. For the moment, maybe constant time.
+meas:   59.50 M, max t:   +2.72, max tau: 3.53e-04, (5/tau)^2: 2.01e+08. For the moment, maybe constant time.
+meas:   59.59 M, max t:   +2.68, max tau: 3.47e-04, (5/tau)^2: 2.08e+08. For the moment, maybe constant time.
+meas:   59.66 M, max t:   +2.70, max tau: 3.50e-04, (5/tau)^2: 2.04e+08. For the moment, maybe constant time.
+meas:   59.74 M, max t:   +2.70, max tau: 3.50e-04, (5/tau)^2: 2.05e+08. For the moment, maybe constant time.
+meas:   59.82 M, max t:   +2.72, max tau: 3.51e-04, (5/tau)^2: 2.03e+08. For the moment, maybe constant time.
+meas:   59.89 M, max t:   +2.72, max tau: 3.51e-04, (5/tau)^2: 2.03e+08. For the moment, maybe constant time.
+meas:   59.97 M, max t:   +2.64, max tau: 3.41e-04, (5/tau)^2: 2.14e+08. For the moment, maybe constant time.
 ```
 
 ## Benchmarking

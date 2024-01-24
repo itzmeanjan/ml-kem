@@ -27,7 +27,7 @@ do_one_computation(uint8_t* const data)
   kyber_utils::generate_vector<kyber768_kem::k, kyber768_kem::η1>(poly_vec, sigma, nonce);
   // Apply NTT on that secret vector
   kyber_utils::poly_vec_ntt<kyber768_kem::k>(poly_vec);
-  // Apply iNTT on bit-reversed NTT form secret polynomial vector
+  // Apply iNTT on bit-reversed NTT form of secret polynomial vector
   kyber_utils::poly_vec_intt<kyber768_kem::k>(poly_vec);
   // Compress coefficients of polynomial vector
   kyber_utils::poly_vec_compress<kyber768_kem::k, kyber768_kem::du>(poly_vec);
@@ -49,9 +49,9 @@ do_one_computation(uint8_t* const data)
   kyber_utils::ct_cond_memcpy(cond, _sink, seed_t(data + doff4, doff5 - doff4), seed_t(data + doff5, doff6 - doff5));
 
   // Just so that optimizer doesn't remove above function calls !
-  return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) & // result of generating vector of polynomials
-         (byte_arr[0] ^ byte_arr[byte_arr.size() - 1]) &                                 // result of serializing vector of polynomials
-         (_sink[0] ^ _sink[_sink.size() - 1]) &                                          // result of conditional memcpy
+  return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) ^ // result of generating vector of polynomials
+         (byte_arr[0] ^ byte_arr[byte_arr.size() - 1]) ^                                 // result of serializing vector of polynomials
+         (_sink[0] ^ _sink[_sink.size() - 1]) ^                                          // result of conditional memcpy
          static_cast<uint8_t>(cond >> 24);                                               // result of constant-time memcmp
 }
 
@@ -77,7 +77,7 @@ test_kyber768_kem()
                                 kyber768_kem::CIPHER_LEN + // bytes for locally computed cipher text
                                 SEED_LEN +                 // bytes for first source buffer to copy from
                                 SEED_LEN;                  // bytes for second source buffer to copy from
-  constexpr size_t number_measurements = 1ul << 20;
+  constexpr size_t number_measurements = 1e5;
 
   dudect_config_t config = {
     chunk_size,

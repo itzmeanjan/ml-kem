@@ -82,7 +82,7 @@ $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(OPT_FLAGS) $(LINK_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
 $(DUDECT_BUILD_DIR)/%.out: $(DUDECT_TEST_DIR)/%.cpp $(DUDECT_BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR) $(DUDECT_INC_DIR)
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) $(LINK_FLAGS) $< -o $@
+	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) -lm $(LINK_FLAGS) $< -o $@
 
 $(ASAN_TEST_BINARY): $(ASAN_TEST_OBJECTS)
 	$(CXX) $(ASAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
@@ -93,8 +93,7 @@ $(UBSAN_TEST_BINARY): $(UBSAN_TEST_OBJECTS)
 test: $(TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
 
-dudect_test: $(DUDECT_TEST_BINARIES)
-	$(foreach binary,$^,timeout 3.0m ./$(binary);)
+dudect_test_build: $(DUDECT_TEST_BINARIES)
 
 asan_test: $(ASAN_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times

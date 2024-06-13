@@ -51,6 +51,7 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
   hasher.absorb(pubkey);
   hasher.finalize();
   hasher.digest(_seckey2);
+  hasher.reset();
 }
 
 // Given (k * 12 * 32 + 32) -bytes public key and 32 -bytes seed ( used for
@@ -74,10 +75,11 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's encapsulation implementation.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline shake256::shake256_t
+static inline void
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
-            std::span<uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher)
+            std::span<uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher,
+            std::span<uint8_t, 32> shared_secret)
   requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
 {
   std::array<uint8_t, 64> g_in{};
@@ -125,7 +127,8 @@ encapsulate(std::span<const uint8_t, 32> m,
   shake256::shake256_t xof256;
   xof256.absorb(_kdf_in);
   xof256.finalize();
-  return xof256;
+  xof256.squeeze(shared_secret);
+  xof256.reset();
 }
 
 // Given (k * 24 * 32 + 96) -bytes secret key and (k * du * 32 + dv * 32) -bytes
@@ -143,8 +146,10 @@ encapsulate(std::span<const uint8_t, 32> m,
 // See algorithm 9 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline shake256::shake256_t
-decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey, std::span<const uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher)
+static inline void
+decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey,
+            std::span<const uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher,
+            std::span<uint8_t, 32> shared_secret)
   requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;
@@ -201,7 +206,8 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   shake256::shake256_t xof256;
   xof256.absorb(_kdf_in);
   xof256.finalize();
-  return xof256;
+  xof256.squeeze(shared_secret);
+  xof256.reset();
 }
 
 }

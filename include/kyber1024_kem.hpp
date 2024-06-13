@@ -24,6 +24,9 @@ constexpr size_t SKEY_LEN = kyber_utils::get_kem_secret_key_len(k);
 // = 1568 -bytes Kyber1024 cipher text length
 constexpr size_t CIPHER_LEN = kyber_utils::get_kem_cipher_len(k, du, dv);
 
+// = 32 -bytes Kyber1024 fixed size shared secret byte length
+constexpr size_t SHARED_SECRET_LEN = 32;
+
 // Computes a new Kyber1024 KEM keypair s.t. public key is 1568 -bytes and
 // secret key is 3168 -bytes, given 32 -bytes seed d ( used in CPA-PKE ) and 32
 // -bytes seed z ( used in CCA-KEM ).
@@ -40,10 +43,13 @@ keygen(std::span<const uint8_t, 32> d, std::span<const uint8_t, 32> z, std::span
 // at same SHAKE256 XOF backed KDF.
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
-inline shake256::shake256_t
-encapsulate(std::span<const uint8_t, 32> m, std::span<const uint8_t, PKEY_LEN> pubkey, std::span<uint8_t, CIPHER_LEN> cipher)
+inline void
+encapsulate(std::span<const uint8_t, 32> m,
+            std::span<const uint8_t, PKEY_LEN> pubkey,
+            std::span<uint8_t, CIPHER_LEN> cipher,
+            std::span<uint8_t, SHARED_SECRET_LEN> shared_secret)
 {
-  return kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher);
+  kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
 }
 
 // Given a Kyber1024 KEM secret key ( of 3168 -bytes ) and a cipher text of 1568
@@ -52,10 +58,10 @@ encapsulate(std::span<const uint8_t, 32> m, std::span<const uint8_t, PKEY_LEN> p
 // derivation function).
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
-inline shake256::shake256_t
-decapsulate(std::span<const uint8_t, SKEY_LEN> seckey, std::span<const uint8_t, CIPHER_LEN> cipher)
+inline void
+decapsulate(std::span<const uint8_t, SKEY_LEN> seckey, std::span<const uint8_t, CIPHER_LEN> cipher, std::span<uint8_t, SHARED_SECRET_LEN> shared_secret)
 {
-  return kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher);
+  kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher, shared_secret);
 }
 
 }

@@ -2,6 +2,7 @@
 #include "kyber512_kem.hpp"
 #include "kyber768_kem.hpp"
 #include "utils.hpp"
+#include <array>
 #include <fstream>
 #include <gtest/gtest.h>
 
@@ -70,15 +71,12 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
       std::array<uint8_t, kyber512::PKEY_LEN> pkey{};
       std::array<uint8_t, kyber512::SKEY_LEN> skey{};
       std::array<uint8_t, kyber512::CIPHER_LEN> ctxt{};
-      std::array<uint8_t, 32> shrd_sec0{};
-      std::array<uint8_t, 32> shrd_sec1{};
+      std::array<uint8_t, kyber512_kem::SHARED_SECRET_LEN> shrd_sec0{};
+      std::array<uint8_t, kyber512_kem::SHARED_SECRET_LEN> shrd_sec1{};
 
       kyber512::keygen(___d, ___z, pkey, skey);
-      auto skdf = kyber512::encapsulate(___m, pkey, ctxt);
-      auto rkdf = kyber512::decapsulate(skey, ctxt);
-
-      skdf.squeeze(shrd_sec0);
-      rkdf.squeeze(shrd_sec1);
+      kyber512::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      kyber512::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);
       EXPECT_EQ(___sk, skey);
@@ -158,11 +156,8 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec1{};
 
       kyber768::keygen(___d, ___z, pkey, skey);
-      auto skdf = kyber768::encapsulate(___m, pkey, ctxt);
-      auto rkdf = kyber768::decapsulate(skey, ctxt);
-
-      skdf.squeeze(shrd_sec0);
-      rkdf.squeeze(shrd_sec1);
+      kyber768::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      kyber768::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);
       EXPECT_EQ(___sk, skey);
@@ -249,11 +244,8 @@ TEST(KyberKEM, Kyber1024KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec1{};
 
       kyber1024::keygen(___d, ___z, pkey, skey);
-      auto skdf = kyber1024::encapsulate(___m, pkey, ctxt);
-      auto rkdf = kyber1024::decapsulate(skey, ctxt);
-
-      skdf.squeeze(shrd_sec0);
-      rkdf.squeeze(shrd_sec1);
+      kyber1024::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      kyber1024::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);
       EXPECT_EQ(___sk, skey);

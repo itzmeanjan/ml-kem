@@ -15,15 +15,15 @@
 // - This shared secret key can now be used with any symmetric key primitive.
 //
 // works as expected.
-template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t klen>
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 void
 test_kyber_kem()
-  requires(klen > 0)
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
   constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
   constexpr size_t ctlen = kyber_utils::get_kem_cipher_len(k, du, dv);
+  constexpr size_t sslen = 32;
 
   std::vector<uint8_t> d(slen);
   std::vector<uint8_t> z(slen);
@@ -31,8 +31,8 @@ test_kyber_kem()
   std::vector<uint8_t> pkey(pklen);
   std::vector<uint8_t> skey(sklen);
   std::vector<uint8_t> cipher(ctlen);
-  std::vector<uint8_t> sender_key(klen);
-  std::vector<uint8_t> receiver_key(klen);
+  std::vector<uint8_t> sender_key(sslen);
+  std::vector<uint8_t> receiver_key(sslen);
 
   auto _d = std::span<uint8_t, slen>(d);
   auto _z = std::span<uint8_t, slen>(z);
@@ -40,6 +40,8 @@ test_kyber_kem()
   auto _pkey = std::span<uint8_t, pklen>(pkey);
   auto _skey = std::span<uint8_t, sklen>(skey);
   auto _cipher = std::span<uint8_t, ctlen>(cipher);
+  auto _sender_key = std::span<uint8_t, sslen>(sender_key);
+  auto _receiver_key = std::span<uint8_t, sslen>(receiver_key);
 
   prng::prng_t prng;
   prng.read(d);
@@ -47,26 +49,23 @@ test_kyber_kem()
   prng.read(m);
 
   kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
-  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
-  auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher);
-
-  skdf.squeeze(sender_key);
-  rkdf.squeeze(receiver_key);
+  kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
+  kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher, _receiver_key);
 
   EXPECT_EQ(sender_key, receiver_key);
 }
 
 TEST(KyberKEM, Kyber512KeygenEncapsDecaps)
 {
-  test_kyber_kem<2, 3, 2, 10, 4, 32>();
+  test_kyber_kem<2, 3, 2, 10, 4>();
 }
 
 TEST(KyberKEM, Kyber768KeygenEncapsDecaps)
 {
-  test_kyber_kem<3, 2, 2, 10, 4, 32>();
+  test_kyber_kem<3, 2, 2, 10, 4>();
 }
 
 TEST(KyberKEM, Kyber1024KeygenEncapsDecaps)
 {
-  test_kyber_kem<4, 2, 2, 11, 5, 32>();
+  test_kyber_kem<4, 2, 2, 11, 5>();
 }

@@ -101,9 +101,7 @@ bench_encapsulate(benchmark::State& state)
     const uint64_t start = cpu_ticks();
 #endif
 
-    auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
-    benchmark::DoNotOptimize(skdf);
-    skdf.squeeze(_sender_key);
+    kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
 
     benchmark::DoNotOptimize(_m);
     benchmark::DoNotOptimize(_pkey);
@@ -162,8 +160,7 @@ bench_decapsulate(benchmark::State& state)
 
   prng.read(_m);
 
-  auto skdf = kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher);
-  skdf.squeeze(_sender_key);
+  kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
 
 #ifdef __x86_64__
   uint64_t total_ticks = 0ul;
@@ -174,9 +171,7 @@ bench_decapsulate(benchmark::State& state)
     const uint64_t start = cpu_ticks();
 #endif
 
-    auto rkdf = kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher);
-    benchmark::DoNotOptimize(rkdf);
-    rkdf.squeeze(_receiver_key);
+    kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher, _receiver_key);
 
     benchmark::DoNotOptimize(_skey);
     benchmark::DoNotOptimize(_cipher);

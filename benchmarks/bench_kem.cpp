@@ -101,7 +101,7 @@ bench_encapsulate(benchmark::State& state)
     const uint64_t start = cpu_ticks();
 #endif
 
-    kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
+    (void)kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
 
     benchmark::DoNotOptimize(_m);
     benchmark::DoNotOptimize(_pkey);
@@ -160,7 +160,7 @@ bench_decapsulate(benchmark::State& state)
 
   prng.read(_m);
 
-  kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
+  (void)kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
 
 #ifdef __x86_64__
   uint64_t total_ticks = 0ul;

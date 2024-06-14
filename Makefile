@@ -58,16 +58,16 @@ $(BUILD_DIR):
 	mkdir -p $@
 
 $(SHA3_INC_DIR):
-	git submodule update --init
+	git submodule update --init sha3
 
 $(DUDECT_INC_DIR): $(SHA3_INC_DIR)
-	git submodule update --init
+	git submodule update --init dudect
 
 $(SUBTLE_INC_DIR): $(DUDECT_INC_DIR)
-	git submodule update --init
+	git submodule update --init subtle
 
 $(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
-	git submodule update --init
+	git submodule update --init gtest-parallel
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@

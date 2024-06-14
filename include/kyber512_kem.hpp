@@ -43,13 +43,13 @@ keygen(std::span<const uint8_t, 32> d, std::span<const uint8_t, 32> z, std::span
 // SHAKE256 XOF backed KDF.
 //
 // Returned KDF can be used for deriving shared key of arbitrary bytes length.
-inline void
+[[nodiscard("If public key is malformed, encapsulation fails")]] inline bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, PKEY_LEN> pubkey,
             std::span<uint8_t, CIPHER_LEN> cipher,
             std::span<uint8_t, SHARED_SECRET_LEN> shared_secret)
 {
-  kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
+  return kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
 }
 
 // Given a Kyber512 KEM secret key ( of 1632 -bytes ) and a cipher text of 768

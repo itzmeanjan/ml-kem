@@ -60,12 +60,15 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 // cipher text of length (k * du * 32 + dv * 32) -bytes which can be shared with
 // recipient party ( having respective secret key ) over insecure channel.
 //
-// It also returns a SHAKE256 object which acts as a KDF ( key derivation
-// function ), used for generating arbitrary length shared secret key, to be
-// used for symmetric key encryption between these two participating entities.
+// It also computes a fixed length 32 -bytes shared secret, which can be used for
+// symmetric key encryption between these two participating entities. Alternatively
+// they might choose to derive longer keys from this shared secret.
 //
-// Other side of communication should also be able to generate same arbitrary
-// length key stream ( using KDF ), after successful decryption of cipher text.
+// Other side of communication should also be able to generate same 32 -byte shared secret,
+// after successful decryption of cipher text.
+//
+// If invalid public key is input, this function execution will fail, returning false,
+// otherwise it will return true, while producing both cipher text and shared secret.
 //
 // See algorithm 8 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
@@ -76,7 +79,7 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 // https://github.com/pq-crystals/kyber.git. It also helps in properly
 // benchmarking underlying KEM's encapsulation implementation.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline void
+[[nodiscard("Use result, it might fail because of malformed input public key")]] static inline bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
             std::span<uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher,
@@ -106,8 +109,13 @@ encapsulate(std::span<const uint8_t, 32> m,
   h512.finalize();
   h512.digest(_g_out);
 
-  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, _g_out1, cipher);
+  const auto has_mod_check_passed = pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, _g_out1, cipher);
+  if (!has_mod_check_passed) {
+    return has_mod_check_passed;
+  }
+
   std::copy(_g_out0.begin(), _g_out0.end(), shared_secret.begin());
+  return true;
 }
 
 // Given (k * 24 * 32 + 96) -bytes secret key and (k * du * 32 + dv * 32) -bytes
@@ -171,7 +179,8 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   xof256.finalize();
   xof256.squeeze(j_out);
 
-  pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
+  // Explicitly ignore return value, because public key, held as part of secret key is *assumed* to be valid.
+  (void)pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
   // line 7-11 of algorithm 9, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;

@@ -80,16 +80,19 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
   kyber_utils::poly_vec_encode<k, 12>(s, seckey);
 }
 
-// Given (k * 12 * 32 + 32) -bytes public key, 32 -bytes message ( to be
+// Given (k * 12 * 32 + 32) -bytes *valid* public key, 32 -bytes message ( to be
 // encrypted ) and 32 -bytes random coin ( from where all randomness is
 // deterministically sampled ), this routine encrypts message using
 // INDCPA-secure Kyber encryption algorithm, computing compressed cipher text of
 // (k * du * 32 + dv * 32) -bytes.
 //
+// If modulus check, as described in point (2) of section 6.2 of ML-KEM draft standard,
+// fails, it returns false, otherwise it returns true.
+//
 // See algorithm 5 defined in Kyber specification
 // https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline void
+[[nodiscard("Use result of modulus check on public key")]] static inline bool
 encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
         std::span<const uint8_t, 32> msg,
         std::span<const uint8_t, 32> rcoin,
@@ -102,7 +105,17 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
   auto rho = pubkey.template subspan<pkoff, 32>();
 
   std::array<field::zq_t, k * ntt::N> t_prime{};
+  std::array<uint8_t, _pubkey0.size()> encoded_tprime{};
+
   kyber_utils::poly_vec_decode<k, 12>(_pubkey0, t_prime);
+  kyber_utils::poly_vec_encode<k, 12>(t_prime, encoded_tprime);
+
+  using encoded_pkey_t = std::span<const uint8_t, _pubkey0.size()>;
+  const auto are_equal = kyber_utils::ct_memcmp(encoded_pkey_t(_pubkey0), encoded_pkey_t(encoded_tprime));
+  if (are_equal == 0u) {
+    // Got an invalid public key
+    return false;
+  }
 
   // step 4, 5, 6, 7, 8
   std::array<field::zq_t, k * k * ntt::N> A_prime{};
@@ -158,6 +171,8 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
   // step 22
   kyber_utils::poly_compress<dv>(v);
   kyber_utils::encode<dv>(v, _enc1);
+
+  return true;
 }
 
 // Given (k * 12 * 32) -bytes secret key and (k * du * 32 + dv * 32) -bytes

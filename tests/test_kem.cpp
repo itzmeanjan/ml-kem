@@ -49,7 +49,7 @@ test_kyber_kem()
   prng.read(m);
 
   kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
-  kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
+  (void)kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
   kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher, _receiver_key);
 
   EXPECT_EQ(sender_key, receiver_key);

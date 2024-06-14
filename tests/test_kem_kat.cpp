@@ -75,7 +75,7 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
       std::array<uint8_t, kyber512_kem::SHARED_SECRET_LEN> shrd_sec1{};
 
       kyber512::keygen(___d, ___z, pkey, skey);
-      kyber512::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      (void)kyber512::encapsulate(___m, pkey, ctxt, shrd_sec0);
       kyber512::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);
@@ -156,7 +156,7 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec1{};
 
       kyber768::keygen(___d, ___z, pkey, skey);
-      kyber768::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      (void)kyber768::encapsulate(___m, pkey, ctxt, shrd_sec0);
       kyber768::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);
@@ -244,7 +244,7 @@ TEST(KyberKEM, Kyber1024KnownAnswerTests)
       std::array<uint8_t, 32> shrd_sec1{};
 
       kyber1024::keygen(___d, ___z, pkey, skey);
-      kyber1024::encapsulate(___m, pkey, ctxt, shrd_sec0);
+      (void)kyber1024::encapsulate(___m, pkey, ctxt, shrd_sec0);
       kyber1024::decapsulate(skey, ctxt, shrd_sec1);
 
       EXPECT_EQ(___pk, pkey);

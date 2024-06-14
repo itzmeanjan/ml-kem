@@ -54,13 +54,9 @@ main()
   prng.read(_m);
 
   // encapsulate key, compute cipher text and obtain KDF
-  auto skdf = kyber512_kem::encapsulate(_m, _pkey, _cipher);
+  const bool is_encapsulated = kyber512_kem::encapsulate(_m, _pkey, _cipher, _shrd_key0);
   // decapsulate cipher text and obtain KDF
-  auto rkdf = kyber512_kem::decapsulate(_skey, _cipher);
-
-  // both sender's and receiver's KDF should produce same KEY_LEN many bytes
-  skdf.squeeze(_shrd_key0);
-  rkdf.squeeze(_shrd_key1);
+  kyber512_kem::decapsulate(_skey, _cipher, _shrd_key1);
 
   // check that both of the communicating parties arrived at same shared key
   assert(std::ranges::equal(_shrd_key0, _shrd_key1));
@@ -69,11 +65,11 @@ main()
     using namespace kyber_utils;
 
     std::cout << "Kyber512 KEM\n";
-    std::cout << "\npubkey        : " << to_hex(_pkey);
-    std::cout << "\nseckey        : " << to_hex(_skey);
-    std::cout << "\ncipher        : " << to_hex(_cipher);
-    std::cout << "\nshared secret : " << to_hex(_shrd_key0);
-    std::cout << "\n";
+    std::cout << "pubkey         : " << to_hex(_pkey) << "\n";
+    std::cout << "seckey         : " << to_hex(_skey) << "\n";
+    std::cout << "encapsulated ? : " << std::boolalpha << is_encapsulated << "\n";
+    std::cout << "cipher         : " << to_hex(_cipher) << "\n";
+    std::cout << "shared secret  : " << to_hex(_shrd_key0) << "\n";
   }
 
   return EXIT_SUCCESS;

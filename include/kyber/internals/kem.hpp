@@ -1,9 +1,9 @@
 #pragma once
+#include "kyber/internals/utility/utils.hpp"
 #include "pke.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 #include "shake256.hpp"
-#include "utils.hpp"
 #include <algorithm>
 #include <array>
 #include <cstdint>

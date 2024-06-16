@@ -1,5 +1,5 @@
 #include "bench_helper.hpp"
-#include "kem.hpp"
+#include "kyber/internals/kem.hpp"
 #include "x86_64_cpu_ticks.hpp"
 #include <benchmark/benchmark.h>
 

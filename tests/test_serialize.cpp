@@ -1,5 +1,5 @@
-#include "field.hpp"
-#include "serialize.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/serialize.hpp"
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <vector>

@@ -1,4 +1,4 @@
-#include "field.hpp"
+#include "kyber/internals/math/field.hpp"
 #include <gtest/gtest.h>
 
 // Test functional correctness of Kyber prime field operations ( using

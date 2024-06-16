@@ -1,4 +1,4 @@
-#include "kyber512_kem.hpp"
+#include "kyber/kyber512_kem.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iostream>

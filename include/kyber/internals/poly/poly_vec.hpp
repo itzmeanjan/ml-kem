@@ -1,9 +1,9 @@
 #pragma once
-#include "compression.hpp"
-#include "field.hpp"
-#include "ntt.hpp"
-#include "params.hpp"
-#include "serialize.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/compression.hpp"
+#include "kyber/internals/poly/ntt.hpp"
+#include "kyber/internals/poly/serialize.hpp"
+#include "kyber/internals/utility/params.hpp"
 #include <array>
 #include <cstdint>
 

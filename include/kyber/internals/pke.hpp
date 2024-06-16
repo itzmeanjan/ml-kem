@@ -1,10 +1,10 @@
 #pragma once
-#include "field.hpp"
-#include "params.hpp"
-#include "poly_vec.hpp"
-#include "sampling.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/poly_vec.hpp"
+#include "kyber/internals/poly/sampling.hpp"
+#include "kyber/internals/utility/params.hpp"
+#include "kyber/internals/utility/utils.hpp"
 #include "sha3_512.hpp"
-#include "utils.hpp"
 #include <array>
 #include <span>
 

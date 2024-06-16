@@ -1,7 +1,7 @@
 #pragma once
-#include "field.hpp"
-#include "ntt.hpp"
-#include "params.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/ntt.hpp"
+#include "kyber/internals/utility/params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <array>

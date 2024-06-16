@@ -1,5 +1,5 @@
-#include "field.hpp"
-#include "ntt.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/ntt.hpp"
 #include <gtest/gtest.h>
 #include <vector>
 

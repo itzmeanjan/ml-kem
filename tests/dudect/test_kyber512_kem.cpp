@@ -1,4 +1,4 @@
-#include "kyber512_kem.hpp"
+#include "kyber/kyber512_kem.hpp"
 #include <cstdio>
 
 #define DUDECT_IMPLEMENTATION

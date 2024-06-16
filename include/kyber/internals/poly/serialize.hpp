@@ -1,7 +1,7 @@
 #pragma once
-#include "field.hpp"
-#include "ntt.hpp"
-#include "params.hpp"
+#include "kyber/internals/math/field.hpp"
+#include "kyber/internals/poly/ntt.hpp"
+#include "kyber/internals/utility/params.hpp"
 #include <cstring>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities

@@ -1,6 +1,5 @@
 #pragma once
-#include "kem.hpp"
-#include "utils.hpp"
+#include "kyber/internals/kem.hpp"
 
 // Kyber Key Encapsulation Mechanism (KEM) instantiated with Kyber1024
 // parameters

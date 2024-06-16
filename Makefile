@@ -14,7 +14,7 @@ DEP_IFLAGS = -I $(SHA3_INC_DIR) -I $(SUBTLE_INC_DIR)
 DUDECT_DEP_IFLAGS = $(DEP_IFLAGS) -I $(DUDECT_INC_DIR)
 
 SRC_DIR = include
-KYBER_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
+KYBER_SOURCES := $(shell find $(SRC_DIR) -name '*.hpp')
 BUILD_DIR = build
 DUDECT_BUILD_DIR = $(BUILD_DIR)/dudect
 ASAN_BUILD_DIR = $(BUILD_DIR)/asan

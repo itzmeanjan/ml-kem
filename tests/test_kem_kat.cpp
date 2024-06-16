@@ -1,7 +1,7 @@
-#include "kyber1024_kem.hpp"
-#include "kyber512_kem.hpp"
-#include "kyber768_kem.hpp"
-#include "utils.hpp"
+#include "kyber/internals/utility/utils.hpp"
+#include "kyber/kyber1024_kem.hpp"
+#include "kyber/kyber512_kem.hpp"
+#include "kyber/kyber768_kem.hpp"
 #include <array>
 #include <fstream>
 #include <gtest/gtest.h>

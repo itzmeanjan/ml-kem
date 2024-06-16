@@ -1,4 +1,4 @@
-#include "kyber768_kem.hpp"
+#include "kyber/kyber768_kem.hpp"
 
 #define DUDECT_IMPLEMENTATION
 #define DUDECT_VISIBLITY_STATIC

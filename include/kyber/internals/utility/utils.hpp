@@ -1,5 +1,4 @@
 #pragma once
-#include "params.hpp"
 #include "subtle.hpp"
 #include <array>
 #include <cassert>

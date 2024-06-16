@@ -1,5 +1,5 @@
 #pragma once
-#include "prng.hpp"
+#include "kyber/internals/rng/prng.hpp"
 #include <bit>
 #include <cstdint>
 

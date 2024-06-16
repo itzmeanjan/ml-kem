@@ -1,5 +1,5 @@
-#include "kem.hpp"
-#include "utils.hpp"
+#include "kyber/internals/kem.hpp"
+#include "kyber/internals/utility/utils.hpp"
 #include <gtest/gtest.h>
 
 // Given k, η1, η2, du, dv - Kyber parameters, this routine checks whether

@@ -1,6 +1,5 @@
 #pragma once
 #include <cstddef>
-#include <cstdint>
 
 // Holds compile-time executable functions, ensuring that routines are invoked
 // with proper arguments.

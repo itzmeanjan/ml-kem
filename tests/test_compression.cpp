@@ -1,4 +1,4 @@
-#include "compression.hpp"
+#include "kyber/internals/poly/compression.hpp"
 #include <gtest/gtest.h>
 
 // Decompression error that can happen for some given `d` s.t.

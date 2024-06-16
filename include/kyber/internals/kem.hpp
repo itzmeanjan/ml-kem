@@ -19,7 +19,7 @@ namespace kem {
 // secret key: (k * 24 * 32 + 96) -bytes wide [ includes public key ]
 //
 // See algorithm 7 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 //
 // Note, this routine allows you to pass two 32 -bytes seeds ( see first &
 // second parameter ), which is designed this way for ease of writing test cases
@@ -71,7 +71,7 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 // otherwise it will return true, while producing both cipher text and shared secret.
 //
 // See algorithm 8 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 //
 // Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
 // which is designed this way for ease of writing test cases against known
@@ -131,7 +131,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 // key primitives.
 //
 // See algorithm 9 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline void
 decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey,

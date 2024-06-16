@@ -11,7 +11,7 @@ namespace kyber_utils {
 // some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q))
 //
 // See top of page 5 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 //
 // Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96c407b3cfc9f6e1749475b673794402c1/mlkem768.go#L395-L425.
 template<size_t d>
@@ -38,7 +38,7 @@ compress(const field::zq_t x)
 // defined in eq. 2 of Kyber specification.
 //
 // See top of page 5 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t d>
 static inline constexpr field::zq_t
 decompress(const field::zq_t x)

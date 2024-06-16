@@ -12,7 +12,7 @@ namespace kyber_utils {
 // byte array of length 32 * l -bytes
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
 encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr)
@@ -148,7 +148,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
 // ) coefficient ∈ [0, 2^l)
 //
 // See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
 decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly)

@@ -10,7 +10,7 @@ namespace kyber_params {
 // bounds.
 //
 // See page 5 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_d(const size_t d)
 {
@@ -58,7 +58,7 @@ check_matrix_dim(const size_t a_cols, const size_t b_rows)
 // invoked with proper parameter set.
 //
 // See algorithm 4, 7 and table 1 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_keygen_params(const size_t k, const size_t eta1)
 {
@@ -73,7 +73,7 @@ check_keygen_params(const size_t k, const size_t eta1)
 // invoked with proper parameter set.
 //
 // See algorithm 5 and table 1 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_encrypt_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
@@ -88,7 +88,7 @@ check_encrypt_params(const size_t k, const size_t η1, const size_t η2, const s
 // invoked with proper parameter set.
 //
 // See algorithm 6 and table 1 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_decrypt_params(const size_t k, const size_t du, const size_t dv)
 {
@@ -103,7 +103,7 @@ check_decrypt_params(const size_t k, const size_t du, const size_t dv)
 // invoked with proper parameter set.
 //
 // See algorithm 8 and table 1 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_encap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
@@ -114,7 +114,7 @@ check_encap_params(const size_t k, const size_t η1, const size_t η2, const siz
 // invoked with proper parameter set.
 //
 // See algorithm 9 and table 1 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 consteval bool
 check_decap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {

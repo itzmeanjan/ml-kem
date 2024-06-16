@@ -8,7 +8,7 @@
 // |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
 //
 // See eq. 2 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t d>
 static inline constexpr size_t
 compute_error()

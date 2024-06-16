@@ -6,7 +6,7 @@
 namespace kyber1024_kem {
 
 // See row 3 of table 1 of specification @
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 
 constexpr size_t k = 4;
 constexpr size_t η1 = 2;

@@ -1,5 +1,5 @@
 > [!CAUTION]
-> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, be careful !*
+> This Kyber implementation is conformant with Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, be careful !*
 
 # kyber
 CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
@@ -21,7 +21,7 @@ Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
 Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3`, `subtle` and `dudect` (for timing leakage tests) are dependencies of this library, which are pinned to specific git commits, using git submodule.
 
 > [!NOTE]
-> Find Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
+> Find Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
 
 ## Prerequisites
 
@@ -452,7 +452,7 @@ Kyber768 KEM Routines | `kyber768_kem::` | [include/kyber768_kem.hpp](include/ky
 Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include/kyber1024_kem.hpp)
 
 > [!NOTE]
-> Kyber parameter sets are selected from table 1 of Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf.
+> Kyber parameter sets are selected from table 1 of Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 
 See example [program](./examples/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
 

@@ -19,7 +19,7 @@ namespace pke {
 // secret key: (k * 12 * 32) -bytes wide
 //
 // See algorithm 4 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 //
 // Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
 // which is designed this way for ease of writing test cases against known
@@ -90,7 +90,7 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
 // fails, it returns false, otherwise it returns true.
 //
 // See algorithm 5 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result of modulus check on public key")]] static inline bool
 encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
@@ -181,7 +181,7 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
 // secret key.
 //
 // See algorithm 6 defined in Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t du, size_t dv>
 static inline void
 decrypt(std::span<const uint8_t, k * 12 * 32> seckey, std::span<const uint8_t, k * du * 32 + dv * 32> enc, std::span<uint8_t, 32> dec)

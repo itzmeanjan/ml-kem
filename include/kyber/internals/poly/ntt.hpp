@@ -183,7 +183,7 @@ intt(std::span<field::zq_t, N> poly)
 // h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
 //
 // See page 6 of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// https://doi.org/10.6028/NIST.FIPS.203.ipd
 static inline constexpr void
 basemul(std::span<const field::zq_t, 2> f, // degree-1 polynomial
         std::span<const field::zq_t, 2> g, // degree-1 polynomial

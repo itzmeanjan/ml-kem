@@ -42,7 +42,6 @@ from_hex(std::string_view bytes)
 TEST(KyberKEM, Kyber512KnownAnswerTests)
 {
   using namespace std::literals;
-  namespace utils = kyber_utils;
   namespace kyber512 = kyber512_kem;
 
   const std::string kat_file = "./kats/kyber512.kat";
@@ -123,7 +122,6 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
 TEST(KyberKEM, Kyber768KnownAnswerTests)
 {
   using namespace std::literals;
-  namespace utils = kyber_utils;
   namespace kyber768 = kyber768_kem;
 
   const std::string kat_file = "./kats/kyber768.kat";
@@ -211,7 +209,6 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
 TEST(KyberKEM, Kyber1024KnownAnswerTests)
 {
   using namespace std::literals;
-  namespace utils = kyber_utils;
   namespace kyber1024 = kyber1024_kem;
 
   const std::string kat_file = "./kats/kyber1024.kat";

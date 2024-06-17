@@ -19,7 +19,7 @@ TEST(KyberKEM, NumberTheoreticTransform)
   auto _poly_a = std::span<field::zq_t, ntt::N>(poly_a);
   auto _poly_b = std::span<field::zq_t, ntt::N>(poly_b);
 
-  prng::prng_t prng;
+  prng::prng_t<128> prng{};
 
   for (size_t i = 0; i < ntt::N; i++) {
     _poly_a[i] = field::zq_t::random(prng);

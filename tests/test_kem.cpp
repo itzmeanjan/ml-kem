@@ -15,7 +15,7 @@
 // - This shared secret key can now be used with any symmetric key primitive.
 //
 // works as expected.
-template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
+template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t bit_security_level>
 void
 test_kyber_kem()
 {
@@ -43,7 +43,7 @@ test_kyber_kem()
   auto _sender_key = std::span<uint8_t, sslen>(sender_key);
   auto _receiver_key = std::span<uint8_t, sslen>(receiver_key);
 
-  prng::prng_t prng;
+  prng::prng_t<bit_security_level> prng{};
   prng.read(d);
   prng.read(z);
   prng.read(m);
@@ -57,15 +57,15 @@ test_kyber_kem()
 
 TEST(KyberKEM, Kyber512KeygenEncapsDecaps)
 {
-  test_kyber_kem<2, 3, 2, 10, 4>();
+  test_kyber_kem<2, 3, 2, 10, 4, 128>();
 }
 
 TEST(KyberKEM, Kyber768KeygenEncapsDecaps)
 {
-  test_kyber_kem<3, 2, 2, 10, 4>();
+  test_kyber_kem<3, 2, 2, 10, 4, 192>();
 }
 
 TEST(KyberKEM, Kyber1024KeygenEncapsDecaps)
 {
-  test_kyber_kem<4, 2, 2, 11, 5>();
+  test_kyber_kem<4, 2, 2, 11, 5, 256>();
 }

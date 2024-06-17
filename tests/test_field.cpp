@@ -7,7 +7,7 @@
 TEST(KyberKEM, ArithmeticOverZq)
 {
   constexpr size_t itr_cnt = 1ul << 20;
-  prng::prng_t prng;
+  prng::prng_t<128> prng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {
     const auto a = field::zq_t::random(prng);

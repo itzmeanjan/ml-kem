@@ -115,7 +115,8 @@ public:
   inline constexpr bool operator==(const zq_t rhs) const { return this->v == rhs.v; }
 
   // Samples a random Zq element, using pseudo random number generator.
-  static inline zq_t random(prng::prng_t& prng)
+  template<size_t bit_security_level>
+  static inline zq_t random(prng::prng_t<bit_security_level>& prng)
   {
     uint16_t res = 0;
     prng.read(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));

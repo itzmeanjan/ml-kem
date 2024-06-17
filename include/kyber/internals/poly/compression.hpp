@@ -22,7 +22,7 @@ compress(const field::zq_t x)
   constexpr uint16_t mask = (1u << d) - 1;
 
   const auto dividend = x.raw() << d;
-  const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * field::R) >> (field::RADIX_BIT_WIDTH * 2));
+  const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * field::R) >> (field::Q_BIT_WIDTH * 2));
   const auto remainder = dividend - quotient0 * field::Q;
 
   const auto quotient1 = quotient0 + ((((field::Q / 2) - remainder) >> 31) & 1);

@@ -50,11 +50,11 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
 
       auto _pk = std::string_view(pk);
       auto __pk = _pk.substr(_pk.find("="sv) + 2, _pk.size());
-      auto ___pk = utils::from_hex<kyber512::PKEY_LEN>(__pk);
+      auto ___pk = utils::from_hex<kyber512::PKEY_BYTE_LEN>(__pk);
 
       auto _sk = std::string_view(sk);
       auto __sk = _sk.substr(_sk.find("="sv) + 2, _sk.size());
-      auto ___sk = utils::from_hex<kyber512::SKEY_LEN>(__sk);
+      auto ___sk = utils::from_hex<kyber512::SKEY_BYTE_LEN>(__sk);
 
       auto _m = std::string_view(m);
       auto __m = _m.substr(_m.find("="sv) + 2, _m.size());
@@ -62,17 +62,17 @@ TEST(KyberKEM, Kyber512KnownAnswerTests)
 
       auto _ct = std::string_view(ct);
       auto __ct = _ct.substr(_ct.find("="sv) + 2, _ct.size());
-      auto ___ct = utils::from_hex<kyber512::CIPHER_LEN>(__ct);
+      auto ___ct = utils::from_hex<kyber512::CIPHER_TEXT_BYTE_LEN>(__ct);
 
       auto _ss = std::string_view(ss);
       auto __ss = _ss.substr(_ss.find("="sv) + 2, _ss.size());
       auto ___ss = utils::from_hex<32>(__ss);
 
-      std::array<uint8_t, kyber512::PKEY_LEN> pkey{};
-      std::array<uint8_t, kyber512::SKEY_LEN> skey{};
-      std::array<uint8_t, kyber512::CIPHER_LEN> ctxt{};
-      std::array<uint8_t, kyber512_kem::SHARED_SECRET_LEN> shrd_sec0{};
-      std::array<uint8_t, kyber512_kem::SHARED_SECRET_LEN> shrd_sec1{};
+      std::array<uint8_t, kyber512::PKEY_BYTE_LEN> pkey{};
+      std::array<uint8_t, kyber512::SKEY_BYTE_LEN> skey{};
+      std::array<uint8_t, kyber512::CIPHER_TEXT_BYTE_LEN> ctxt{};
+      std::array<uint8_t, kyber512_kem::SHARED_SECRET_BYTE_LEN> shrd_sec0{};
+      std::array<uint8_t, kyber512_kem::SHARED_SECRET_BYTE_LEN> shrd_sec1{};
 
       kyber512::keygen(___d, ___z, pkey, skey);
       (void)kyber512::encapsulate(___m, pkey, ctxt, shrd_sec0);
@@ -131,11 +131,11 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
 
       auto _pk = std::string_view(pk);
       auto __pk = _pk.substr(_pk.find("="sv) + 2, _pk.size());
-      auto ___pk = utils::from_hex<kyber768::PKEY_LEN>(__pk);
+      auto ___pk = utils::from_hex<kyber768::PKEY_BYTE_LEN>(__pk);
 
       auto _sk = std::string_view(sk);
       auto __sk = _sk.substr(_sk.find("="sv) + 2, _sk.size());
-      auto ___sk = utils::from_hex<kyber768::SKEY_LEN>(__sk);
+      auto ___sk = utils::from_hex<kyber768::SKEY_BYTE_LEN>(__sk);
 
       auto _m = std::string_view(m);
       auto __m = _m.substr(_m.find("="sv) + 2, _m.size());
@@ -143,15 +143,15 @@ TEST(KyberKEM, Kyber768KnownAnswerTests)
 
       auto _ct = std::string_view(ct);
       auto __ct = _ct.substr(_ct.find("="sv) + 2, _ct.size());
-      auto ___ct = utils::from_hex<kyber768::CIPHER_LEN>(__ct);
+      auto ___ct = utils::from_hex<kyber768::CIPHER_TEXT_BYTE_LEN>(__ct);
 
       auto _ss = std::string_view(ss);
       auto __ss = _ss.substr(_ss.find("="sv) + 2, _ss.size());
       auto ___ss = utils::from_hex<32>(__ss);
 
-      std::array<uint8_t, kyber768::PKEY_LEN> pkey{};
-      std::array<uint8_t, kyber768::SKEY_LEN> skey{};
-      std::array<uint8_t, kyber768::CIPHER_LEN> ctxt{};
+      std::array<uint8_t, kyber768::PKEY_BYTE_LEN> pkey{};
+      std::array<uint8_t, kyber768::SKEY_BYTE_LEN> skey{};
+      std::array<uint8_t, kyber768::CIPHER_TEXT_BYTE_LEN> ctxt{};
       std::array<uint8_t, 32> shrd_sec0{};
       std::array<uint8_t, 32> shrd_sec1{};
 
@@ -219,11 +219,11 @@ TEST(KyberKEM, Kyber1024KnownAnswerTests)
 
       auto _pk = std::string_view(pk);
       auto __pk = _pk.substr(_pk.find("="sv) + 2, _pk.size());
-      auto ___pk = utils::from_hex<kyber1024::PKEY_LEN>(__pk);
+      auto ___pk = utils::from_hex<kyber1024::PKEY_BYTE_LEN>(__pk);
 
       auto _sk = std::string_view(sk);
       auto __sk = _sk.substr(_sk.find("="sv) + 2, _sk.size());
-      auto ___sk = utils::from_hex<kyber1024::SKEY_LEN>(__sk);
+      auto ___sk = utils::from_hex<kyber1024::SKEY_BYTE_LEN>(__sk);
 
       auto _m = std::string_view(m);
       auto __m = _m.substr(_m.find("="sv) + 2, _m.size());
@@ -231,15 +231,15 @@ TEST(KyberKEM, Kyber1024KnownAnswerTests)
 
       auto _ct = std::string_view(ct);
       auto __ct = _ct.substr(_ct.find("="sv) + 2, _ct.size());
-      auto ___ct = utils::from_hex<kyber1024::CIPHER_LEN>(__ct);
+      auto ___ct = utils::from_hex<kyber1024::CIPHER_TEXT_BYTE_LEN>(__ct);
 
       auto _ss = std::string_view(ss);
       auto __ss = _ss.substr(_ss.find("="sv) + 2, _ss.size());
       auto ___ss = utils::from_hex<32>(__ss);
 
-      std::array<uint8_t, kyber1024::PKEY_LEN> pkey{};
-      std::array<uint8_t, kyber1024::SKEY_LEN> skey{};
-      std::array<uint8_t, kyber1024::CIPHER_LEN> ctxt{};
+      std::array<uint8_t, kyber1024::PKEY_BYTE_LEN> pkey{};
+      std::array<uint8_t, kyber1024::SKEY_BYTE_LEN> skey{};
+      std::array<uint8_t, kyber1024::CIPHER_TEXT_BYTE_LEN> ctxt{};
       std::array<uint8_t, 32> shrd_sec0{};
       std::array<uint8_t, 32> shrd_sec1{};
 

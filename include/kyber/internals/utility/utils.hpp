@@ -98,7 +98,7 @@ get_kem_secret_key_len(const size_t k)
 
 // Compile-time compute IND-CCA-secure Kyber KEM cipher text length ( in bytes )
 static inline constexpr size_t
-get_kem_cipher_len(size_t k, size_t du, size_t dv)
+get_kem_cipher_text_len(size_t k, size_t du, size_t dv)
 {
   return k * du * 32 + dv * 32;
 }

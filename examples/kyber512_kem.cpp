@@ -20,18 +20,18 @@ main()
   auto _z = std::span<uint8_t, SEED_LEN>(z);
 
   // public/ private keypair
-  std::vector<uint8_t> pkey(kyber512_kem::PKEY_LEN, 0);
-  std::vector<uint8_t> skey(kyber512_kem::SKEY_LEN, 0);
+  std::vector<uint8_t> pkey(kyber512_kem::PKEY_BYTE_LEN, 0);
+  std::vector<uint8_t> skey(kyber512_kem::SKEY_BYTE_LEN, 0);
 
-  auto _pkey = std::span<uint8_t, kyber512_kem::PKEY_LEN>(pkey);
-  auto _skey = std::span<uint8_t, kyber512_kem::SKEY_LEN>(skey);
+  auto _pkey = std::span<uint8_t, kyber512_kem::PKEY_BYTE_LEN>(pkey);
+  auto _skey = std::span<uint8_t, kyber512_kem::SKEY_BYTE_LEN>(skey);
 
   // seed required for key encapsulation
   std::vector<uint8_t> m(SEED_LEN, 0);
-  std::vector<uint8_t> cipher(kyber512_kem::CIPHER_LEN, 0);
+  std::vector<uint8_t> cipher(kyber512_kem::CIPHER_TEXT_BYTE_LEN, 0);
 
   auto _m = std::span<uint8_t, SEED_LEN>(m);
-  auto _cipher = std::span<uint8_t, kyber512_kem::CIPHER_LEN>(cipher);
+  auto _cipher = std::span<uint8_t, kyber512_kem::CIPHER_TEXT_BYTE_LEN>(cipher);
 
   // shared secret that sender/ receiver arrives at
   std::vector<uint8_t> shrd_key0(KEY_LEN, 0);

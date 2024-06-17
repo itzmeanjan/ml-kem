@@ -82,7 +82,7 @@ template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result, it might fail because of malformed input public key")]] static inline bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
-            std::span<uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher,
+            std::span<uint8_t, kyber_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
   requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
 {
@@ -135,7 +135,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline void
 decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey,
-            std::span<const uint8_t, kyber_utils::get_kem_cipher_len(k, du, dv)> cipher,
+            std::span<const uint8_t, kyber_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
   requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
 {

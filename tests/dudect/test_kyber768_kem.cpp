@@ -12,8 +12,8 @@ do_one_computation(uint8_t* const data)
   constexpr size_t doff0 = 0;
   constexpr size_t doff1 = doff0 + SEED_LEN;
   constexpr size_t doff2 = doff1 + 1;
-  constexpr size_t doff3 = doff2 + kyber768_kem::CIPHER_LEN;
-  constexpr size_t doff4 = doff3 + kyber768_kem::CIPHER_LEN;
+  constexpr size_t doff3 = doff2 + kyber768_kem::CIPHER_TEXT_BYTE_LEN;
+  constexpr size_t doff4 = doff3 + kyber768_kem::CIPHER_TEXT_BYTE_LEN;
   constexpr size_t doff5 = doff4 + SEED_LEN;
   constexpr size_t doff6 = doff5 + SEED_LEN;
 
@@ -41,7 +41,7 @@ do_one_computation(uint8_t* const data)
   std::array<uint8_t, SEED_LEN> sink{};
   auto _sink = std::span(sink);
 
-  using ctxt_t = std::span<const uint8_t, kyber768_kem::CIPHER_LEN>;
+  using ctxt_t = std::span<const uint8_t, kyber768_kem::CIPHER_TEXT_BYTE_LEN>;
   using seed_t = std::span<const uint8_t, SEED_LEN>;
 
   // Ensure Fujisaki-Okamoto transform, used during decapsulation, is constant-time
@@ -71,12 +71,12 @@ prepare_inputs(dudect_config_t* const c, uint8_t* const input_data, uint8_t* con
 dudect_state_t
 test_kyber768_kem()
 {
-  constexpr size_t chunk_size = SEED_LEN +                 // bytes holding seed `sigma`
-                                1 +                        // single byte nonce
-                                kyber768_kem::CIPHER_LEN + // bytes holding received cipher text
-                                kyber768_kem::CIPHER_LEN + // bytes for locally computed cipher text
-                                SEED_LEN +                 // bytes for first source buffer to copy from
-                                SEED_LEN;                  // bytes for second source buffer to copy from
+  constexpr size_t chunk_size = SEED_LEN +                           // bytes holding seed `sigma`
+                                1 +                                  // single byte nonce
+                                kyber768_kem::CIPHER_TEXT_BYTE_LEN + // bytes holding received cipher text
+                                kyber768_kem::CIPHER_TEXT_BYTE_LEN + // bytes for locally computed cipher text
+                                SEED_LEN +                           // bytes for first source buffer to copy from
+                                SEED_LEN;                            // bytes for second source buffer to copy from
   constexpr size_t number_measurements = 1e5;
 
   dudect_config_t config = {

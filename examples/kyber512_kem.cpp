@@ -1,7 +1,23 @@
 #include "kyber/kyber512_kem.hpp"
 #include <algorithm>
 #include <cassert>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+
+// Given a bytearray of length N, this function converts it to human readable hex formatted string of length 2*N | N >= 0.
+static inline std::string
+to_hex(std::span<const uint8_t> bytes)
+{
+  std::stringstream ss;
+  ss << std::hex;
+
+  for (size_t i = 0; i < bytes.size(); i++) {
+    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
+  }
+
+  return ss.str();
+}
 
 // Compile it with
 //
@@ -61,16 +77,12 @@ main()
   // check that both of the communicating parties arrived at same shared key
   assert(std::ranges::equal(_shrd_key0, _shrd_key1));
 
-  {
-    using namespace kyber_utils;
-
-    std::cout << "Kyber512 KEM\n";
-    std::cout << "pubkey         : " << to_hex(_pkey) << "\n";
-    std::cout << "seckey         : " << to_hex(_skey) << "\n";
-    std::cout << "encapsulated ? : " << std::boolalpha << is_encapsulated << "\n";
-    std::cout << "cipher         : " << to_hex(_cipher) << "\n";
-    std::cout << "shared secret  : " << to_hex(_shrd_key0) << "\n";
-  }
+  std::cout << "Kyber512 KEM\n";
+  std::cout << "pubkey         : " << to_hex(_pkey) << "\n";
+  std::cout << "seckey         : " << to_hex(_skey) << "\n";
+  std::cout << "encapsulated ? : " << std::boolalpha << is_encapsulated << "\n";
+  std::cout << "cipher         : " << to_hex(_cipher) << "\n";
+  std::cout << "shared secret  : " << to_hex(_shrd_key0) << "\n";
 
   return EXIT_SUCCESS;
 }

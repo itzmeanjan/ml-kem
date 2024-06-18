@@ -209,7 +209,7 @@ TEST(ML_KEM, ML_KEM_768_KnownAnswerTests)
 //
 // using Known Answer Tests, generated following
 // https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
-TEST(Ml_kemKEM, ML_KEM_1024_KnownAnswerTests)
+TEST(ML_KEM, ML_KEM_1024_KnownAnswerTests)
 {
   using namespace std::literals;
 

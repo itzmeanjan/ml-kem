@@ -4,7 +4,7 @@
 // Test functional correctness of Ml_kem prime field operations ( using
 // Montgomery Arithmetic ), by running through multiple rounds of execution of
 // field operations on randomly sampled field elements.
-TEST(Ml_kemKEM, ArithmeticOverZq)
+TEST(ML_KEM, ArithmeticOverZq)
 {
   constexpr size_t itr_cnt = 1ul << 20;
   ml_kem_prng::prng_t<128> prng{};

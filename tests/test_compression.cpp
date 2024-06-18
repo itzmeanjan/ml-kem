@@ -64,7 +64,7 @@ test_zq_compression()
   return res;
 }
 
-TEST(Ml_kemKEM, CompressDecompressZq)
+TEST(ML_KEM, CompressDecompressZq)
 {
   EXPECT_TRUE((test_zq_compression<11, 1ul << 20>()));
   EXPECT_TRUE((test_zq_compression<10, 1ul << 20>()));

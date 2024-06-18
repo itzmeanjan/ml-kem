@@ -16,7 +16,7 @@
 // works as expected.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t bit_security_level>
 void
-test_ml_kem_kem()
+test_ml_kem()
 {
   constexpr size_t slen = 32;
   constexpr size_t pklen = ml_kem_utils::get_kem_public_key_len(k);
@@ -54,17 +54,17 @@ test_ml_kem_kem()
   EXPECT_EQ(sender_key, receiver_key);
 }
 
-TEST(Ml_kemKEM, Ml_kem512KeygenEncapsDecaps)
+TEST(ML_KEM, Ml_KEM_512_KeygenEncapsDecaps)
 {
-  test_ml_kem_kem<2, 3, 2, 10, 4, 128>();
+  test_ml_kem<2, 3, 2, 10, 4, 128>();
 }
 
-TEST(Ml_kemKEM, Ml_kem768KeygenEncapsDecaps)
+TEST(ML_KEM, ML_KEM_768_KeygenEncapsDecaps)
 {
-  test_ml_kem_kem<3, 2, 2, 10, 4, 192>();
+  test_ml_kem<3, 2, 2, 10, 4, 192>();
 }
 
-TEST(Ml_kemKEM, Ml_kem1024KeygenEncapsDecaps)
+TEST(ML_KEM, ML_KEM_1024_KeygenEncapsDecaps)
 {
-  test_ml_kem_kem<4, 2, 2, 11, 5, 256>();
+  test_ml_kem<4, 2, 2, 11, 5, 256>();
 }

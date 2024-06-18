@@ -38,7 +38,7 @@ test_serialize_deserialize()
   }
 }
 
-TEST(Ml_kemKEM, PolynomialSerialization)
+TEST(ML_KEM, PolynomialSerialization)
 {
   test_serialize_deserialize<12>();
   test_serialize_deserialize<11>();

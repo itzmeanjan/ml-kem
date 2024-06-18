@@ -48,7 +48,7 @@ decompress(const ml_kem_field::zq_t x)
 // Utility function to compress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
 static inline constexpr void
-poly_compress(std::span<ml_kem_field::zq_t, ntt::N> poly)
+poly_compress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {
@@ -59,7 +59,7 @@ poly_compress(std::span<ml_kem_field::zq_t, ntt::N> poly)
 // Utility function to decompress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
 static inline constexpr void
-poly_decompress(std::span<ml_kem_field::zq_t, ntt::N> poly)
+poly_decompress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {

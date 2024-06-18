@@ -1,32 +1,25 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
-#include <array>
-#include <cstring>
 
-// (inverse) Number Theoretic Transform for degree-255 polynomial, over Ml_kem
-// Prime Field Zq | q = 3329
-namespace ntt {
+namespace ml_kem_ntt {
 
-constexpr size_t LOG2N = 8;
-constexpr size_t N = 1 << LOG2N;
+static constexpr size_t LOG2N = 8;
+static constexpr size_t N = 1 << LOG2N;
 
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-constexpr auto ζ = ml_kem_field::zq_t(17);
+static constexpr auto ζ = ml_kem_field::zq_t(17);
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
-// Meaning (N/ 2) * 3303 = 1 mod q
-constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
+// Meaning (N/ 2) * INV_N = 1 mod q
+static constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
 
-// Given a 64 -bit unsigned integer, this routine extracts specified many
-// contiguous bits from ( least significant bits ) LSB side & reverses their bit
-// order, returning bit reversed `mbw` -bit wide number
+// Given a 64 -bit unsigned integer, this routine extracts specified many contiguous bits from ( least significant bits ) LSB side
+// and reverses their bit order, returning bit reversed `mbw` -bit wide number.
 //
-// See
-// https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38
-// for source of inspiration
+// See https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38 for source of inspiration.
 template<size_t mbw>
 static inline constexpr size_t
 bit_rev(const size_t v)
@@ -41,67 +34,46 @@ bit_rev(const size_t v)
   return v_rev;
 }
 
-// Compile-time compute powers of ζ, used for polynomial evaluation ( NTT )
-consteval std::array<ml_kem_field::zq_t, N / 2>
-compute_ntt_ζ()
-{
-  std::array<ml_kem_field::zq_t, N / 2> res;
+// Compile-time computed constants ( powers of ζ ), used for polynomial evaluation i.e. computation of NTT form.
+static constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto {
+  std::array<ml_kem_field::zq_t, N / 2> res{};
 
-  for (size_t i = 0; i < N / 2; i++) {
+  for (size_t i = 0; i < res.size(); i++) {
     res[i] = ζ ^ bit_rev<LOG2N - 1>(i);
   }
 
   return res;
-}
+}();
 
-// Precomputed constants ( powers of ζ ), used for computing NTT form of
-// degree-255 polynomial
-constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = compute_ntt_ζ();
+// Compile-time computed constants ( negated powers of ζ ), used for polynomial interpolation i.e. computation of iNTT form.
+static constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = []() -> auto {
+  std::array<ml_kem_field::zq_t, N / 2> res{};
 
-// Compile-time compute negated powers of ζ, used for polynomial interpolation (
-// iNTT )
-consteval std::array<ml_kem_field::zq_t, N / 2>
-compute_intt_ζ()
-{
-  std::array<ml_kem_field::zq_t, N / 2> res;
-
-  for (size_t i = 0; i < N / 2; i++) {
+  for (size_t i = 0; i < res.size(); i++) {
     res[i] = -NTT_ζ_EXP[i];
   }
 
   return res;
-}
+}();
 
-// Precomputed constants ( negated powers of ζ ), used for computing coefficient
-// form of degree-255 polynomial using inverse NTT
-constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = compute_intt_ζ();
+// Compile-time computed constants ( powers of ζ ), used when multiplying two degree-255 polynomials in NTT domain.
+static constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() -> auto {
+  std::array<ml_kem_field::zq_t, N / 2> res{};
 
-// Compile-time compute powers of ζ, used for multiplication of two degree-255
-// polynomials in NTT representation.
-consteval std::array<ml_kem_field::zq_t, N / 2>
-compute_mul_ζ()
-{
-  std::array<ml_kem_field::zq_t, N / 2> res;
-
-  for (size_t i = 0; i < N / 2; i++) {
+  for (size_t i = 0; i < res.size(); i++) {
     res[i] = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
   }
 
   return res;
-}
+}();
 
-// Precomputed constants ( powers of ζ ), used when multiplying two degree-255
-// polynomials in NTT domain.
-constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = compute_mul_ζ();
-
-// Given a polynomial f with 256 coefficients over F_q | q = 3329, this routine
-// computes number theoretic transform using cooley-tukey algorithm, producing
-// polynomial f' s.t. its coefficients are placed in bit-reversed order
+// Given a polynomial f with 256 coefficients over F_q | q = 3329, this routine computes number theoretic transform
+// using Cooley-Tukey algorithm, producing polynomial f' s.t. its coefficients are placed in bit-reversed order.
 //
 // Note, this routine mutates input i.e. it's an in-place NTT implementation.
 //
-// Implementation inspired from
-// https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144
+// Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144.
+// See algorithm 8 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 static inline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
@@ -130,15 +102,14 @@ ntt(std::span<ml_kem_field::zq_t, N> poly)
   }
 }
 
-// Given a polynomial f with 256 coefficients over F_q | q = 3329, s.t. its
-// coefficients are placed in bit-reversed order, this routine computes inverse
-// number theoretic transform using cooley-tukey algorithm, producing polynomial
-// f' s.t. its coefficients are placed in standard order
+// Given a polynomial f with 256 coefficients over F_q | q = 3329, s.t. its coefficients are placed in bit-reversed order,
+// this routine computes inverse number theoretic transform using Gentleman-Sande algorithm, producing polynomial f' s.t.
+// its coefficients are placed in standard order.
 //
 // Note, this routine mutates input i.e. it's an in-place iNTT implementation.
 //
-// Implementation inspired from
-// https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224
+// Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224.
+// See algorithm 9 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 static inline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
@@ -173,23 +144,10 @@ intt(std::span<ml_kem_field::zq_t, N> poly)
   }
 }
 
-// Given two degree-1 polynomials s.t.
-//
-// f = f_2i + f_(2i + 1) * X
-// g = g_2i + g_(2i + 1) * X
-//
-// this routine computes resulting degree-1 polynomial h s.t.
-//
-// h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
-//
-// See page 6 of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// Given two degree-1 polynomials, this routine computes resulting degree-1 polynomial h.
+// See algorithm 11 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 static inline constexpr void
-basemul(std::span<const ml_kem_field::zq_t, 2> f, // degree-1 polynomial
-        std::span<const ml_kem_field::zq_t, 2> g, // degree-1 polynomial
-        std::span<ml_kem_field::zq_t, 2> h,       // degree-1 polynomial
-        const ml_kem_field::zq_t ζ                // zeta
-)
+basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::zq_t, 2> g, std::span<ml_kem_field::zq_t, 2> h, const ml_kem_field::zq_t ζ)
 {
   ml_kem_field::zq_t f0 = f[0];
   ml_kem_field::zq_t f1 = f[1];
@@ -212,25 +170,22 @@ basemul(std::span<const ml_kem_field::zq_t, 2> f, // degree-1 polynomial
 }
 
 // Given two degree-255 polynomials in NTT form, this routine performs 128
-// basecase multiplications for 128 pairs of degree-1 polynomials s.t.
+// base case multiplications for 128 pairs of degree-1 polynomials s.t.
 //
 // f = (f0ˆ + f1ˆX, f2ˆ + f3ˆX, ..., f254ˆ + f255ˆX)
 // g = (g0ˆ + g1ˆX, g2ˆ + g3ˆX, ..., g254ˆ + g255ˆX)
 //
 // h = f ◦ g
+//
+// See algorithm 10 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 static inline constexpr void
-polymul(std::span<const ml_kem_field::zq_t, N> f, // degree-255 polynomial
-        std::span<const ml_kem_field::zq_t, N> g, // degree-255 polynomial
-        std::span<ml_kem_field::zq_t, N> h        // degree-255 polynomial
-)
+polymul(std::span<const ml_kem_field::zq_t, N> f, std::span<const ml_kem_field::zq_t, N> g, std::span<ml_kem_field::zq_t, N> h)
 {
-  constexpr size_t cnt = f.size() >> 1;
-
   using poly_t = std::span<const ml_kem_field::zq_t, 2>;
   using mut_poly_t = std::span<ml_kem_field::zq_t, 2>;
 
-  for (size_t i = 0; i < cnt; i++) {
-    const size_t off = i << 1;
+  for (size_t i = 0; i < f.size() / 2; i++) {
+    const size_t off = i * 2;
     basemul(poly_t(f.subspan(off, 2)), poly_t(g.subspan(off, 2)), mut_poly_t(h.subspan(off, 2)), POLY_MUL_ζ_EXP[i]);
   }
 }

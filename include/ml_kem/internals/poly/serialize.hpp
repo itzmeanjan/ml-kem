@@ -15,13 +15,13 @@ namespace ml_kem_utils {
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
-encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr)
+encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_t, 32 * l> arr)
   requires(ml_kem_params::check_l(l))
 {
   std::fill(arr.begin(), arr.end(), 0);
 
   if constexpr (l == 1) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t one = 0b1u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -32,7 +32,7 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
                (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) | (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0);
     }
   } else if constexpr (l == 4) {
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint32_t msk = 0b1111u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -40,7 +40,7 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
       arr[i] = (static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) | static_cast<uint8_t>(poly[off + 0].raw() & msk);
     }
   } else if constexpr (l == 5) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t mask5 = 0b11111u;
     constexpr uint32_t mask4 = 0b1111u;
     constexpr uint32_t mask3 = 0b111u;
@@ -67,7 +67,7 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
       arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3);
     }
   } else if constexpr (l == 10) {
-    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
     constexpr uint32_t mask6 = 0b111111u;
     constexpr uint32_t mask4 = 0b1111u;
     constexpr uint32_t mask2 = 0b11u;
@@ -88,7 +88,7 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
       arr[boff + 4] = static_cast<uint8_t>(t3 >> 2);
     }
   } else if constexpr (l == 11) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t mask8 = 0b11111111u;
     constexpr uint32_t mask7 = 0b1111111u;
     constexpr uint32_t mask6 = 0b111111u;
@@ -126,7 +126,7 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
   } else {
     static_assert(l == 12, "l must be equal to 12 !");
 
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint32_t mask4 = 0b1111u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -151,11 +151,11 @@ encode(std::span<const ml_kem_field::zq_t, ntt::N> poly, std::span<uint8_t, 32 *
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
-decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::N> poly)
+decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_l(l))
 {
   if constexpr (l == 1) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t one = 0b1;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -172,7 +172,7 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::
       poly[off + 7] = ml_kem_field::zq_t((byte >> 7) & one);
     }
   } else if constexpr (l == 4) {
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint8_t mask = 0b1111;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -183,7 +183,7 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::
       poly[off + 1] = ml_kem_field::zq_t((byte >> 4) & mask);
     }
   } else if constexpr (l == 5) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t mask5 = 0b11111;
     constexpr uint8_t mask4 = 0b1111;
     constexpr uint8_t mask3 = 0b111;
@@ -213,7 +213,7 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::
       poly[poff + 7] = ml_kem_field::zq_t(t7);
     }
   } else if constexpr (l == 10) {
-    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
     constexpr uint8_t mask6 = 0b111111;
     constexpr uint8_t mask4 = 0b1111;
     constexpr uint8_t mask2 = 0b11;
@@ -233,7 +233,7 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::
       poly[poff + 3] = ml_kem_field::zq_t(t3);
     }
   } else if constexpr (l == 11) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t mask7 = 0b1111111;
     constexpr uint8_t mask6 = 0b111111;
     constexpr uint8_t mask5 = 0b11111;
@@ -267,7 +267,7 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ntt::
   } else {
     static_assert(l == 12, "l must be equal to 12 !");
 
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint8_t mask4 = 0b1111;
 
     for (size_t i = 0; i < itr_cnt; i++) {

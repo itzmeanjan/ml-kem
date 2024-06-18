@@ -27,23 +27,23 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
   const auto rho = _g_out.template subspan<0, 32>();
   const auto sigma = _g_out.template subspan<rho.size(), 32>();
 
-  std::array<ml_kem_field::zq_t, k * k * ntt::N> A_prime{};
+  std::array<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> A_prime{};
   ml_kem_utils::generate_matrix<k, false>(A_prime, rho);
 
   uint8_t N = 0;
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> s{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> s{};
   ml_kem_utils::generate_vector<k, eta1>(s, sigma, N);
   N += k;
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> e{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> e{};
   ml_kem_utils::generate_vector<k, eta1>(e, sigma, N);
   N += k;
 
   ml_kem_utils::poly_vec_ntt<k>(s);
   ml_kem_utils::poly_vec_ntt<k>(e);
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> t_prime{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> t_prime{};
 
   ml_kem_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
   ml_kem_utils::poly_vec_add_to<k>(e, t_prime);
@@ -76,7 +76,7 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
   auto _pubkey0 = pubkey.template subspan<0, pkoff>();
   auto rho = pubkey.template subspan<pkoff, 32>();
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> t_prime{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> t_prime{};
   std::array<uint8_t, _pubkey0.size()> encoded_tprime{};
 
   ml_kem_utils::poly_vec_decode<k, 12>(_pubkey0, t_prime);
@@ -89,37 +89,37 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
     return false;
   }
 
-  std::array<ml_kem_field::zq_t, k * k * ntt::N> A_prime{};
+  std::array<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> A_prime{};
   ml_kem_utils::generate_matrix<k, true>(A_prime, rho);
 
   uint8_t N = 0;
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> r{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> r{};
   ml_kem_utils::generate_vector<k, eta1>(r, rcoin, N);
   N += k;
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> e1{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> e1{};
   ml_kem_utils::generate_vector<k, eta2>(e1, rcoin, N);
   N += k;
 
-  std::array<ml_kem_field::zq_t, ntt::N> e2{};
+  std::array<ml_kem_field::zq_t, ml_kem_ntt::N> e2{};
   ml_kem_utils::generate_vector<1, eta2>(e2, rcoin, N);
 
   ml_kem_utils::poly_vec_ntt<k>(r);
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> u{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> u{};
 
   ml_kem_utils::matrix_multiply<k, k, k, 1>(A_prime, r, u);
   ml_kem_utils::poly_vec_intt<k>(u);
   ml_kem_utils::poly_vec_add_to<k>(e1, u);
 
-  std::array<ml_kem_field::zq_t, ntt::N> v{};
+  std::array<ml_kem_field::zq_t, ml_kem_ntt::N> v{};
 
   ml_kem_utils::matrix_multiply<1, k, k, 1>(t_prime, r, v);
   ml_kem_utils::poly_vec_intt<1>(v);
   ml_kem_utils::poly_vec_add_to<1>(e2, v);
 
-  std::array<ml_kem_field::zq_t, ntt::N> m{};
+  std::array<ml_kem_field::zq_t, ml_kem_ntt::N> m{};
   ml_kem_utils::decode<1>(msg, m);
   ml_kem_utils::poly_decompress<1>(m);
   ml_kem_utils::poly_vec_add_to<1>(m, v);
@@ -150,22 +150,22 @@ decrypt(std::span<const uint8_t, k * 12 * 32> seckey, std::span<const uint8_t, k
   auto _enc0 = enc.template subspan<0, encoff>();
   auto _enc1 = enc.template subspan<encoff, dv * 32>();
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> u{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> u{};
 
   ml_kem_utils::poly_vec_decode<k, du>(_enc0, u);
   ml_kem_utils::poly_vec_decompress<k, du>(u);
 
-  std::array<ml_kem_field::zq_t, ntt::N> v{};
+  std::array<ml_kem_field::zq_t, ml_kem_ntt::N> v{};
 
   ml_kem_utils::decode<dv>(_enc1, v);
   ml_kem_utils::poly_decompress<dv>(v);
 
-  std::array<ml_kem_field::zq_t, k * ntt::N> s_prime{};
+  std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> s_prime{};
   ml_kem_utils::poly_vec_decode<k, 12>(seckey, s_prime);
 
   ml_kem_utils::poly_vec_ntt<k>(u);
 
-  std::array<ml_kem_field::zq_t, ntt::N> t{};
+  std::array<ml_kem_field::zq_t, ml_kem_ntt::N> t{};
 
   ml_kem_utils::matrix_multiply<1, k, k, 1>(s_prime, u, t);
   ml_kem_utils::poly_vec_intt<1>(t);

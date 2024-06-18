@@ -1,27 +1,27 @@
 > [!CAUTION]
-> This Kyber implementation is conformant with Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, be careful !*
+> This ML-KEM implementation is conformant with ML-KEM draft standard https://doi.org/10.6028/NIST.FIPS.203.ipd and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, please be careful !*
 
-# kyber
-CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
+# ML-KEM (formerly known as Kyber)
+Module-Lattice -based Key Encapsulation Mechanism Standard by NIST.
 
 ## Motivation
 
-Kyber is being standardized by NIST as post-quantum secure key encapsulation mechanism (KEM), which can be used for key establishment.
+ML-KEM is being standardized by NIST as post-quantum secure key encapsulation mechanism (KEM), which can be used for key establishment, between two parties, communicating over insecure channel.
 
-Kyber offers an *IND-CCA2-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
+ML-KEM offers an *IND-CCA-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
 
-Kyber Key Encapsulation Mechanism is built on top of *IND-CPA-secure Kyber Public Key Encryption*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure Kyber PKE* - giving us the *IND-CCA2-secure KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 Xof in this context ) which is obtained by both of these parties as result of seeding SHAKE256 Xof with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE scheme.
+ML-KEM is built on top of *IND-CPA-secure K-PKE*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure K-PKE* - giving us the *IND-CCA-secure ML-KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel, over public & insecure channel, can generate a 32 -bytes shared secret key. Now they can be use this 32 -bytes shared secret key in any symmetric key primitive, either for encrypting their communication (in much faster way) or deriving new/ longer keys.
 
 Algorithm | Input | Output
 --- | :-: | --:
-KEM KeyGen | - | Public Key and Secret Key
-Encapsulation | Public Key | Cipher Text and SHAKE256 KDF
-Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
+KeyGen | - | Public Key and Secret Key
+Encapsulation | Public Key | Cipher Text and 32B Shared Secret
+Decapsulation | Secret Key and Cipher Text | 32B Shared Secret
 
-Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3`, `subtle` and `dudect` (for timing leakage tests) are dependencies of this library, which are pinned to specific git commits, using git submodule.
+Here I'm maintaining `kyber` - a C++20 header-only `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM draft standard. It's pretty easy to use, see [usage](#usage).
 
 > [!NOTE]
-> Find Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
+> Find ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
 
 ## Prerequisites
 
@@ -29,13 +29,10 @@ Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usag
 
 ```bash
 $ clang++ --version
-Ubuntu clang version 17.0.2 (1~exp1ubuntu2.1)
+Ubuntu clang version 17.0.6 (9ubuntu1)
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
-
-$  g++ --version
-g++ (Ubuntu 13.2.0-4ubuntu3) 13.2.0
 ```
 
 - Build tools such as `make`, `cmake`.
@@ -48,18 +45,18 @@ $ cmake --version
 cmake version 3.25.1
 ```
 
-- For testing Kyber KEM implementation, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide, if you don't have it installed.
-- For benchmarking Kyber KEM implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found guide @ https://github.com/google/benchmark#installation helpful.
+- For testing ML-KEM implementation, you need to globally install `google-test` library and headers. Follow guide @ https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project, if you don't have it installed.
+- For benchmarking ML-KEM implementation, you'll need to have `google-benchmark` header and library globally installed. I found guide @ https://github.com/google/benchmark#installation helpful.
 
 > [!NOTE]
-> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
+> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
 
 > [!TIP]
-> Git submodule based dependencies will mostly be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init` from inside the root of this repository.
+> Git submodule based dependencies will normally be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init` from inside the root of this repository.
 
 ## Testing
 
-For testing functional correctness and conformance with Kyber specification, you have to issue
+For testing functional correctness of this implementation and conformance with ML-KEM draft standard, you have to issue
 
 > [!NOTE]
 > Known Answer Test (KAT) files living in [this](./kats/) directory are generated by following (reproducible) steps, described in https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
@@ -71,24 +68,22 @@ make ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled
 ```
 
 ```bash
-[10/10] KyberKEM.ArithmeticOverZq (149 ms)
-PASSED TESTS (10/10):
-       1 ms: build/test.out KyberKEM.NumberTheoreticTransform
-       1 ms: build/test.out KyberKEM.PolynomialSerialization
-       1 ms: build/test.out KyberKEM.Kyber768KeygenEncapsDecaps
-       2 ms: build/test.out KyberKEM.Kyber512KeygenEncapsDecaps
-       2 ms: build/test.out KyberKEM.Kyber1024KeygenEncapsDecaps
-      16 ms: build/test.out KyberKEM.Kyber512KnownAnswerTests
-      21 ms: build/test.out KyberKEM.Kyber1024KnownAnswerTests
-      22 ms: build/test.out KyberKEM.Kyber768KnownAnswerTests
-      99 ms: build/test.out KyberKEM.CompressDecompressZq
-     149 ms: build/test.out KyberKEM.ArithmeticOverZq
+PASSED TESTS (9/9):
+       3 ms: build/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
+       3 ms: build/test.out ML_KEM.PolynomialSerialization
+       4 ms: build/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
+       4 ms: build/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
+      41 ms: build/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
+      63 ms: build/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
+      64 ms: build/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
+     226 ms: build/test.out ML_KEM.CompressDecompressZq
+     284 ms: build/test.out ML_KEM.ArithmeticOverZq
 ```
 
 In case you're interested in running timing leakage tests using `dudect`, execute following
 
 > [!NOTE]
-> `dudect` is integrated into this library implementation of Kyber KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
+> `dudect` is integrated into this library implementation of ML-KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
 
 ```bash
 # Can only be built and run x86_64 machine.
@@ -98,9 +93,9 @@ make dudect_test_build -j
 # Before running the constant-time tests, it's a good idea to put all CPU cores on "performance" mode.
 # You may find guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md helpful.
 
-timeout 10m taskset -c 0 ./build/dudect/test_kyber512_kem.out
-timeout 10m taskset -c 0 ./build/dudect/test_kyber768_kem.out
-timeout 10m taskset -c 0 ./build/dudect/test_kyber1024_kem.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_512.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_768.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_1024.out
 ```
 
 > [!TIP]
@@ -126,21 +121,18 @@ meas:   59.97 M, max t:   +2.64, max tau: 3.41e-04, (5/tau)^2: 2.14e+08. For the
 
 ## Benchmarking
 
-For benchmarking Kyber KEM routines ( i.e. keygen, encaps and decaps ) for various suggested parameter sets, you have to issue.
+For benchmarking ML-KEM public functions such as keygen, encaps and decaps, for various suggested parameter sets, you have to issue.
 
 ```bash
-make benchmark  # If you haven't built google-benchmark library with libPFM support.
-make perf       # If you have built google-benchmark library with libPFM support.
+make benchmark -j  # If you haven't built google-benchmark library with libPFM support.
+make perf -j       # If you have built google-benchmark library with libPFM support.
 ```
-
-> [!NOTE]
-> Benchmarking expects presence of `google-benchmark` header and library in global namespace ( so that it can be found by the compiler ).
 
 > [!CAUTION]
 > When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md.
 
 > [!NOTE]
-> `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing Kyber KEM routines in terms of CPU cycles. Follow [this](https://github.com/google/benchmark/blob/main/docs/perf_counters.md) for more details.
+> `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing ML-KEM functions, in terms of CPU cycles. Follow https://github.com/google/benchmark/blob/main/docs/perf_counters.md for more details.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
@@ -376,7 +368,7 @@ kyber512/decap_max            16.2 us         16.1 us           10       62.2184
 
 ## Usage
 
-`kyber` is written as a header-only C++ library, majorly targeting 64 -bit platforms and it's pretty easy to get started with. All you need to do is following.
+`kyber` is written as a header-only C++20 `constexpr` library, majorly targeting 64 -bit desktop/ server grade platforms and it's pretty easy to get started with. All you need to do is following.
 
 - Clone `kyber` repository.
 
@@ -389,12 +381,12 @@ git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && git submodul
 git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
 ```
 
-- Write your program while including proper header files ( based on which variant of Kyber KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required KEM routines and constants ( such as byte length of public/ private keys and cipher text ).
+- Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
 
 ```cpp
 // main.cpp
 
-#include "kyber512_kem.hpp"
+#include "ml_kem/ml_kem_512.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -402,38 +394,37 @@ git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
 int
 main()
 {
-  std::array<uint8_t, 32> d{}; // seed
-  std::array<uint8_t, 32> z{}; // seed
-  std::array<uint8_t, kyber512_kem::PKEY_LEN> pkey{};
-  std::array<uint8_t, kyber512_kem::SKEY_LEN> skey{};
-  std::array<uint8_t, 32> m{}; // seed
-  std::array<uint8_t, kyber512_kem::CIPHER_LEN> cipher{};
+  std::array<uint8_t, ml_kem_512::SEED_D_BYTE_LEN> d{};
+  std::array<uint8_t, ml_kem_512::SEED_Z_BYTE_LEN> z{};
+
+  std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pkey{};
+  std::array<uint8_t, ml_kem_512::SKEY_BYTE_LEN> skey{};
+
+  std::array<uint8_t, ml_kem_512::SEED_M_BYTE_LEN> m{};
+  std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
+
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> sender_key{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> receiver_key{};
 
   // Be careful !
   //
-  // Read API documentation in include/prng.hpp
-  prng::prng_t prng;
+  // Read API documentation in include/ml_kem/internals/rng/prng.hpp
+  ml_kem_prng::prng_t<128> prng;
 
   prng.read(d);
   prng.read(z);
   prng.read(m);
 
-  kyber512_kem::keygen(d, z, pkey, skey);
-  auto skdf = kyber512_kem::encapsulate(m, pkey, cipher);
-  auto rkdf = kyber512_kem::decapsulate(skey, cipher);
+  ml_kem_512::keygen(d, z, pkey, skey);
+  assert(ml_kem_512::encapsulate(m, pkey, cipher, sender_key)); // Key Encapsulation might fail, if input public key is malformed
+  ml_kem_512::decapsulate(skey, cipher, receiver_key);
 
-  std::array<uint8_t, 32> sender_key{};
-  skdf.squeeze(sender_key);
-
-  std::array<uint8_t, 32> receiver_key{};
-  rkdf.squeeze(receiver_key);
-
-  assert(std::ranges::equal(sender_key, receiver_key));
+  assert(sender_key == receiver_key);
   return 0;
 }
 ```
 
-- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( kyber being a header-only library ) too.
+- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( all of them are header-only libraries ) too.
 
 ```bash
 # Assuming `kyber` was cloned just under $HOME
@@ -442,35 +433,35 @@ KYBER_HEADERS=~/kyber/include
 SHA3_HEADERS=~/kyber/sha3/include
 SUBTLE_HEADERS=~/kyber/subtle/include
 
-g++ -std=c++20 -Wall -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
 ```
 
-Kyber KEM Variant | Namespace | Header
+ML-KEM Variant | Namespace | Header
 :-- | :-: | --:
-Kyber512 KEM Routines | `kyber512_kem::` | [include/kyber512_kem.hpp](include/kyber512_kem.hpp)
-Kyber768 KEM Routines | `kyber768_kem::` | [include/kyber768_kem.hpp](include/kyber768_kem.hpp)
-Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include/kyber1024_kem.hpp)
+ML-KEM-512 Routines | `ml_kem_512::` | `include/ml_kem/ml_kem_512.hpp`
+ML-KEM-768 Routines | `ml_kem_768::` | `include/ml_kem/ml_kem_768.hpp`
+ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 
 > [!NOTE]
-> Kyber parameter sets are selected from table 1 of Kyber specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+> ML-KEM parameter sets are taken from table 2 of ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd.
 
-See example [program](./examples/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
+See example [program](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-512 API.
 
 ```bash
-g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/kyber512_kem.cpp && ./a.out
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/ml_kem_768.cpp && ./a.out
 ```
 
 ```bash
-Kyber512 KEM
-
-pubkey        : 175782d35b2666833aee098617626d88dbcc47091a011882d52105acc218c9287a95276a3259a6a94aa386d8148886abdcc1841f39260ce4754ebacc1fd36102905d4c623d0b27930b4c249ee7380758c0ac5982b0e932eda95184a40f55c451d835861ca2b314dbce97829f1b92752dda592d8960b2540f464988ea1c974c63467c439b1de540490b0af0491a6507951ebc971887bd2b4a11327381d99586f10668c83abe92fb649b113da7ec666729bc1cc38a1de137dd3cc4e3a6abb9881a2ee63e7df3ad6cb680664ba1559ca17448c968b7c867ac5f324911ffd43993b8a7b8f57094c786877c1208fa7f53e51d6f1a46ae71bc81f78ebe5808d48200b7e1bc81ec3d31070a6993aa5db237eb3a4c592aa559a73bd769583a0ad095ec1669b952be4a71fe8603f5d597f007a048cc9d7fea6735383b6b8bbf896b74dc48a21840a92c497a9bc7434b0241a9e42e6428515d477c4e0b3678fab1d619b794f01b828648e7577bb2e5297915b9fdf33cb291a37de51b51c7aca6f07994193bd981134da2340c23a93cda8b68e429ac801d3748b8d112b57e388511e3305e50a51184b623607447468be94351cd0b9111a119b4b3c6f270c1cfea749a2ac89455590280c369163946481dbaeb4693dbb376202db2d8464c61aea6411cd887080f5c59e1587da01510cd1b0e8b030a5c200639ba26376134e88279891b90373cc92e7a76c0aaa33d084ab3f61e175010996652e441300ad5aefda9cc88f17fef2102b643179e0a49a60c47ce06c5b1a0b150b09ca4593e5dd48a9b1979d103ba862c43ed354d2ec99575b70e741808288aa0e1cb792c0a458d4584ddfa1870d7b797e2aac7d4cc08916015401338d8841d226d9656661cda93f53343e0f906b82bce8f25428b02a639a47f7dda5b946a3785656fb6d083df5a5ec7493cc017a2469b1f43c96f2e3bbc9d6cb07bec82d721a4cfba6ca2c59b0e01bda98585692b9da753923f830b52c843b6d963f959ad60189f42d61df7808f4d131c4d233e246c4735193e516452061701e6114cf1587a54c79105f48fdce9c2134bb60550b242945ea011ec54c570054b93d96f072426b7c9b524db8d2f136b7db2d1f38897
-seckey        : a598a250c2008688af8f71a285abae5b528a19479acf915cd2f92a7365bc757c670accc4b2190aa77b7d0c76355962a0ea9b6a1f4400be77797a6851776815032307913aa475b733a1ba698b2134ea25a57bd9b979e2bcb7d99f24f06ee760227486ae1cdaba79065bc3180d79a0906c514e5b973435c00f34b87e882643ef6b42bcbca4a3b65207abb5dca76e49a9be7a6013d256bc09b1211b70bb28e2151200c6c1e00082e88634600a29e3cf5ff541051c703ac373a91228a6d30491221df6749e22b21429612ed4ba07a7d7789717809e498f2e3a1b8a6a40afe0a7d2460350074a2a5127cc20c0b03446977a612a096324337cd5bc455f77cdbe4600e147b02fe58bc9c383b1e84ea3bc5755d3a87ce515b07c96741a72d9eb702d445acc3374531c70ef221216db2c9198110d83084f7b508da18fd34b8ee9f45d1204a627609d09a89c73e8bfc1f987c6bc906fac0d01720b169061b3d8015a5121a0d3beab454a03cc24a9bc5725e6c4aaf44d8f8b7242443f289c0751226448ec794a02a1ba411caeabb99f7a90510b8812a91a0ad69f1476408940381724a1dbfb7f69642788267b068c585bf41bf3f857fd14bcd9506b95b6a257d7481a07628004944e136a4c97842c13451e960cf4e08a8b6666e17a6aac016d701c1a00c82072939a092397c7104d7fd6332b860034f2ace5191e2792cf10e21f5166304bf329696128d63640b7882809b750f1f89e5d513fa08a8439e1ad5fe0affd887b0f06ab91798c35d48f39261af3dab7ddbc899be21d1f751b8d317b8e280f400b637ac6a471b4065973a6253235c94117e22083562b715ce680fafb78da9113f0f52692c52625ea8e1c24a1d8837beb963a5ab078455c8a43cbab68dc4eaa4c7646c9bb45803442250e935738944c7228aa3f7137567eb1231c63bff7552a7858525b92bdca832a41cb20fb24647a62af1da27e50c41f3cd070ed8c1d1213c22b1540a5c1412d67ab4ff334c2e5217c06a5f8a93c0637bd0fb4736c19591f67c378aa80f7c9587b346bbfe81eff8574c7e0acc3164c3df048019639a80377b97457175782d35b2666833aee098617626d88dbcc47091a011882d52105acc218c9287a95276a3259a6a94aa386d8148886abdcc1841f39260ce4754ebacc1fd36102905d4c623d0b27930b4c249ee7380758c0ac5982b0e932eda95184a40f55c451d835861ca2b314dbce97829f1b92752dda592d8960b2540f464988ea1c974c63467c439b1de540490b0af0491a6507951ebc971887bd2b4a11327381d99586f10668c83abe92fb649b113da7ec666729bc1cc38a1de137dd3cc4e3a6abb9881a2ee63e7df3ad6cb680664ba1559ca17448c968b7c867ac5f324911ffd43993b8a7b8f57094c786877c1208fa7f53e51d6f1a46ae71bc81f78ebe5808d48200b7e1bc81ec3d31070a6993aa5db237eb3a4c592aa559a73bd769583a0ad095ec1669b952be4a71fe8603f5d597f007a048cc9d7fea6735383b6b8bbf896b74dc48a21840a92c497a9bc7434b0241a9e42e6428515d477c4e0b3678fab1d619b794f01b828648e7577bb2e5297915b9fdf33cb291a37de51b51c7aca6f07994193bd981134da2340c23a93cda8b68e429ac801d3748b8d112b57e388511e3305e50a51184b623607447468be94351cd0b9111a119b4b3c6f270c1cfea749a2ac89455590280c369163946481dbaeb4693dbb376202db2d8464c61aea6411cd887080f5c59e1587da01510cd1b0e8b030a5c200639ba26376134e88279891b90373cc92e7a76c0aaa33d084ab3f61e175010996652e441300ad5aefda9cc88f17fef2102b643179e0a49a60c47ce06c5b1a0b150b09ca4593e5dd48a9b1979d103ba862c43ed354d2ec99575b70e741808288aa0e1cb792c0a458d4584ddfa1870d7b797e2aac7d4cc08916015401338d8841d226d9656661cda93f53343e0f906b82bce8f25428b02a639a47f7dda5b946a3785656fb6d083df5a5ec7493cc017a2469b1f43c96f2e3bbc9d6cb07bec82d721a4cfba6ca2c59b0e01bda98585692b9da753923f830b52c843b6d963f959ad60189f42d61df7808f4d131c4d233e246c4735193e516452061701e6114cf1587a54c79105f48fdce9c2134bb60550b242945ea011ec54c570054b93d96f072426b7c9b524db8d2f136b7db2d1f3889778f791d583227a702cdfa4a9f95014df019495f14e02318b3704dc3794af523705be75f29753f47b2888ceef235d82caca9f983b40bf10b29672da272113a973
-cipher        : bcee459c896ea378dcc458a532c35c029eff6b8cf8adc83f484fb6f9bfe32612f7c936cbf4dbd7c5262288dc3966a0d769f94a0bd57913a60a71efae09321c22c53839d836cef5fb8bf5c630bd3b3d657492eabfc7e67a42a631c95391656f0fce607a181e418144dff3d97f1192a2825a94da5113bcffc2e5f3e043f7583e6159902ddd009f8bcb18046a05695917bdef48accc2e3708f8536aabb420a7fd7989c60bca6c1941af45eac2f03cf71c8506721f8cd69bd3c573f036e3e8ae72b85632d06e0cab6fa1fea078d84aa1a116ac58ee632a0542b2d0e6a7026ae814ceeb46478d1cefd082c9b19efa7bb6ddd7abda8e43eab7b5a5204449273ea056b36d3797371f855d0c7ff0436279b21b831ad0970c26cc39f8627deb932689b8df48e73b1b5893987fa4dbc65571a78287f1573beeb85db52a3edbad6f50725bcbfa40423e3ce1ab00c16ea3922bc42e6782ce224ccfb3c978d8704584b9768a8edb6a950c0208b1c1c9a6a4e0d6300a9cfe788389697460efc41308448e9752d2022dfdecd118440346e2fabb07559b76301943f3b186adaaba09828efb28db1cd4a5e82e01f360451cb3c487f371af05725ea0e7d61932a8dc38108e99182e9b50d2aa828a773a2e18f5271ac75e5a5c50b9221f893e5f7076732beb0ffb9e4b82e1c0648192c9547870372b78c6a3e3a1b00d904a4a1492d5944e0510acee62e40c78cecef97922b04807cdd47d4d403a7bb16316598e6eee760b257382d9648c9920c3395717d8ac829bd37465c0f3e7f0c7e6fc351aac802edb722200776906eb36f622c0b8702958e44317961f583265a83b8cfcd9eed80f15b9ef848ebb7355df9718a60c532e20074854797685b3e4a25f929fce9ad02a5af114f92210abd3b73fddf28f116c2d4c27ceda6428a3892eb0c18fc12b07596e4153f2a3df9aa440957704bc56bbbee06cd99def3218c046344b4c5a811840a088bcbbad76fca4a20b9bf608873b2830afd6097b05022e8b1d42af3e5e4f00303adc9f130a84cdde3fef9335ccd1120b3f2050f17ef0c10fd226268965cbfc13738ada0632
-shared secret : 508ac79bf97e90d75267159ba5189b73c48ab41a91aec0f32edd6cd1e66465b5
+ML-KEM-768
+Pubkey         : 6653a1f5242faad7b37863433dc56538957f3c412102a17d28bc328c4781c566331f8c0b77093baef24a58d6312ddc719ac67ac2874f3adc8a3e6530adbc14cc069159a99e56277895c17c04da1644db23a6e9c16f31c21959400a8abd483a3fcfc0c5fd759917322a66a2aa77a6956f3b8387443640746b0ac8a282521dd784332d56aa745898c3fcc60a56a0716931bbe69b26c4514d529c79979355c8b40eb97fe7c485ceaa45d610145b4bce7da6343db46b6bf42182931a3ed98bafb66614e024cf8c9e51a90b1fc3702a2b4fe3b0c537fa9a1680b4d2f2044c557b1819300a6225be6c234d07d06a702eeb7110ef05c8973b0cab182efbb9ba07811b87b24e2a652cb428240c53423efcaf201973bf3342e86a8d477191d3544217f143586ba351fb7729ac8a51a51c8ab719fd3568c615a7a438b8967301754cac96a8552af82d8ce8840da56cb7481ad54581904c0d390732eceb23df4483cd7593d949bb0c985042f71018862b0d126702a7b55c8c7d9d44cfea157d4013c57ceb18bcfc2c95d8bb8d6178e0ac738ffcc1b3fca525a7ae83652e0b75836fe6c77d182626a8ca85262a17bc60645105a503b2f0f707e765552d49979273b0cb5870124933c6557ef795b36bf093f6c35ef722c9b2854999d20b5fd23dc6d2381ef38bcf547e37faa8ccda3dea2409deda7992a1951849ce3e7b11f3f98cb0d2283e458af854af9d74c57516a924e74222e9bcac529e88a02913d9ae29ec3cc42269d08ca1bf13a941f95d0bb05da9ac4a1ea2bb86b4c631853ec5f2129834a70ba923c8f1bc3fd5cad8692ef4401417b362f0e729497633794abc21e95a59319403002085b113a7b0544165210c1726346a088a933347a265ba055429e637fc40b111d38446461d77546166f923e5249427e5c62092b6ee2a2b585273c3d545b99673419194e54978d71ca606e238a053988db999904207b8326c5b27a38966c4d99460386c453d12821602b444320da205c980da3ab9d3461d405601a7226c143cf4492b8bf4c63a949a8ad81224c71005abcf6afb4ba7ba94ee437079494f9d78c69ac950711765a7e50ab42ba6bf64a5a7d30e64d14fb845ab37b4cc5b099c44e3cf4f9bc61f3640b5b98560474f9f1054dce9be10db77dea35a2375c66d0a26d7f73e7385b03ca8194dbaaf601184f826bd0a86b1d023ae9548b6d4602cd25c3f46e1c66dca6fd183007d043f6f3a6f5a56089180744d579bfe3cc65f003d91084adac4c0ac5811ea8a3e5aa6500eac125a423000297a7975585a083bcfc807b7722b5a0438c1b11b62abcb9a4623f8090c451690455acf97814074c0b6d6d19180f08afbd5ba0e259ee910a61f684d14e7996e47ba5a19994a13a642a1bb563411979bcaf7b302d70ba750a89867653b93596d03b260c7c0a024949bb7b1b110dc8267d5c5305390da26c7e6296add6ba7533b92540c28b337c5b392a6024c57cc09b899ec72e1466de604aa0c909baeb0b0078324e810481f760ae694b5e88cb034bca48bf70881047c7b6ab7ce04b96ad2bd0142b387bc1824a22742c7ce18ebac7744a616a5631e40ab817426c6130ece8641661ab863c44c2adb64029990aea24c94bec0ad7bfba46cd1894775ac6549b1a63446cade59357e125c589a73
+Seckey         : 7fc5b38c54324b214d9db93e4069c03a097931156a9e18291ac9b0ac787dfcd189a5971b3dd79fab1b5bacbb35a8d33d08faa3493c8d26886c0f487bee757b16837799912bbd99200502227ff510a4c39d924434af8233220084888b134fb608b9d424c66b8ec5c34069327c5ac591ee0b774ef42f922aceeae21d44738b74e644c5dc0fff4c8ed2cb25f495126840442370159a7c5bb6631c4b7aa4d0445a1fa63c104b492e986e1109bcab369fa0889ca41202d22c8511b8a35719163336a87ea672798168038439ab5645acf813f773a0a575169250c2a2062618aa3b77d015750abaf6a707019945e590beaf6cc499b8305ef66583e42c24f9b2d720ac286a8b513261d36a4c34eb7a6a012488aa3e58553e5245ac7e7089d327568ec66e9bccc96fa5ce0bcc8b1fda3343857adc564d4a631e695b7ecea241947561519b48a75b4f89ab992f201d3f5c958254c9c8653ee2d08756388152db8284d0a48db1a7b96282e4b168cf16a51362534c4c90ca21c28f5b76a12c6042f61a7de52c2bf8901f3738cec81c1ac75399b63320217ce8833e06c0b022b5883415009e08428cc07570660cd14a818cc2ad1a00aeb011b9622a48dde6632277b784d28651c17438d8457e67a6dbc016e387cdabf15e3c456c17c1b3825376bdb3c3f418ac251c96605b208f35c0027559405240bc419303ea9d1c9a36c10ccc0b443782e1c1e860ad0af914ab7a53cfaa0d7ef1100be74da5b43fcfe4bc60e7397cf009ddda713eb7610a15716e9b9e7ac55269c9494bc910a3753c0a0942ec654f1500826f900bb4776dde03166ef376dd67cc385406d2f4047ffc819b2657e596c964189727f3b8a9705f4dc011fda20c73846f62146085547d872519636697e16c7e89d741c917974e490812482ab704099e003acab375f1376536b85c5c12196b2a7514461a2fc2032bb65164f6cbe16c8fb6754a3cd75bb26635a1f5b96d113dfb1a3b301438608c39be68adb5b359d00b0b39a77f7167a18c75532b18798aea17d6ea64bf798c3ec0438a1c94d3445f906985f3791a3f4a98df13cd0af24d8feba0dbeb08b42635327c31cff5b6da791ad1c33055b18fa6d8b5c7f454c39a70d1e86f96660cea737e7ca52014a6c662e346a09bc25e4027602b4472dc93ee06c91a698be675bb39d2319e91a083b92e4b7b0bcc38771977c300e889ae60bb38b97ca68836d0bcabde4b6a0d70042ee67e051a1503927c422593df1668bb789d7060cc6b09d0a891384d5bbe90b480ba93afa99a079ea85e28a0236437a0ba397705356b0f90757e754f34fb5a591b3888eb5d719b79f462abab333ed078bb90c4b11dec276713c4cb06bca9d98068f48b90802451f69d2acb08abe66c61f6081f008d04fa7bad176da4201c9c2a3b3b29b3e7734b1961b6e2ea8d963350d8301a2dc48ce2e056156275cae8c23665b47a5a49c1abc5a01c98cee22a9dd7584c15b304e5c61cd449453208417075a6c3b999f626795379f1d556da168832a47ac638ce89a59c5a9c0a9746ad219142cf782280311b9cea87598c46ba673ac30a281a052dcd710e1bac328d822c19db8ee7e38925c7378431937b812e03382963b9c26653a1f5242faad7b37863433dc56538957f3c412102a17d28bc328c4781c566331f8c0b77093baef24a58d6312ddc719ac67ac2874f3adc8a3e6530adbc14cc069159a99e56277895c17c04da1644db23a6e9c16f31c21959400a8abd483a3fcfc0c5fd759917322a66a2aa77a6956f3b8387443640746b0ac8a282521dd784332d56aa745898c3fcc60a56a0716931bbe69b26c4514d529c79979355c8b40eb97fe7c485ceaa45d610145b4bce7da6343db46b6bf42182931a3ed98bafb66614e024cf8c9e51a90b1fc3702a2b4fe3b0c537fa9a1680b4d2f2044c557b1819300a6225be6c234d07d06a702eeb7110ef05c8973b0cab182efbb9ba07811b87b24e2a652cb428240c53423efcaf201973bf3342e86a8d477191d3544217f143586ba351fb7729ac8a51a51c8ab719fd3568c615a7a438b8967301754cac96a8552af82d8ce8840da56cb7481ad54581904c0d390732eceb23df4483cd7593d949bb0c985042f71018862b0d126702a7b55c8c7d9d44cfea157d4013c57ceb18bcfc2c95d8bb8d6178e0ac738ffcc1b3fca525a7ae83652e0b75836fe6c77d182626a8ca85262a17bc60645105a503b2f0f707e765552d49979273b0cb5870124933c6557ef795b36bf093f6c35ef722c9b2854999d20b5fd23dc6d2381ef38bcf547e37faa8ccda3dea2409deda7992a1951849ce3e7b11f3f98cb0d2283e458af854af9d74c57516a924e74222e9bcac529e88a02913d9ae29ec3cc42269d08ca1bf13a941f95d0bb05da9ac4a1ea2bb86b4c631853ec5f2129834a70ba923c8f1bc3fd5cad8692ef4401417b362f0e729497633794abc21e95a59319403002085b113a7b0544165210c1726346a088a933347a265ba055429e637fc40b111d38446461d77546166f923e5249427e5c62092b6ee2a2b585273c3d545b99673419194e54978d71ca606e238a053988db999904207b8326c5b27a38966c4d99460386c453d12821602b444320da205c980da3ab9d3461d405601a7226c143cf4492b8bf4c63a949a8ad81224c71005abcf6afb4ba7ba94ee437079494f9d78c69ac950711765a7e50ab42ba6bf64a5a7d30e64d14fb845ab37b4cc5b099c44e3cf4f9bc61f3640b5b98560474f9f1054dce9be10db77dea35a2375c66d0a26d7f73e7385b03ca8194dbaaf601184f826bd0a86b1d023ae9548b6d4602cd25c3f46e1c66dca6fd183007d043f6f3a6f5a56089180744d579bfe3cc65f003d91084adac4c0ac5811ea8a3e5aa6500eac125a423000297a7975585a083bcfc807b7722b5a0438c1b11b62abcb9a4623f8090c451690455acf97814074c0b6d6d19180f08afbd5ba0e259ee910a61f684d14e7996e47ba5a19994a13a642a1bb563411979bcaf7b302d70ba750a89867653b93596d03b260c7c0a024949bb7b1b110dc8267d5c5305390da26c7e6296add6ba7533b92540c28b337c5b392a6024c57cc09b899ec72e1466de604aa0c909baeb0b0078324e810481f760ae694b5e88cb034bca48bf70881047c7b6ab7ce04b96ad2bd0142b387bc1824a22742c7ce18ebac7744a616a5631e40ab817426c6130ece8641661ab863c44c2adb64029990aea24c94bec0ad7bfba46cd1894775ac6549b1a63446cade59357e125c589a73dd18d5e8aad6acb35a89e0958c3ae122197bb6fed165733ca120172d11335a4d60d73fb91d0ffac552692219ef3082477a0f6399aa5dce8a72fd0afaa3b627c9
+Encapsulated ? : true
+Cipher         : 1d04afad6cf4058acb290f72298587c8afb9e022fc0a4b3e1aa5fdc79cfbe44e7781317adbc1f92fd01a6ad3840386710a369276c50671d2b58272505793736bb9d0e8883c200270ddae19fbc86af41aba366b4ddfd67f8771905b3fccca6da805a1e13a9e697500779cfe52484811e906042fa6e6e93ef641e5e7a46c39969c4683ee7cb440fc4cc452dab5215d6ec32a36fa0e8d7501b5d7dcc9dbfb51cbb1c036b052a7354544a6707099ded7b5e5c5024e2a6f356b2d300585128a30d7b964842d5c06659990c85468b42f5f2b46c39b4fa740a3f7006da01ffa09fb2fd6b5b0e9174bd7a801972b647df2825842b8ad146220a1ddcc9eee6967954e8d960bbf5ea8a74ae0306061c44e2995eb451171bd3eb4679579922e48e713ad40cddcd14343dc57a181e3067f1b01895122a447cf002b600c96a30c5f809efcc459cebc8723ca5b5147d2f9d09186f31bba013f19e63294cc5a57c0184b838cb9d51c62e0303c9a029cf6a5c489ccb43bd0bdd4da61f147d6ef9c2b95a758d0c2b9a9265e7cf4255989c07799940c517ecd527cca2acf62d104e2d45a176e35852d81f42397c93d3b2b1c7fde3cc6f4cd5d6c166f7312e34f690a07ecbaac69a045358564142422b45c58784cd5d2d69d9084b7e9f33176893bee2f1589725ed1a443f4b9095e97294f740e8471f468a51db85cc66176af022db77314579776b69eaa8594dbed5d0e0b549675e12c742913da76e3de732c24f7811d8ee32ade2ac1bcb8763c0e898a67695aaab9478c80dc29cc3ae9f1c4b63c116bda64e1e8727881ebe4c1db30219a87d7ff8805675b56a4907d9408bb96438a5182c66a47739f8b12cd5241b5f4e995f4f1fc85041eeaeb158d7ea9c1601a9b3849c6977137a0e82afb72b16748efa456fbae5b28ed82107d79dec3da87d0c0261267a3dbe9dcedb374d96fc00b7478b30f917b2312e7e79133923c2d9aba394bfcdbd00539f7d2d4fdecf9821fdb4c15f253e5ad80d10e360fb84b45e01415a4d5759cd5000ea5c4e80f60a887f9e8ad35ef7cabab83eeb59bf81b3bb10b440707e877c558ca9c80df8d3d8741b838ddf9a5e0e7826a1f6ee0c4f2241687ab0573b18814d21a668861962400148b45a24fdfeb3638a1f16b7c344b088cfffc851317753c1e0602bb0cbfb5357132baf29d6123862eb8b29229a5fd9b173ad4c1b098d11ff23f6ee1c7d357235e647dd99451162cfbed33b7d05df5578859538a9edbeae2cf8ac0903c36e7db352c147c11725a3c5c611b149a4c87e24589d9e31d30a9a8b2cdd863b8dd3ab8c90cde061426a2afedb4aff424cde10e70f1e38207d0fc8be467b4f063739d920bb1906144a704c7ba5be6645899270e5da6380dabfb16e7f906a1f484501005cb383692e054533697a63c8a2f8e1b891b37d5b23afef1de8f9a257f7c9577466fbd87223c5773795ac23ab4cfc0043a965e8695e764174bdc1c778d3d1d6e2a65d9cb7a4b1eb31ca818b0c8abe779fd61a34ee78cfc49fd7682
+Shared secret  : ee30e0696c36480afb066fa2971535f195a30ce08aacc3dfc182ed0947a44f3a
 ```
 
 > [!CAUTION]
-> Before you consider using Psuedo Random Number Generator which comes with this library implementation, I strongly advice you to go through [include/prng.hpp](./include/prng.hpp).
+> Before you consider using Psuedo Random Number Generator which comes with this library implementation, I strongly advice you to go through [include/ml_kem/internals/rng/prng.hpp](./include/ml_kem/internals/rng/prng.hpp).
 
 > [!NOTE]
-> Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.
+> Looking at API documentation, in header files, can give you good idea of how to use ML-KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different ML-KEM parameters. This gives much better type safety and compile-time error reporting.

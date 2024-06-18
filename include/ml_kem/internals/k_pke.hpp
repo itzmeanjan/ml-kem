@@ -12,7 +12,7 @@ namespace k_pke {
 // K-PKE key generation algorithm, generating byte serialized public key and secret keym given a 32 -bytes input seed `d`.
 // See algorithm 12 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1>
-static inline void
+static inline constexpr void
 keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubkey, std::span<uint8_t, k * 12 * 32> seckey)
   requires(ml_kem_params::check_keygen_params(k, eta1))
 {
@@ -65,7 +65,7 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
 //
 // See algorithm 13 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-[[nodiscard("Use result of modulus check on public key")]] static inline bool
+[[nodiscard("Use result of modulus check on public key")]] static inline constexpr bool
 encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
         std::span<const uint8_t, 32> msg,
         std::span<const uint8_t, 32> rcoin,
@@ -142,7 +142,7 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
 //
 // See algorithm 14 defined in K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t du, size_t dv>
-static inline void
+static inline constexpr void
 decrypt(std::span<const uint8_t, k * 12 * 32> seckey, std::span<const uint8_t, k * du * 32 + dv * 32> enc, std::span<uint8_t, 32> dec)
   requires(ml_kem_params::check_decrypt_params(k, du, dv))
 {

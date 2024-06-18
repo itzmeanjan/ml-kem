@@ -98,7 +98,7 @@ poly_vec_sub_from(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, st
 // Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, this routine encodes each of those polynomials into 32 x l -bytes,
 // writing to a (k x 32 x l) -bytes destination array.
 template<size_t k, size_t l>
-static inline void
+static inline constexpr void
 poly_vec_encode(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std::span<uint8_t, k * 32 * l> dst)
   requires(ml_kem_params::check_k(k))
 {
@@ -116,7 +116,7 @@ poly_vec_encode(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std:
 // Given a byte array of length (k x 32 x l) -bytes, this routine decodes them into k degree-255 polynomials, writing them to a
 // column vector of dimension `k x 1`.
 template<size_t k, size_t l>
-static inline void
+static inline constexpr void
 poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> dst)
   requires(ml_kem_params::check_k(k))
 {

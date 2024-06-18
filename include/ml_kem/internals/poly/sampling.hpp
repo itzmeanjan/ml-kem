@@ -82,7 +82,7 @@ generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::s
 //
 // See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t eta>
-static inline void
+static inline constexpr void
 sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_eta(eta))
 {
@@ -132,7 +132,7 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
 
 // Sample a polynomial vector from Bη, following step (9-12) of algorithm 12/ 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta>
-static inline void
+static inline constexpr void
 generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
   requires((k == 1) || ml_kem_params::check_k(k))
 {

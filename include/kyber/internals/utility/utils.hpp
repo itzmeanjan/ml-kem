@@ -2,7 +2,6 @@
 #include "subtle.hpp"
 #include <span>
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace kyber_utils {
 
 // Given two byte arrays of equal length, this routine can be used for comparing them in constant-time,
@@ -21,7 +20,9 @@ ct_memcmp(std::span<const uint8_t, n> bytes0, std::span<const uint8_t, n> bytes1
 
 // Given a branch value, taking either 0x00000000 (false value) or 0xffffffff (truth value), this routine can be used for conditionally
 // copying bytes from either `source0` byte array (in case branch holds truth value) or `source1` byte array (if branch holds false value)
-// to `sink` byte array, all in constant-time. Note, all these byte arrays are of equal length.
+// to `sink` byte array, all in constant-time.
+//
+// In simple words, `sink = cond ? source0 ? source1`
 template<size_t n>
 static inline constexpr void
 ct_cond_memcpy(const uint32_t cond, std::span<uint8_t, n> sink, std::span<const uint8_t, n> source0, std::span<const uint8_t, n> source1)
@@ -31,14 +32,14 @@ ct_cond_memcpy(const uint32_t cond, std::span<uint8_t, n> sink, std::span<const 
   }
 }
 
-// Compile-time compute IND-CCA-secure Kyber KEM public key length ( in bytes )
+// Returns compile-time computable ML-KEM public key byte length.
 static inline constexpr size_t
 get_kem_public_key_len(const size_t k)
 {
   return k * 12 * 32 + 32;
 }
 
-// Compile-time compute IND-CCA-secure Kyber KEM secret key length ( in bytes )
+// Returns compile-time computable ML-KEM secret key byte length.
 static inline constexpr size_t
 get_kem_secret_key_len(const size_t k)
 {
@@ -48,7 +49,7 @@ get_kem_secret_key_len(const size_t k)
   return t0 + t1 + 32 + 32;
 }
 
-// Compile-time compute IND-CCA-secure Kyber KEM cipher text length ( in bytes )
+// Returns compile-time computable ML-KEM cipher text byte length.
 static inline constexpr size_t
 get_kem_cipher_text_len(size_t k, size_t du, size_t dv)
 {

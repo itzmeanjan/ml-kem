@@ -18,7 +18,7 @@ do_one_computation(uint8_t* const data)
   constexpr size_t doff5 = doff4 + SEED_LEN;
   constexpr size_t doff6 = doff5 + SEED_LEN;
 
-  std::array<field::zq_t, ml_kem_512::k * ntt::N> poly_vec{};
+  std::array<ml_kem_field::zq_t, ml_kem_512::k * ntt::N> poly_vec{};
   std::array<uint8_t, ml_kem_512::k * 32 * ml_kem_512::du> byte_arr{};
 
   auto sigma = std::span<const uint8_t, SEED_LEN>(data + doff0, doff1 - doff0);

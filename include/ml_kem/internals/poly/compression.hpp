@@ -4,61 +4,51 @@
 #include "ml_kem/internals/utility/params.hpp"
 #include <span>
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace ml_kem_utils {
 
-// Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding
-// some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q))
+// Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q)).
 //
-// See top of page 5 of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
-//
-// Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96c407b3cfc9f6e1749475b673794402c1/mlkem768.go#L395-L425.
+// See formula 4.5 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96/mlkem768.go#L395-L425.
 template<size_t d>
-static inline constexpr field::zq_t
-compress(const field::zq_t x)
+static inline constexpr ml_kem_field::zq_t
+compress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
   constexpr uint16_t mask = (1u << d) - 1;
 
   const auto dividend = x.raw() << d;
-  const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * field::R) >> (field::Q_BIT_WIDTH * 2));
-  const auto remainder = dividend - quotient0 * field::Q;
+  const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * ml_kem_field::R) >> (ml_kem_field::Q_BIT_WIDTH * 2));
+  const auto remainder = dividend - quotient0 * ml_kem_field::Q;
 
-  const auto quotient1 = quotient0 + ((((field::Q / 2) - remainder) >> 31) & 1);
-  const auto quotient2 = quotient1 + (((field::Q + (field::Q / 2) - remainder) >> 31) & 1);
+  const auto quotient1 = quotient0 + ((((ml_kem_field::Q / 2) - remainder) >> 31) & 1);
+  const auto quotient2 = quotient1 + (((ml_kem_field::Q + (ml_kem_field::Q / 2) - remainder) >> 31) & 1);
 
-  return field::zq_t(static_cast<uint16_t>(quotient2) & mask);
+  return ml_kem_field::zq_t(static_cast<uint16_t>(quotient2) & mask);
 }
 
-// Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses
-// it back to y ∈ Z_q | q = 3329
+// Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses it back to y ∈ Z_q | q = 3329.
 //
-// This routine recovers the compressed element with error probability as
-// defined in eq. 2 of Ml_kem specification.
-//
-// See top of page 5 of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See formula 4.6 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t d>
-static inline constexpr field::zq_t
-decompress(const field::zq_t x)
+static inline constexpr ml_kem_field::zq_t
+decompress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
   constexpr uint32_t t1 = t0 >> 1;
 
-  const uint32_t t2 = field::Q * x.raw();
+  const uint32_t t2 = ml_kem_field::Q * x.raw();
   const uint32_t t3 = t2 + t1;
   const uint16_t t4 = static_cast<uint16_t>(t3 >> d);
 
-  return field::zq_t(t4);
+  return ml_kem_field::zq_t(t4);
 }
 
-// Utility function to compress each of 256 coefficients of a degree-255
-// polynomial s.t. input polynomial is mutated.
+// Utility function to compress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
 static inline constexpr void
-poly_compress(std::span<field::zq_t, ntt::N> poly)
+poly_compress(std::span<ml_kem_field::zq_t, ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {
@@ -66,11 +56,10 @@ poly_compress(std::span<field::zq_t, ntt::N> poly)
   }
 }
 
-// Utility function to decompress each of 256 coefficients of a degree-255
-// polynomial s.t. input polynomial is mutated.
+// Utility function to decompress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
 static inline constexpr void
-poly_decompress(std::span<field::zq_t, ntt::N> poly)
+poly_decompress(std::span<ml_kem_field::zq_t, ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {

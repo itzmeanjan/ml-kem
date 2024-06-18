@@ -10,8 +10,8 @@ TEST(Ml_kemKEM, ArithmeticOverZq)
   ml_kem_prng::prng_t<128> prng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {
-    const auto a = field::zq_t::random(prng);
-    const auto b = field::zq_t::random(prng);
+    const auto a = ml_kem_field::zq_t::random(prng);
+    const auto b = ml_kem_field::zq_t::random(prng);
 
     // Addition, Subtraction and Negation
     const auto c = a + b;
@@ -26,16 +26,16 @@ TEST(Ml_kemKEM, ArithmeticOverZq)
     const auto g = f / b;
     const auto h = f / a;
 
-    if (b != field::zq_t()) {
+    if (b != ml_kem_field::zq_t()) {
       EXPECT_EQ(g, a);
     } else {
-      EXPECT_EQ(g, field::zq_t());
+      EXPECT_EQ(g, ml_kem_field::zq_t());
     }
 
-    if (a != field::zq_t()) {
+    if (a != ml_kem_field::zq_t()) {
       EXPECT_EQ(h, b);
     } else {
-      EXPECT_EQ(h, field::zq_t());
+      EXPECT_EQ(h, ml_kem_field::zq_t());
     }
   }
 }

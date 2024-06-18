@@ -20,7 +20,7 @@ namespace ml_kem_utils {
 // See algorithm 1, defined in Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 inline void
-parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
+parse(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ntt::N> poly)
 {
   constexpr size_t n = poly.size();
 
@@ -34,13 +34,13 @@ parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
       const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) | static_cast<uint16_t>(buf[off + 0]);
       const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) | (static_cast<uint16_t>(buf[off + 1] >> 4));
 
-      if (d1 < field::Q) {
-        poly[coeff_idx] = field::zq_t(d1);
+      if (d1 < ml_kem_field::Q) {
+        poly[coeff_idx] = ml_kem_field::zq_t(d1);
         coeff_idx++;
       }
 
-      if ((d2 < field::Q) && (coeff_idx < n)) {
-        poly[coeff_idx] = field::zq_t(d2);
+      if ((d2 < ml_kem_field::Q) && (coeff_idx < n)) {
+        poly[coeff_idx] = ml_kem_field::zq_t(d2);
         coeff_idx++;
       }
     }
@@ -55,7 +55,7 @@ parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, bool transpose>
 static inline void
-generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat, std::span<const uint8_t, 32> rho)
+generate_matrix(std::span<ml_kem_field::zq_t, k * k * ntt::N> mat, std::span<const uint8_t, 32> rho)
   requires(ml_kem_params::check_k(k))
 {
   std::array<uint8_t, rho.size() + 2> xof_in{};
@@ -77,7 +77,7 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat, std::span<const uint
       hasher.absorb(xof_in);
       hasher.finalize();
 
-      using poly_t = std::span<field::zq_t, mat.size() / (k * k)>;
+      using poly_t = std::span<ml_kem_field::zq_t, mat.size() / (k * k)>;
       parse(hasher, poly_t(mat.subspan(off, ntt::N)));
     }
   }
@@ -92,7 +92,7 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat, std::span<const uint
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t eta>
 static inline void
-cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
+cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ntt::N> poly)
   requires(ml_kem_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
@@ -110,8 +110,8 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
       const uint8_t t1 = (word >> 1) & mask8;
       const uint8_t t2 = t0 + t1;
 
-      poly[poff + 0] = field::zq_t((t2 >> 0) & mask2) - field::zq_t((t2 >> 2) & mask2);
-      poly[poff + 1] = field::zq_t((t2 >> 4) & mask2) - field::zq_t((t2 >> 6) & mask2);
+      poly[poff + 0] = ml_kem_field::zq_t((t2 >> 0) & mask2) - ml_kem_field::zq_t((t2 >> 2) & mask2);
+      poly[poff + 1] = ml_kem_field::zq_t((t2 >> 4) & mask2) - ml_kem_field::zq_t((t2 >> 6) & mask2);
     }
   } else {
     static_assert(eta == 3, "η must be 3 !");
@@ -131,10 +131,10 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
       const uint32_t t2 = (word >> 2) & mask24;
       const uint32_t t3 = t0 + t1 + t2;
 
-      poly[poff + 0] = field::zq_t((t3 >> 0) & mask3) - field::zq_t((t3 >> 3) & mask3);
-      poly[poff + 1] = field::zq_t((t3 >> 6) & mask3) - field::zq_t((t3 >> 9) & mask3);
-      poly[poff + 2] = field::zq_t((t3 >> 12) & mask3) - field::zq_t((t3 >> 15) & mask3);
-      poly[poff + 3] = field::zq_t((t3 >> 18) & mask3) - field::zq_t((t3 >> 21) & mask3);
+      poly[poff + 0] = ml_kem_field::zq_t((t3 >> 0) & mask3) - ml_kem_field::zq_t((t3 >> 3) & mask3);
+      poly[poff + 1] = ml_kem_field::zq_t((t3 >> 6) & mask3) - ml_kem_field::zq_t((t3 >> 9) & mask3);
+      poly[poff + 2] = ml_kem_field::zq_t((t3 >> 12) & mask3) - ml_kem_field::zq_t((t3 >> 15) & mask3);
+      poly[poff + 3] = ml_kem_field::zq_t((t3 >> 18) & mask3) - ml_kem_field::zq_t((t3 >> 21) & mask3);
     }
   }
 }
@@ -144,7 +144,7 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta>
 static inline void
-generate_vector(std::span<field::zq_t, k * ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
+generate_vector(std::span<ml_kem_field::zq_t, k * ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
   std::array<uint8_t, 64 * eta> prf_out{};
@@ -161,7 +161,7 @@ generate_vector(std::span<field::zq_t, k * ntt::N> vec, std::span<const uint8_t,
     hasher.finalize();
     hasher.squeeze(prf_out);
 
-    using poly_t = std::span<field::zq_t, vec.size() / k>;
+    using poly_t = std::span<ml_kem_field::zq_t, vec.size() / k>;
     ml_kem_utils::cbd<eta>(prf_out, poly_t(vec.subspan(off, ntt::N)));
   }
 }

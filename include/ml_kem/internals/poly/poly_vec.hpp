@@ -15,14 +15,14 @@ namespace ml_kem_utils {
 // attempts to multiply and compute resulting matrix
 template<size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols>
 static inline constexpr void
-matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
-                std::span<const field::zq_t, b_rows * b_cols * ntt::N> b,
-                std::span<field::zq_t, a_rows * b_cols * ntt::N> c)
+matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ntt::N> a,
+                std::span<const ml_kem_field::zq_t, b_rows * b_cols * ntt::N> b,
+                std::span<ml_kem_field::zq_t, a_rows * b_cols * ntt::N> c)
   requires(ml_kem_params::check_matrix_dim(a_cols, b_rows))
 {
-  using poly_t = std::span<const field::zq_t, ntt::N>;
+  using poly_t = std::span<const ml_kem_field::zq_t, ntt::N>;
 
-  std::array<field::zq_t, ntt::N> tmp{};
+  std::array<ml_kem_field::zq_t, ntt::N> tmp{};
   auto _tmp = std::span(tmp);
 
   for (size_t i = 0; i < a_rows; i++) {
@@ -48,10 +48,10 @@ matrix_multiply(std::span<const field::zq_t, a_rows * a_cols * ntt::N> a,
 // polynomial NTT over k polynomials
 template<size_t k>
 static inline constexpr void
-poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
+poly_vec_ntt(std::span<ml_kem_field::zq_t, k * ntt::N> vec)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
-  using poly_t = std::span<field::zq_t, ntt::N>;
+  using poly_t = std::span<ml_kem_field::zq_t, ntt::N>;
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -65,10 +65,10 @@ poly_vec_ntt(std::span<field::zq_t, k * ntt::N> vec)
 // polynomials
 template<size_t k>
 static inline constexpr void
-poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
+poly_vec_intt(std::span<ml_kem_field::zq_t, k * ntt::N> vec)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
-  using poly_t = std::span<field::zq_t, ntt::N>;
+  using poly_t = std::span<ml_kem_field::zq_t, ntt::N>;
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -80,7 +80,7 @@ poly_vec_intt(std::span<field::zq_t, k * ntt::N> vec)
 // routine adds it to another polynomial vector of same dimension
 template<size_t k>
 static inline constexpr void
-poly_vec_add_to(std::span<const field::zq_t, k * ntt::N> src, std::span<field::zq_t, k * ntt::N> dst)
+poly_vec_add_to(std::span<const ml_kem_field::zq_t, k * ntt::N> src, std::span<ml_kem_field::zq_t, k * ntt::N> dst)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -94,7 +94,7 @@ poly_vec_add_to(std::span<const field::zq_t, k * ntt::N> src, std::span<field::z
 // routine subtracts it to another polynomial vector of same dimension
 template<size_t k>
 static inline constexpr void
-poly_vec_sub_from(std::span<const field::zq_t, k * ntt::N> src, std::span<field::zq_t, k * ntt::N> dst)
+poly_vec_sub_from(std::span<const ml_kem_field::zq_t, k * ntt::N> src, std::span<ml_kem_field::zq_t, k * ntt::N> dst)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
   constexpr size_t cnt = k * ntt::N;
@@ -109,10 +109,10 @@ poly_vec_sub_from(std::span<const field::zq_t, k * ntt::N> src, std::span<field:
 // (k x 32 x l) -bytes destination array
 template<size_t k, size_t l>
 static inline void
-poly_vec_encode(std::span<const field::zq_t, k * ntt::N> src, std::span<uint8_t, k * 32 * l> dst)
+poly_vec_encode(std::span<const ml_kem_field::zq_t, k * ntt::N> src, std::span<uint8_t, k * 32 * l> dst)
   requires(ml_kem_params::check_k(k))
 {
-  using poly_t = std::span<const field::zq_t, src.size() / k>;
+  using poly_t = std::span<const ml_kem_field::zq_t, src.size() / k>;
   using serialized_t = std::span<uint8_t, dst.size() / k>;
 
   for (size_t i = 0; i < k; i++) {
@@ -128,11 +128,11 @@ poly_vec_encode(std::span<const field::zq_t, k * ntt::N> src, std::span<uint8_t,
 // k x 1
 template<size_t k, size_t l>
 static inline void
-poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<field::zq_t, k * ntt::N> dst)
+poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<ml_kem_field::zq_t, k * ntt::N> dst)
   requires(ml_kem_params::check_k(k))
 {
   using serialized_t = std::span<const uint8_t, src.size() / k>;
-  using poly_t = std::span<field::zq_t, dst.size() / k>;
+  using poly_t = std::span<ml_kem_field::zq_t, dst.size() / k>;
 
   for (size_t i = 0; i < k; i++) {
     const size_t off0 = i * l * 32;
@@ -146,10 +146,10 @@ poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<field::zq_t,
 // k * 256 coefficients are compressed, while mutating input.
 template<size_t k, size_t d>
 static inline constexpr void
-poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
+poly_vec_compress(std::span<ml_kem_field::zq_t, k * ntt::N> vec)
   requires(ml_kem_params::check_k(k))
 {
-  using poly_t = std::span<field::zq_t, vec.size() / k>;
+  using poly_t = std::span<ml_kem_field::zq_t, vec.size() / k>;
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;
@@ -161,10 +161,10 @@ poly_vec_compress(std::span<field::zq_t, k * ntt::N> vec)
 // k * 256 coefficients are decompressed, while mutating input.
 template<size_t k, size_t d>
 static inline constexpr void
-poly_vec_decompress(std::span<field::zq_t, k * ntt::N> vec)
+poly_vec_decompress(std::span<ml_kem_field::zq_t, k * ntt::N> vec)
   requires(ml_kem_params::check_k(k))
 {
-  using poly_t = std::span<field::zq_t, vec.size() / k>;
+  using poly_t = std::span<ml_kem_field::zq_t, vec.size() / k>;
 
   for (size_t i = 0; i < k; i++) {
     const size_t off = i * ntt::N;

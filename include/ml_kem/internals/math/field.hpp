@@ -3,7 +3,7 @@
 #include <bit>
 #include <cstdint>
 
-namespace field {
+namespace ml_kem_field {
 
 // Ml_kem Prime Field Modulus ( = 3329 )
 static constexpr uint32_t Q = (1u << 8) * 13 + 1;

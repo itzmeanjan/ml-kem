@@ -17,17 +17,17 @@ test_serialize_deserialize()
   constexpr size_t blen = (ntt::N * l) / 8;
   constexpr uint32_t mask = (1u << l) - 1u;
 
-  std::vector<field::zq_t> src(ntt::N);
-  std::vector<field::zq_t> dst(ntt::N);
+  std::vector<ml_kem_field::zq_t> src(ntt::N);
+  std::vector<ml_kem_field::zq_t> dst(ntt::N);
   std::vector<uint8_t> bytes(blen);
 
   ml_kem_prng::prng_t<256> prng{};
 
   for (size_t i = 0; i < ntt::N; i++) {
-    src[i] = field::zq_t::random(prng);
+    src[i] = ml_kem_field::zq_t::random(prng);
   }
 
-  using poly_t = std::span<field::zq_t, ntt::N>;
+  using poly_t = std::span<ml_kem_field::zq_t, ntt::N>;
   using serialized_t = std::span<uint8_t, blen>;
 
   ml_kem_utils::encode<l>(poly_t(src), serialized_t(bytes));

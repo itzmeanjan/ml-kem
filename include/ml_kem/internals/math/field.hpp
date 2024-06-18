@@ -58,7 +58,8 @@ private:
 public:
   // Constructor(s)
   inline constexpr zq_t() = default;
-  inline constexpr zq_t(const uint16_t a) { this->v = a; }
+  inline constexpr zq_t(const uint16_t a /* Expects a ∈ [0, Q) */) { this->v = a; }
+  static inline constexpr zq_t from_non_reduced(const uint16_t a /* Doesn't expect that a ∈ [0, Q) */) { return barrett_reduce(a); }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   inline constexpr uint32_t raw() const { return this->v; }
@@ -120,7 +121,7 @@ public:
     uint16_t res = 0;
     prng.read(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
 
-    return zq_t(barrett_reduce(static_cast<uint32_t>(res)));
+    return zq_t::from_non_reduced(static_cast<uint32_t>(res));
   }
 };
 

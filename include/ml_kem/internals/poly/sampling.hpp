@@ -4,28 +4,24 @@
 #include "ml_kem/internals/utility/params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
-#include <array>
-#include <cstdint>
+#include <limits>
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace ml_kem_utils {
 
-// Uniform sampling in R_q | q = 3329
+// Uniform sampling in R_q | q = 3329.
 //
-// Given a byte stream, this routine *deterministically* samples a degree 255
-// polynomial in NTT representation. If the byte stream is statistically close
-// to uniform random byte stream, produced polynomial coefficients are also
+// Given a byte stream, this routine *deterministically* samples a degree 255 polynomial in NTT representation.
+// If the byte stream is statistically close to uniform random byte stream, produced polynomial coefficients are also
 // statiscally close to randomly sampled elements of R_q.
 //
-// See algorithm 1, defined in Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
-inline void
-parse(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
+// See algorithm 6 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+inline constexpr void
+sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
 {
   constexpr size_t n = poly.size();
 
   size_t coeff_idx = 0;
-  std::array<uint8_t, shake128::RATE / 8> buf{};
+  std::array<uint8_t, shake128::RATE / std::numeric_limits<uint8_t>::digits> buf{};
 
   while (coeff_idx < n) {
     hasher.squeeze(buf);
@@ -47,14 +43,12 @@ parse(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N>
   }
 }
 
-// Generate public matrix A ( consists of degree-255 polynomials ) in NTT
-// domain, by sampling from a XOF ( read SHAKE128 ), which is seeded with 32
-// -bytes key and two nonces ( each of 1 -byte )
+// Generate public matrix A ( consists of degree-255 polynomials ) in NTT domain, by sampling from a XOF ( read SHAKE128 ),
+// which is seeded with 32 -bytes key and two nonces ( each of 1 -byte ).
 //
-// See step (4-8) of algorithm 4/ 5, defined in Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See step (4-8) of algorithm 12/ 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, bool transpose>
-static inline void
+static inline constexpr void
 generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::span<const uint8_t, 32> rho)
   requires(ml_kem_params::check_k(k))
 {
@@ -78,21 +72,18 @@ generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::s
       hasher.finalize();
 
       using poly_t = std::span<ml_kem_field::zq_t, mat.size() / (k * k)>;
-      parse(hasher, poly_t(mat.subspan(off, ml_kem_ntt::N)));
+      sample_ntt(hasher, poly_t(mat.subspan(off, ml_kem_ntt::N)));
     }
   }
 }
 
-// Centered Binomial Distribution
+// Centered Binomial Distribution.
+// A degree 255 polynomial deterministically sampled from `64 * eta` -bytes output of a pseudorandom function ( PRF ).
 //
-// A degree 255 polynomial deterministically sampled from 64 * eta -bytes output
-// of a pseudorandom function ( PRF )
-//
-// See algorithm 2, defined in Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t eta>
 static inline void
-cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
+sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
@@ -139,9 +130,7 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ml_kem
   }
 }
 
-// Sample a polynomial vector from Bη, following step (9-12) of algorithm 4,
-// defined in Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// Sample a polynomial vector from Bη, following step (9-12) of algorithm 12/ 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta>
 static inline void
 generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
@@ -162,7 +151,7 @@ generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<
     hasher.squeeze(prf_out);
 
     using poly_t = std::span<ml_kem_field::zq_t, vec.size() / k>;
-    ml_kem_utils::cbd<eta>(prf_out, poly_t(vec.subspan(off, ml_kem_ntt::N)));
+    ml_kem_utils::sample_poly_cbd<eta>(prf_out, poly_t(vec.subspan(off, ml_kem_ntt::N)));
   }
 }
 

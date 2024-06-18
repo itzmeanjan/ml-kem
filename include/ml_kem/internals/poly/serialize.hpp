@@ -2,19 +2,15 @@
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/utility/params.hpp"
-#include <cstring>
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace ml_kem_utils {
 
-// Given a degree-255 polynomial, where significant portion of each ( total 256
-// of them ) coefficient ∈ [0, 2^l), this routine serializes the polynomial to a
-// byte array of length 32 * l -bytes
+// Given a degree-255 polynomial, where significant portion of each ( total 256 of them ) coefficient ∈ [0, 2^l),
+// this routine serializes the polynomial to a byte array of length 32 * l -bytes.
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See algorithm 4 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline void
+static inline constexpr void
 encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_t, 32 * l> arr)
   requires(ml_kem_params::check_l(l))
 {
@@ -143,14 +139,12 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
   }
 }
 
-// Given a byte array of length 32 * l -bytes this routine deserializes it to a
-// polynomial of degree 255 s.t. significant portion of each ( total 256 of them
-// ) coefficient ∈ [0, 2^l)
+// Given a byte array of length 32 * l -bytes this routine deserializes it to a polynomial of degree 255 s.t. significant
+// portion of each ( total 256 of them ) coefficient ∈ [0, 2^l).
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See algorithm 5 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline void
+static inline constexpr void
 decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_l(l))
 {
@@ -277,8 +271,9 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_ke
       const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask4) << 8) | static_cast<uint16_t>(arr[boff + 0]);
       const auto t1 = (static_cast<uint16_t>(arr[boff + 2]) << 4) | static_cast<uint16_t>(arr[boff + 1] >> 4);
 
-      poly[poff + 0] = ml_kem_field::zq_t(t0);
-      poly[poff + 1] = ml_kem_field::zq_t(t1);
+      // Read line (786-792) of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+      poly[poff + 0] = ml_kem_field::zq_t::from_non_reduced(t0);
+      poly[poff + 1] = ml_kem_field::zq_t::from_non_reduced(t1);
     }
   }
 }

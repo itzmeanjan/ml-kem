@@ -4,15 +4,11 @@
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/poly/serialize.hpp"
 #include "ml_kem/internals/utility/params.hpp"
-#include <array>
-#include <cstdint>
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
 namespace ml_kem_utils {
 
-// Given two matrices ( in NTT domain ) of compatible dimension, where each
-// matrix element is a degree-255 polynomial over Z_q | q = 3329, this routine
-// attempts to multiply and compute resulting matrix
+// Given two matrices ( in NTT domain ) of compatible dimension, where each matrix element is a degree-255 polynomial over Z_q | q = 3329,
+// this routine multiplies them, computing a resulting matrix.
 template<size_t a_rows, size_t a_cols, size_t b_rows, size_t b_cols>
 static inline constexpr void
 matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ml_kem_ntt::N> a,
@@ -43,9 +39,8 @@ matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ml_kem_ntt
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials ( where
-// polynomial coefficients are in non-NTT form ), this routine applies in-place
-// polynomial NTT over k polynomials
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials ( where polynomial coefficients are in non-NTT form ),
+// this routine applies in-place polynomial NTT over `k` polynomials.
 template<size_t k>
 static inline constexpr void
 poly_vec_ntt(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
@@ -59,10 +54,8 @@ poly_vec_ntt(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials ( where
-// polynomial coefficients are in NTT form i.e. they are placed in bit-reversed
-// order ), this routine applies in-place polynomial iNTT over those k
-// polynomials
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials ( where polynomial coefficients are in NTT form i.e.
+// they are placed in bit-reversed order ), this routine applies in-place polynomial iNTT over those `k` polynomials.
 template<size_t k>
 static inline constexpr void
 poly_vec_intt(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
@@ -76,8 +69,7 @@ poly_vec_intt(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
-// routine adds it to another polynomial vector of same dimension
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, this routine adds it to another polynomial vector of same dimension.
 template<size_t k>
 static inline constexpr void
 poly_vec_add_to(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> dst)
@@ -90,8 +82,7 @@ poly_vec_add_to(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std:
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this
-// routine subtracts it to another polynomial vector of same dimension
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, this routine subtracts it to another polynomial vector of same dimension.
 template<size_t k>
 static inline constexpr void
 poly_vec_sub_from(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> dst)
@@ -104,9 +95,8 @@ poly_vec_sub_from(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, st
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, this routine
-// encodes each of those polynomials into 32 x l -bytes, writing to a
-// (k x 32 x l) -bytes destination array
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, this routine encodes each of those polynomials into 32 x l -bytes,
+// writing to a (k x 32 x l) -bytes destination array.
 template<size_t k, size_t l>
 static inline void
 poly_vec_encode(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std::span<uint8_t, k * 32 * l> dst)
@@ -123,9 +113,8 @@ poly_vec_encode(std::span<const ml_kem_field::zq_t, k * ml_kem_ntt::N> src, std:
   }
 }
 
-// Given a byte array of length (k x 32 x l) -bytes, this routine decodes them
-// into k degree-255 polynomials, writing them to a column vector of dimension
-// k x 1
+// Given a byte array of length (k x 32 x l) -bytes, this routine decodes them into k degree-255 polynomials, writing them to a
+// column vector of dimension `k x 1`.
 template<size_t k, size_t l>
 static inline void
 poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> dst)
@@ -142,8 +131,7 @@ poly_vec_decode(std::span<const uint8_t, k * 32 * l> src, std::span<ml_kem_field
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
-// k * 256 coefficients are compressed, while mutating input.
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, each of k * 256 coefficients are compressed, while mutating input.
 template<size_t k, size_t d>
 static inline constexpr void
 poly_vec_compress(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
@@ -157,8 +145,7 @@ poly_vec_compress(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)
   }
 }
 
-// Given a vector ( of dimension k x 1 ) of degree-255 polynomials, each of
-// k * 256 coefficients are decompressed, while mutating input.
+// Given a vector ( of dimension `k x 1` ) of degree-255 polynomials, each of k * 256 coefficients are decompressed, while mutating input.
 template<size_t k, size_t d>
 static inline constexpr void
 poly_vec_decompress(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec)

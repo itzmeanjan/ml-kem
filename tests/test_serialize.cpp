@@ -1,15 +1,10 @@
-#include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/serialize.hpp"
-#include <cstdint>
 #include <gtest/gtest.h>
-#include <vector>
 
-// Ensure that degree-255 polynomial serialization to byte array ( of length
-// 32*l -bytes ) and deserialization of that byte array to degree-255 polynomial
-// works as expected for parameterizable values of l | l ∈ [1, 12].
+// Ensure that degree-255 polynomial serialization to byte array ( of length 32*l -bytes ) and deserialization of
+// that byte array to degree-255 polynomial works as expected for parameterizable values of l | l ∈ [1, 12].
 //
-// l denotes significant bit width ( from LSB side ) for each coefficient of
-// polynomial.
+// `l` denotes significant bit width ( from LSB side ) for each coefficient of polynomial.
 template<size_t l>
 void
 test_serialize_deserialize()

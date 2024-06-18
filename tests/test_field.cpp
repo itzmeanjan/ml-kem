@@ -6,7 +6,8 @@
 // field operations on randomly sampled field elements.
 TEST(ML_KEM, ArithmeticOverZq)
 {
-  constexpr size_t itr_cnt = 1ul << 20;
+  static constexpr size_t itr_cnt = 1ul << 20;
+
   ml_kem_prng::prng_t<128> prng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {

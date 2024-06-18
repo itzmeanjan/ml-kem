@@ -23,6 +23,7 @@ UBSAN_BUILD_DIR = $(BUILD_DIR)/ubsan
 TEST_DIR = tests
 DUDECT_TEST_DIR = $(TEST_DIR)/dudect
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
 DUDECT_TEST_SOURCES := $(wildcard $(DUDECT_TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 ASAN_TEST_OBJECTS := $(addprefix $(ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
@@ -123,5 +124,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^

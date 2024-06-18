@@ -1,5 +1,5 @@
-#include "kyber/internals/math/field.hpp"
-#include "kyber/internals/poly/serialize.hpp"
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/serialize.hpp"
 #include <cstdint>
 #include <gtest/gtest.h>
 #include <vector>
@@ -30,15 +30,15 @@ test_serialize_deserialize()
   using poly_t = std::span<field::zq_t, ntt::N>;
   using serialized_t = std::span<uint8_t, blen>;
 
-  kyber_utils::encode<l>(poly_t(src), serialized_t(bytes));
-  kyber_utils::decode<l>(serialized_t(bytes), poly_t(dst));
+  ml_kem_utils::encode<l>(poly_t(src), serialized_t(bytes));
+  ml_kem_utils::decode<l>(serialized_t(bytes), poly_t(dst));
 
   for (size_t i = 0; i < ntt::N; i++) {
     EXPECT_EQ((src[i].raw() & mask), (dst[i].raw() & mask));
   }
 }
 
-TEST(KyberKEM, PolynomialSerialization)
+TEST(Ml_kemKEM, PolynomialSerialization)
 {
   test_serialize_deserialize<12>();
   test_serialize_deserialize<11>();

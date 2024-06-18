@@ -1,22 +1,22 @@
 #pragma once
-#include "kyber/internals/math/field.hpp"
-#include "kyber/internals/poly/ntt.hpp"
-#include "kyber/internals/utility/params.hpp"
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/params.hpp"
 #include <cstring>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
-namespace kyber_utils {
+namespace ml_kem_utils {
 
 // Given a degree-255 polynomial, where significant portion of each ( total 256
 // of them ) coefficient ∈ [0, 2^l), this routine serializes the polynomial to a
 // byte array of length 32 * l -bytes
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
+// See algorithm 3 described in section 1.1 ( page 7 ) of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
 encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr)
-  requires(kyber_params::check_l(l))
+  requires(ml_kem_params::check_l(l))
 {
   std::fill(arr.begin(), arr.end(), 0);
 
@@ -147,12 +147,12 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
 // polynomial of degree 255 s.t. significant portion of each ( total 256 of them
 // ) coefficient ∈ [0, 2^l)
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
+// See algorithm 3 described in section 1.1 ( page 7 ) of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t l>
 static inline void
 decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly)
-  requires(kyber_params::check_l(l))
+  requires(ml_kem_params::check_l(l))
 {
   if constexpr (l == 1) {
     constexpr size_t itr_cnt = ntt::N >> 3;

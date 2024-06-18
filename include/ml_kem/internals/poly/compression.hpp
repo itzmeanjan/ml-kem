@@ -1,23 +1,23 @@
 #pragma once
-#include "kyber/internals/math/field.hpp"
-#include "kyber/internals/poly/ntt.hpp"
-#include "kyber/internals/utility/params.hpp"
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/params.hpp"
 #include <span>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
-namespace kyber_utils {
+namespace ml_kem_utils {
 
 // Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding
 // some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q))
 //
-// See top of page 5 of Kyber specification
+// See top of page 5 of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 //
 // Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96c407b3cfc9f6e1749475b673794402c1/mlkem768.go#L395-L425.
 template<size_t d>
 static inline constexpr field::zq_t
 compress(const field::zq_t x)
-  requires(kyber_params::check_d(d))
+  requires(ml_kem_params::check_d(d))
 {
   constexpr uint16_t mask = (1u << d) - 1;
 
@@ -35,14 +35,14 @@ compress(const field::zq_t x)
 // it back to y ∈ Z_q | q = 3329
 //
 // This routine recovers the compressed element with error probability as
-// defined in eq. 2 of Kyber specification.
+// defined in eq. 2 of Ml_kem specification.
 //
-// See top of page 5 of Kyber specification
+// See top of page 5 of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t d>
 static inline constexpr field::zq_t
 decompress(const field::zq_t x)
-  requires(kyber_params::check_d(d))
+  requires(ml_kem_params::check_d(d))
 {
   constexpr uint32_t t0 = 1u << d;
   constexpr uint32_t t1 = t0 >> 1;
@@ -59,7 +59,7 @@ decompress(const field::zq_t x)
 template<size_t d>
 static inline constexpr void
 poly_compress(std::span<field::zq_t, ntt::N> poly)
-  requires(kyber_params::check_d(d))
+  requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = compress<d>(poly[i]);
@@ -71,7 +71,7 @@ poly_compress(std::span<field::zq_t, ntt::N> poly)
 template<size_t d>
 static inline constexpr void
 poly_decompress(std::span<field::zq_t, ntt::N> poly)
-  requires(kyber_params::check_d(d))
+  requires(ml_kem_params::check_d(d))
 {
   for (size_t i = 0; i < poly.size(); i++) {
     poly[i] = decompress<d>(poly[i]);

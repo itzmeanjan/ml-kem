@@ -2,7 +2,7 @@
 #include <cstddef>
 
 // Holds compile-time executable functions, ensuring that functions are invoked with proper arguments.
-namespace kyber_params {
+namespace ml_kem_params {
 
 // Compile-time check to ensure that number of bits ( read `d` ) to consider during
 // polynomial coefficient compression/ decompression is within tolerable bounds.

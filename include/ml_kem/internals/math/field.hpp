@@ -1,14 +1,14 @@
 #pragma once
-#include "kyber/internals/rng/prng.hpp"
+#include "ml_kem/internals/rng/prng.hpp"
 #include <bit>
 #include <cstdint>
 
 namespace field {
 
-// Kyber Prime Field Modulus ( = 3329 )
+// Ml_kem Prime Field Modulus ( = 3329 )
 static constexpr uint32_t Q = (1u << 8) * 13 + 1;
 
-// Bit width of Kyber Prime Field Modulus ( = 12 )
+// Bit width of Ml_kem Prime Field Modulus ( = 12 )
 static constexpr size_t Q_BIT_WIDTH = std::bit_width(Q);
 
 // Precomputed Barrett Reduction Constant

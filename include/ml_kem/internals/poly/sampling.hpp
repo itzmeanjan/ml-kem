@@ -1,14 +1,14 @@
 #pragma once
-#include "kyber/internals/math/field.hpp"
-#include "kyber/internals/poly/ntt.hpp"
-#include "kyber/internals/utility/params.hpp"
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
 #include <array>
 #include <cstdint>
 
 // IND-CPA-secure Public Key Encryption Scheme Utilities
-namespace kyber_utils {
+namespace ml_kem_utils {
 
 // Uniform sampling in R_q | q = 3329
 //
@@ -17,7 +17,7 @@ namespace kyber_utils {
 // to uniform random byte stream, produced polynomial coefficients are also
 // statiscally close to randomly sampled elements of R_q.
 //
-// See algorithm 1, defined in Kyber specification
+// See algorithm 1, defined in Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 inline void
 parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
@@ -51,12 +51,12 @@ parse(shake128::shake128_t& hasher, std::span<field::zq_t, ntt::N> poly)
 // domain, by sampling from a XOF ( read SHAKE128 ), which is seeded with 32
 // -bytes key and two nonces ( each of 1 -byte )
 //
-// See step (4-8) of algorithm 4/ 5, defined in Kyber specification
+// See step (4-8) of algorithm 4/ 5, defined in Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, bool transpose>
 static inline void
 generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat, std::span<const uint8_t, 32> rho)
-  requires(kyber_params::check_k(k))
+  requires(ml_kem_params::check_k(k))
 {
   std::array<uint8_t, rho.size() + 2> xof_in{};
   std::copy(rho.begin(), rho.end(), xof_in.begin());
@@ -88,12 +88,12 @@ generate_matrix(std::span<field::zq_t, k * k * ntt::N> mat, std::span<const uint
 // A degree 255 polynomial deterministically sampled from 64 * eta -bytes output
 // of a pseudorandom function ( PRF )
 //
-// See algorithm 2, defined in Kyber specification
+// See algorithm 2, defined in Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t eta>
 static inline void
 cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
-  requires(kyber_params::check_eta(eta))
+  requires(ml_kem_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
     static_assert(eta == 2, "η must be 2 !");
@@ -140,12 +140,12 @@ cbd(std::span<const uint8_t, 64 * eta> prf, std::span<field::zq_t, ntt::N> poly)
 }
 
 // Sample a polynomial vector from Bη, following step (9-12) of algorithm 4,
-// defined in Kyber specification
+// defined in Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta>
 static inline void
 generate_vector(std::span<field::zq_t, k * ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
-  requires((k == 1) || kyber_params::check_k(k))
+  requires((k == 1) || ml_kem_params::check_k(k))
 {
   std::array<uint8_t, 64 * eta> prf_out{};
   std::array<uint8_t, sigma.size() + 1> prf_in{};
@@ -162,7 +162,7 @@ generate_vector(std::span<field::zq_t, k * ntt::N> vec, std::span<const uint8_t,
     hasher.squeeze(prf_out);
 
     using poly_t = std::span<field::zq_t, vec.size() / k>;
-    kyber_utils::cbd<eta>(prf_out, poly_t(vec.subspan(off, ntt::N)));
+    ml_kem_utils::cbd<eta>(prf_out, poly_t(vec.subspan(off, ntt::N)));
   }
 }
 

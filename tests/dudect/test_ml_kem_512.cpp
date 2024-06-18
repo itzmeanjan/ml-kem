@@ -1,4 +1,4 @@
-#include "kyber/kyber512_kem.hpp"
+#include "ml_kem/ml_kem_512.hpp"
 #include <cstdio>
 
 #define DUDECT_IMPLEMENTATION
@@ -13,41 +13,41 @@ do_one_computation(uint8_t* const data)
   constexpr size_t doff0 = 0;
   constexpr size_t doff1 = doff0 + SEED_LEN;
   constexpr size_t doff2 = doff1 + 1;
-  constexpr size_t doff3 = doff2 + kyber512_kem::CIPHER_TEXT_BYTE_LEN;
-  constexpr size_t doff4 = doff3 + kyber512_kem::CIPHER_TEXT_BYTE_LEN;
+  constexpr size_t doff3 = doff2 + ml_kem_512::CIPHER_TEXT_BYTE_LEN;
+  constexpr size_t doff4 = doff3 + ml_kem_512::CIPHER_TEXT_BYTE_LEN;
   constexpr size_t doff5 = doff4 + SEED_LEN;
   constexpr size_t doff6 = doff5 + SEED_LEN;
 
-  std::array<field::zq_t, kyber512_kem::k * ntt::N> poly_vec{};
-  std::array<uint8_t, kyber512_kem::k * 32 * kyber512_kem::du> byte_arr{};
+  std::array<field::zq_t, ml_kem_512::k * ntt::N> poly_vec{};
+  std::array<uint8_t, ml_kem_512::k * 32 * ml_kem_512::du> byte_arr{};
 
   auto sigma = std::span<const uint8_t, SEED_LEN>(data + doff0, doff1 - doff0);
   const auto nonce = data[doff1];
 
   // Generate new secret polynomial vector
-  kyber_utils::generate_vector<kyber512_kem::k, kyber512_kem::η1>(poly_vec, sigma, nonce);
+  ml_kem_utils::generate_vector<ml_kem_512::k, ml_kem_512::η1>(poly_vec, sigma, nonce);
   // Apply NTT on that secret vector
-  kyber_utils::poly_vec_ntt<kyber512_kem::k>(poly_vec);
+  ml_kem_utils::poly_vec_ntt<ml_kem_512::k>(poly_vec);
   // Apply iNTT on bit-reversed NTT form of secret polynomial vector
-  kyber_utils::poly_vec_intt<kyber512_kem::k>(poly_vec);
+  ml_kem_utils::poly_vec_intt<ml_kem_512::k>(poly_vec);
   // Compress coefficients of polynomial vector
-  kyber_utils::poly_vec_compress<kyber512_kem::k, kyber512_kem::du>(poly_vec);
+  ml_kem_utils::poly_vec_compress<ml_kem_512::k, ml_kem_512::du>(poly_vec);
   // Serialize polynomial vector into byte array
-  kyber_utils::poly_vec_encode<kyber512_kem::k, kyber512_kem::du>(poly_vec, byte_arr);
+  ml_kem_utils::poly_vec_encode<ml_kem_512::k, ml_kem_512::du>(poly_vec, byte_arr);
   // Recover coefficients of polynomial vector from byte array
-  kyber_utils::poly_vec_decode<kyber512_kem::k, kyber512_kem::du>(byte_arr, poly_vec);
+  ml_kem_utils::poly_vec_decode<ml_kem_512::k, ml_kem_512::du>(byte_arr, poly_vec);
   // Decompress coefficients of polynomial vector
-  kyber_utils::poly_vec_decompress<kyber512_kem::k, kyber512_kem::du>(poly_vec);
+  ml_kem_utils::poly_vec_decompress<ml_kem_512::k, ml_kem_512::du>(poly_vec);
 
   std::array<uint8_t, SEED_LEN> sink{};
   auto _sink = std::span(sink);
 
-  using ctxt_t = std::span<const uint8_t, kyber512_kem::CIPHER_TEXT_BYTE_LEN>;
+  using ctxt_t = std::span<const uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN>;
   using seed_t = std::span<const uint8_t, SEED_LEN>;
 
   // Ensure Fujisaki-Okamoto transform, used during decapsulation, is constant-time
-  const uint32_t cond = kyber_utils::ct_memcmp(ctxt_t(data + doff2, doff3 - doff2), ctxt_t(data + doff3, doff4 - doff3));
-  kyber_utils::ct_cond_memcpy(cond, _sink, seed_t(data + doff4, doff5 - doff4), seed_t(data + doff5, doff6 - doff5));
+  const uint32_t cond = ml_kem_utils::ct_memcmp(ctxt_t(data + doff2, doff3 - doff2), ctxt_t(data + doff3, doff4 - doff3));
+  ml_kem_utils::ct_cond_memcpy(cond, _sink, seed_t(data + doff4, doff5 - doff4), seed_t(data + doff5, doff6 - doff5));
 
   // Just so that optimizer doesn't remove above function calls !
   return static_cast<uint8_t>(poly_vec[0].raw() ^ poly_vec[poly_vec.size() - 1].raw()) ^ // result of generating vector of polynomials
@@ -70,14 +70,14 @@ prepare_inputs(dudect_config_t* const c, uint8_t* const input_data, uint8_t* con
 }
 
 dudect_state_t
-test_kyber512_kem()
+test_ml_kem_512()
 {
-  constexpr size_t chunk_size = SEED_LEN +                           // bytes holding seed `sigma`
-                                1 +                                  // single byte nonce
-                                kyber512_kem::CIPHER_TEXT_BYTE_LEN + // bytes holding received cipher text
-                                kyber512_kem::CIPHER_TEXT_BYTE_LEN + // bytes for locally computed cipher text
-                                SEED_LEN +                           // bytes for first source buffer to copy from
-                                SEED_LEN;                            // bytes for second source buffer to copy from
+  constexpr size_t chunk_size = SEED_LEN +                         // bytes holding seed `sigma`
+                                1 +                                // single byte nonce
+                                ml_kem_512::CIPHER_TEXT_BYTE_LEN + // bytes holding received cipher text
+                                ml_kem_512::CIPHER_TEXT_BYTE_LEN + // bytes for locally computed cipher text
+                                SEED_LEN +                         // bytes for first source buffer to copy from
+                                SEED_LEN;                          // bytes for second source buffer to copy from
   constexpr size_t number_measurements = 1e5;
 
   dudect_config_t config = {
@@ -101,7 +101,7 @@ test_kyber512_kem()
 int
 main()
 {
-  if (test_kyber512_kem() != DUDECT_NO_LEAKAGE_EVIDENCE_YET) {
+  if (test_ml_kem_512() != DUDECT_NO_LEAKAGE_EVIDENCE_YET) {
     return EXIT_FAILURE;
   }
 

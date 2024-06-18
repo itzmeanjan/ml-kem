@@ -1,9 +1,9 @@
 #pragma once
-#include "kyber/internals/math/field.hpp"
+#include "ml_kem/internals/math/field.hpp"
 #include <array>
 #include <cstring>
 
-// (inverse) Number Theoretic Transform for degree-255 polynomial, over Kyber
+// (inverse) Number Theoretic Transform for degree-255 polynomial, over Ml_kem
 // Prime Field Zq | q = 3329
 namespace ntt {
 
@@ -182,7 +182,7 @@ intt(std::span<field::zq_t, N> poly)
 //
 // h = f * g mod X ^ 2 − ζ ^ (2 * br<7>(i) + 1) | i ∈ [0, 128)
 //
-// See page 6 of Kyber specification
+// See page 6 of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 static inline constexpr void
 basemul(std::span<const field::zq_t, 2> f, // degree-1 polynomial

@@ -1,8 +1,7 @@
-#include "kyber/internals/ml_kem.hpp"
-#include "kyber/internals/utility/utils.hpp"
+#include "ml_kem/internals/ml_kem.hpp"
 #include <gtest/gtest.h>
 
-// Given k, η1, η2, du, dv - Kyber parameters, this routine checks whether
+// Given k, η1, η2, du, dv - ML-KEM parameters, this routine checks whether
 //
 // - A new key pair can be generated for key establishment over insecure channel
 // - Key pair is for receiving party, its public key will be used by sender.
@@ -17,12 +16,12 @@
 // works as expected.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t bit_security_level>
 void
-test_kyber_kem()
+test_ml_kem_kem()
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_text_len(k, du, dv);
+  constexpr size_t pklen = ml_kem_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = ml_kem_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = ml_kem_utils::get_kem_cipher_text_len(k, du, dv);
   constexpr size_t sslen = 32;
 
   std::vector<uint8_t> d(slen);
@@ -55,17 +54,17 @@ test_kyber_kem()
   EXPECT_EQ(sender_key, receiver_key);
 }
 
-TEST(KyberKEM, Kyber512KeygenEncapsDecaps)
+TEST(Ml_kemKEM, Ml_kem512KeygenEncapsDecaps)
 {
-  test_kyber_kem<2, 3, 2, 10, 4, 128>();
+  test_ml_kem_kem<2, 3, 2, 10, 4, 128>();
 }
 
-TEST(KyberKEM, Kyber768KeygenEncapsDecaps)
+TEST(Ml_kemKEM, Ml_kem768KeygenEncapsDecaps)
 {
-  test_kyber_kem<3, 2, 2, 10, 4, 192>();
+  test_ml_kem_kem<3, 2, 2, 10, 4, 192>();
 }
 
-TEST(KyberKEM, Kyber1024KeygenEncapsDecaps)
+TEST(Ml_kemKEM, Ml_kem1024KeygenEncapsDecaps)
 {
-  test_kyber_kem<4, 2, 2, 11, 5, 256>();
+  test_ml_kem_kem<4, 2, 2, 11, 5, 256>();
 }

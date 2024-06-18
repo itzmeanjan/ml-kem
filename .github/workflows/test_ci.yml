@@ -1,4 +1,4 @@
-name: Test Kyber Key Encapsulation Mechanism
+name: Test Ml_kem Key Encapsulation Mechanism
 
 on:
   push:

@@ -1,6 +1,6 @@
 #pragma once
 #include "k_pke.hpp"
-#include "kyber/internals/utility/utils.hpp"
+#include "ml_kem/internals/utility/utils.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 #include "shake256.hpp"
@@ -15,9 +15,9 @@ template<size_t k, size_t eta1>
 static inline void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<const uint8_t, 32> z, // used in CCA-KEM
-       std::span<uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
-       std::span<uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey)
-  requires(kyber_params::check_keygen_params(k, eta1))
+       std::span<uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
+       std::span<uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey)
+  requires(ml_kem_params::check_keygen_params(k, eta1))
 {
   static constexpr size_t skoff0 = k * 12 * 32;
   static constexpr size_t skoff1 = skoff0 + pubkey.size();
@@ -52,10 +52,10 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result, it might fail because of malformed input public key")]] static inline bool
 encapsulate(std::span<const uint8_t, 32> m,
-            std::span<const uint8_t, kyber_utils::get_kem_public_key_len(k)> pubkey,
-            std::span<uint8_t, kyber_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
+            std::span<const uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
+            std::span<uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
-  requires(kyber_params::check_encap_params(k, eta1, eta2, du, dv))
+  requires(ml_kem_params::check_encap_params(k, eta1, eta2, du, dv))
 {
   std::array<uint8_t, m.size() + sha3_256::DIGEST_LEN> g_in{};
   std::array<uint8_t, sha3_512::DIGEST_LEN> g_out{};
@@ -99,10 +99,10 @@ encapsulate(std::span<const uint8_t, 32> m,
 // See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline void
-decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey,
-            std::span<const uint8_t, kyber_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
+decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey,
+            std::span<const uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
-  requires(kyber_params::check_decap_params(k, eta1, eta2, du, dv))
+  requires(ml_kem_params::check_decap_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t sklen = k * 12 * 32;
   constexpr size_t pklen = k * 12 * 32 + 32;
@@ -149,8 +149,8 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
 
   // line 9-12 of algorithm 17, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;
-  const uint32_t cond = kyber_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
-  kyber_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(_g_out0), kdf_t(z));
+  const uint32_t cond = ml_kem_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
+  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(_g_out0), kdf_t(z));
 }
 
 }

@@ -1,4 +1,4 @@
-#include "kyber/internals/poly/compression.hpp"
+#include "ml_kem/internals/poly/compression.hpp"
 #include <gtest/gtest.h>
 
 // Decompression error that can happen for some given `d` s.t.
@@ -7,7 +7,7 @@
 //
 // |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
 //
-// See eq. 2 of Kyber specification
+// See eq. 2 of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t d>
 static inline constexpr size_t
@@ -41,8 +41,8 @@ test_zq_compression()
   for (size_t i = 0; i < itr_cnt; i++) {
     const auto a = field::zq_t::random(prng);
 
-    const auto b = kyber_utils::compress<d>(a);
-    const auto c = kyber_utils::decompress<d>(b);
+    const auto b = ml_kem_utils::compress<d>(a);
+    const auto c = ml_kem_utils::decompress<d>(b);
 
     const auto a_canon = a.raw();
     const auto c_canon = c.raw();
@@ -64,7 +64,7 @@ test_zq_compression()
   return res;
 }
 
-TEST(KyberKEM, CompressDecompressZq)
+TEST(Ml_kemKEM, CompressDecompressZq)
 {
   EXPECT_TRUE((test_zq_compression<11, 1ul << 20>()));
   EXPECT_TRUE((test_zq_compression<10, 1ul << 20>()));

@@ -1,16 +1,16 @@
 #include "bench_helper.hpp"
-#include "kyber/internals/ml_kem.hpp"
+#include "ml_kem/internals/ml_kem.hpp"
 #include "x86_64_cpu_ticks.hpp"
 #include <benchmark/benchmark.h>
 
-// Benchmarking IND-CCA2-secure Kyber KEM key generation algorithm
+// Benchmarking IND-CCA2-secure Ml_kem KEM key generation algorithm
 template<size_t k, size_t eta1, size_t bit_security_level>
 void
 bench_keygen(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
+  constexpr size_t pklen = ml_kem_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = ml_kem_utils::get_kem_secret_key_len(k);
 
   std::vector<uint8_t> d(slen);
   std::vector<uint8_t> z(slen);
@@ -57,15 +57,15 @@ bench_keygen(benchmark::State& state)
 #endif
 }
 
-// Benchmarking IND-CCA2-secure Kyber KEM encapsulation algorithm
+// Benchmarking IND-CCA2-secure Ml_kem KEM encapsulation algorithm
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t bit_security_level>
 void
 bench_encapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_text_len(k, du, dv);
+  constexpr size_t pklen = ml_kem_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = ml_kem_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = ml_kem_utils::get_kem_cipher_text_len(k, du, dv);
   constexpr size_t klen = 32;
 
   std::vector<uint8_t> d(slen);
@@ -123,15 +123,15 @@ bench_encapsulate(benchmark::State& state)
 #endif
 }
 
-// Benchmarking IND-CCA2-secure Kyber KEM decapsulation algorithm
+// Benchmarking IND-CCA2-secure Ml_kem KEM decapsulation algorithm
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv, size_t bit_security_level>
 void
 bench_decapsulate(benchmark::State& state)
 {
   constexpr size_t slen = 32;
-  constexpr size_t pklen = kyber_utils::get_kem_public_key_len(k);
-  constexpr size_t sklen = kyber_utils::get_kem_secret_key_len(k);
-  constexpr size_t ctlen = kyber_utils::get_kem_cipher_text_len(k, du, dv);
+  constexpr size_t pklen = ml_kem_utils::get_kem_public_key_len(k);
+  constexpr size_t sklen = ml_kem_utils::get_kem_secret_key_len(k);
+  constexpr size_t ctlen = ml_kem_utils::get_kem_cipher_text_len(k, du, dv);
   constexpr size_t klen = 32;
 
   std::vector<uint8_t> d(slen);
@@ -193,17 +193,17 @@ bench_decapsulate(benchmark::State& state)
 #endif
 }
 
-// Kyber512
-BENCHMARK(bench_keygen<2, 3, 128>)->Name("kyber512/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_encapsulate<2, 3, 2, 10, 4, 128>)->Name("kyber512/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_decapsulate<2, 3, 2, 10, 4, 128>)->Name("kyber512/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+// Ml_kem512
+BENCHMARK(bench_keygen<2, 3, 128>)->Name("ml_kem512/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<2, 3, 2, 10, 4, 128>)->Name("ml_kem512/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<2, 3, 2, 10, 4, 128>)->Name("ml_kem512/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 
-// Kyber768
-BENCHMARK(bench_keygen<3, 2, 192>)->Name("kyber768/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_encapsulate<3, 2, 2, 10, 4, 192>)->Name("kyber768/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_decapsulate<3, 2, 2, 10, 4, 192>)->Name("kyber768/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+// Ml_kem768
+BENCHMARK(bench_keygen<3, 2, 192>)->Name("ml_kem768/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<3, 2, 2, 10, 4, 192>)->Name("ml_kem768/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<3, 2, 2, 10, 4, 192>)->Name("ml_kem768/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
 
-// Kyber1024
-BENCHMARK(bench_keygen<4, 2, 256>)->Name("kyber1024/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_encapsulate<4, 2, 2, 11, 5, 256>)->Name("kyber1024/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
-BENCHMARK(bench_decapsulate<4, 2, 2, 11, 5, 256>)->Name("kyber1024/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+// Ml_kem1024
+BENCHMARK(bench_keygen<4, 2, 256>)->Name("ml_kem1024/keygen")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_encapsulate<4, 2, 2, 11, 5, 256>)->Name("ml_kem1024/encap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);
+BENCHMARK(bench_decapsulate<4, 2, 2, 11, 5, 256>)->Name("ml_kem1024/decap")->ComputeStatistics("min", compute_min)->ComputeStatistics("max", compute_max);

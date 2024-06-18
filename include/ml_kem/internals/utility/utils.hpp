@@ -2,7 +2,7 @@
 #include "subtle.hpp"
 #include <span>
 
-namespace kyber_utils {
+namespace ml_kem_utils {
 
 // Given two byte arrays of equal length, this routine can be used for comparing them in constant-time,
 // producing truth value (0xffffffff) in case of equality, otherwise it returns false value (0x00000000).

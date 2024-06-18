@@ -42,7 +42,7 @@ test_ml_kem_kem()
   auto _sender_key = std::span<uint8_t, sslen>(sender_key);
   auto _receiver_key = std::span<uint8_t, sslen>(receiver_key);
 
-  prng::prng_t<bit_security_level> prng{};
+  ml_kem_prng::prng_t<bit_security_level> prng{};
   prng.read(d);
   prng.read(z);
   prng.read(m);

@@ -36,7 +36,7 @@ test_zq_compression()
   requires(itr_cnt > 0)
 {
   bool res = true;
-  prng::prng_t<256> prng{};
+  ml_kem_prng::prng_t<256> prng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {
     const auto a = field::zq_t::random(prng);

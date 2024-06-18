@@ -21,7 +21,7 @@ test_serialize_deserialize()
   std::vector<field::zq_t> dst(ntt::N);
   std::vector<uint8_t> bytes(blen);
 
-  prng::prng_t<256> prng{};
+  ml_kem_prng::prng_t<256> prng{};
 
   for (size_t i = 0; i < ntt::N; i++) {
     src[i] = field::zq_t::random(prng);

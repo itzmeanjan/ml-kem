@@ -3,7 +3,7 @@
 #include <limits>
 #include <random>
 
-namespace prng {
+namespace ml_kem_prng {
 
 // Pseudo Random Number Generator s.t. N (>0) -many random bytes are read from SHAKE256 Xof state, arbitrary many times s.t. SHAKE256 state is obtained by
 //

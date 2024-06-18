@@ -57,7 +57,7 @@ main()
   auto _shrd_key1 = std::span<uint8_t, KEY_LEN>(shrd_key1);
 
   // Pseudo-randomness source
-  prng::prng_t<128> prng{};
+  ml_kem_prng::prng_t<128> prng{};
 
   // Fill up seeds using PRNG
   prng.read(_d);

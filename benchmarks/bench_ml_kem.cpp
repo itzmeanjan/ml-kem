@@ -22,7 +22,7 @@ bench_keygen(benchmark::State& state)
   auto _pkey = std::span<uint8_t, pklen>(pkey);
   auto _skey = std::span<uint8_t, sklen>(skey);
 
-  prng::prng_t<bit_security_level> prng{};
+  ml_kem_prng::prng_t<bit_security_level> prng{};
   prng.read(_d);
   prng.read(_z);
 
@@ -84,7 +84,7 @@ bench_encapsulate(benchmark::State& state)
   auto _cipher = std::span<uint8_t, ctlen>(cipher);
   auto _sender_key = std::span<uint8_t, klen>(sender_key);
 
-  prng::prng_t<bit_security_level> prng{};
+  ml_kem_prng::prng_t<bit_security_level> prng{};
   prng.read(_d);
   prng.read(_z);
 
@@ -152,7 +152,7 @@ bench_decapsulate(benchmark::State& state)
   auto _sender_key = std::span<uint8_t, klen>(sender_key);
   auto _receiver_key = std::span<uint8_t, klen>(receiver_key);
 
-  prng::prng_t<bit_security_level> prng{};
+  ml_kem_prng::prng_t<bit_security_level> prng{};
   prng.read(_d);
   prng.read(_z);
 

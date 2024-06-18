@@ -1,31 +1,16 @@
 #pragma once
+#include "k_pke.hpp"
 #include "kyber/internals/utility/utils.hpp"
-#include "pke.hpp"
 #include "sha3_256.hpp"
 #include "sha3_512.hpp"
 #include "shake256.hpp"
 #include <algorithm>
-#include <array>
-#include <cstdint>
 
-// IND-CCA2-secure Key Encapsulation Mechanism
-namespace kem {
+// Key Encapsulation Mechanism
+namespace ml_kem {
 
-// Kyber CCAKEM key generation algorithm, which takes two parameters `k` & `η1`
-// ( read eta1 ) and generates byte serialized public key and secret key of
-// following length
-//
-// public key: (k * 12 * 32 + 32) -bytes wide
-// secret key: (k * 24 * 32 + 96) -bytes wide [ includes public key ]
-//
-// See algorithm 7 defined in Kyber specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
-//
-// Note, this routine allows you to pass two 32 -bytes seeds ( see first &
-// second parameter ), which is designed this way for ease of writing test cases
-// against known answer tests, obtained from Kyber reference implementation
-// https://github.com/pq-crystals/kyber.git. It also helps in properly
-// benchmarking underlying KEM's key generation implementation.
+// ML-KEM key generation algorithm, generating byte serialized public key and secret key, given 32 -bytes seed `d` and `z`.
+// See algorithm 15 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1>
 static inline void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
@@ -34,20 +19,19 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey)
   requires(kyber_params::check_keygen_params(k, eta1))
 {
-  constexpr size_t skoff0 = k * 12 * 32;
-  constexpr size_t skoff1 = skoff0 + pubkey.size();
-  constexpr size_t skoff2 = skoff1 + 32;
+  static constexpr size_t skoff0 = k * 12 * 32;
+  static constexpr size_t skoff1 = skoff0 + pubkey.size();
+  static constexpr size_t skoff2 = skoff1 + 32;
 
   auto _seckey0 = seckey.template subspan<0, skoff0>();
   auto _seckey1 = seckey.template subspan<skoff0, skoff1 - skoff0>();
   auto _seckey2 = seckey.template subspan<skoff1, skoff2 - skoff1>();
   auto _seckey3 = seckey.template subspan<skoff2, seckey.size() - skoff2>();
 
-  pke::keygen<k, eta1>(d, pubkey, _seckey0); // CPAPKE key generation
+  k_pke::keygen<k, eta1>(d, pubkey, _seckey0);
   std::copy(pubkey.begin(), pubkey.end(), _seckey1.begin());
   std::copy(z.begin(), z.end(), _seckey3.begin());
 
-  // hash public key
   sha3_256::sha3_256_t hasher{};
   hasher.absorb(pubkey);
   hasher.finalize();
@@ -55,29 +39,16 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
   hasher.reset();
 }
 
-// Given (k * 12 * 32 + 32) -bytes public key and 32 -bytes seed ( used for
-// deriving 32 -bytes message & 32 -bytes random coin ), this routine computes
-// cipher text of length (k * du * 32 + dv * 32) -bytes which can be shared with
-// recipient party ( having respective secret key ) over insecure channel.
+// Given ML-KEM public key and 32 -bytes seed ( used for deriving 32 -bytes message & 32 -bytes random coin ), this routine computes
+// ML-KEM cipher text which can be shared with recipient party ( owning corresponding secret key ) over insecure channel.
 //
-// It also computes a fixed length 32 -bytes shared secret, which can be used for
-// symmetric key encryption between these two participating entities. Alternatively
-// they might choose to derive longer keys from this shared secret.
+// It also computes a fixed length 32 -bytes shared secret, which can be used for fast symmetric key encryption between these
+// two participating entities. Alternatively they might choose to derive longer keys from this shared secret. Other side of
+// communication should also be able to generate same 32 -byte shared secret, after successful decryption of cipher text.
 //
-// Other side of communication should also be able to generate same 32 -byte shared secret,
-// after successful decryption of cipher text.
+// If invalid ML-KEM public key is input, this function execution will fail, returning false.
 //
-// If invalid public key is input, this function execution will fail, returning false,
-// otherwise it will return true, while producing both cipher text and shared secret.
-//
-// See algorithm 8 defined in Kyber specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
-//
-// Note, this routine allows you to pass 32 -bytes seed ( see first parameter ),
-// which is designed this way for ease of writing test cases against known
-// answer tests, obtained from Kyber reference implementation
-// https://github.com/pq-crystals/kyber.git. It also helps in properly
-// benchmarking underlying KEM's encapsulation implementation.
+// See algorithm 16 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result, it might fail because of malformed input public key")]] static inline bool
 encapsulate(std::span<const uint8_t, 32> m,
@@ -109,8 +80,9 @@ encapsulate(std::span<const uint8_t, 32> m,
   h512.finalize();
   h512.digest(_g_out);
 
-  const auto has_mod_check_passed = pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, _g_out1, cipher);
+  const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, _g_out1, cipher);
   if (!has_mod_check_passed) {
+    // Got an invalid public key
     return has_mod_check_passed;
   }
 
@@ -118,20 +90,13 @@ encapsulate(std::span<const uint8_t, 32> m,
   return true;
 }
 
-// Given (k * 24 * 32 + 96) -bytes secret key and (k * du * 32 + dv * 32) -bytes
-// encrypted ( cipher ) text, this routine recovers 32 -bytes plain text which
-// was encrypted by sender, using respective public key, associated with this
-// secret key.
-
-// Recovered 32 -bytes plain text is used for deriving same key stream ( using
-// SHAKE256 key derivation function ), which is the shared secret key between
-// two communicating parties, over insecure channel. Using returned KDF (
-// SHAKE256 object ) both parties can reach to same shared secret key ( of
-// arbitrary length ), which will be used for encrypting traffic using symmetric
-// key primitives.
+// Given ML-KEM secret key and cipher text, this routine recovers 32 -bytes plain text which was encrypted by sender,
+// using ML-KEM public key, associated with this secret key.
 //
-// See algorithm 9 defined in Kyber specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// Recovered 32 -bytes plain text is used for deriving a 32 -bytes shared secret key, which can now be
+// used for encrypting communication between two participating parties, using fast symmetric key algorithms.
+//
+// See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 static inline void
 decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> seckey,
@@ -165,7 +130,7 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   auto _g_out0 = _g_out.template first<shared_secret.size()>();
   auto _g_out1 = _g_out.template last<32>();
 
-  pke::decrypt<k, du, dv>(pke_sk, cipher, _g_in0);
+  k_pke::decrypt<k, du, dv>(pke_sk, cipher, _g_in0);
   std::copy(h.begin(), h.end(), _g_in1.begin());
 
   sha3_512::sha3_512_t h512{};
@@ -180,9 +145,9 @@ decapsulate(std::span<const uint8_t, kyber_utils::get_kem_secret_key_len(k)> sec
   xof256.squeeze(j_out);
 
   // Explicitly ignore return value, because public key, held as part of secret key is *assumed* to be valid.
-  (void)pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
+  (void)k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
 
-  // line 7-11 of algorithm 9, in constant-time
+  // line 9-12 of algorithm 17, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;
   const uint32_t cond = kyber_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
   kyber_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(_g_out0), kdf_t(z));

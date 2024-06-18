@@ -1,5 +1,5 @@
 #pragma once
-#include "kyber/internals/kem.hpp"
+#include "kyber/internals/ml_kem.hpp"
 
 namespace kyber512_kem {
 
@@ -40,7 +40,7 @@ keygen(std::span<const uint8_t, SEED_D_BYTE_LEN> d,
        std::span<uint8_t, PKEY_BYTE_LEN> pubkey,
        std::span<uint8_t, SKEY_BYTE_LEN> seckey)
 {
-  kem::keygen<k, η1>(d, z, pubkey, seckey);
+  ml_kem::keygen<k, η1>(d, z, pubkey, seckey);
 }
 
 // Given seed `m` and a ML-KEM-512 public key, this routine computes a ML-KEM-512 cipher text and a fixed size shared secret.
@@ -51,14 +51,14 @@ encapsulate(std::span<const uint8_t, SEED_M_BYTE_LEN> m,
             std::span<uint8_t, CIPHER_TEXT_BYTE_LEN> cipher,
             std::span<uint8_t, SHARED_SECRET_BYTE_LEN> shared_secret)
 {
-  return kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
+  return ml_kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
 }
 
 // Given a ML-KEM-512 secret key and a cipher text, this routine computes a fixed size shared secret.
 inline void
 decapsulate(std::span<const uint8_t, SKEY_BYTE_LEN> seckey, std::span<const uint8_t, CIPHER_TEXT_BYTE_LEN> cipher, std::span<uint8_t, SHARED_SECRET_BYTE_LEN> shared_secret)
 {
-  kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher, shared_secret);
+  ml_kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher, shared_secret);
 }
 
 }

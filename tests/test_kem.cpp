@@ -1,4 +1,4 @@
-#include "kyber/internals/kem.hpp"
+#include "kyber/internals/ml_kem.hpp"
 #include "kyber/internals/utility/utils.hpp"
 #include <gtest/gtest.h>
 
@@ -48,9 +48,9 @@ test_kyber_kem()
   prng.read(z);
   prng.read(m);
 
-  kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
-  (void)kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
-  kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher, _receiver_key);
+  ml_kem::keygen<k, eta1>(_d, _z, _pkey, _skey);
+  (void)ml_kem::encapsulate<k, eta1, eta2, du, dv>(_m, _pkey, _cipher, _sender_key);
+  ml_kem::decapsulate<k, eta1, eta2, du, dv>(_skey, _cipher, _receiver_key);
 
   EXPECT_EQ(sender_key, receiver_key);
 }

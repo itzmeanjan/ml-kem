@@ -14,7 +14,7 @@ DEP_IFLAGS = -I $(SHA3_INC_DIR) -I $(SUBTLE_INC_DIR)
 DUDECT_DEP_IFLAGS = $(DEP_IFLAGS) -I $(DUDECT_INC_DIR)
 
 SRC_DIR = include
-KYBER_SOURCES := $(wildcard $(SRC_DIR)/*.hpp)
+ML_KEM_SOURCES := $(shell find $(SRC_DIR) -name '*.hpp')
 BUILD_DIR = build
 DUDECT_BUILD_DIR = $(BUILD_DIR)/dudect
 ASAN_BUILD_DIR = $(BUILD_DIR)/asan
@@ -23,6 +23,7 @@ UBSAN_BUILD_DIR = $(BUILD_DIR)/ubsan
 TEST_DIR = tests
 DUDECT_TEST_DIR = $(TEST_DIR)/dudect
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
+TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
 DUDECT_TEST_SOURCES := $(wildcard $(DUDECT_TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 ASAN_TEST_OBJECTS := $(addprefix $(ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
@@ -58,16 +59,16 @@ $(BUILD_DIR):
 	mkdir -p $@
 
 $(SHA3_INC_DIR):
-	git submodule update --init
+	git submodule update --init sha3
 
 $(DUDECT_INC_DIR): $(SHA3_INC_DIR)
-	git submodule update --init
+	git submodule update --init dudect
 
 $(SUBTLE_INC_DIR): $(DUDECT_INC_DIR)
-	git submodule update --init
+	git submodule update --init subtle
 
 $(GTEST_PARALLEL): $(SUBTLE_INC_DIR)
-	git submodule update --init
+	git submodule update --init gtest-parallel
 
 $(BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
@@ -123,5 +124,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(KYBER_SOURCES) $(TEST_SOURCES) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^

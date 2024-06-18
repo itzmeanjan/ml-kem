@@ -1,27 +1,23 @@
 #pragma once
-#include "field.hpp"
-#include "ntt.hpp"
-#include "params.hpp"
-#include <cstring>
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/params.hpp"
 
-// IND-CPA-secure Public Key Encryption Scheme Utilities
-namespace kyber_utils {
+namespace ml_kem_utils {
 
-// Given a degree-255 polynomial, where significant portion of each ( total 256
-// of them ) coefficient ∈ [0, 2^l), this routine serializes the polynomial to a
-// byte array of length 32 * l -bytes
+// Given a degree-255 polynomial, where significant portion of each ( total 256 of them ) coefficient ∈ [0, 2^l),
+// this routine serializes the polynomial to a byte array of length 32 * l -bytes.
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// See algorithm 4 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline void
-encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr)
-  requires(kyber_params::check_l(l))
+static inline constexpr void
+encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_t, 32 * l> arr)
+  requires(ml_kem_params::check_l(l))
 {
   std::fill(arr.begin(), arr.end(), 0);
 
   if constexpr (l == 1) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t one = 0b1u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -32,7 +28,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
                (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) | (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0);
     }
   } else if constexpr (l == 4) {
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint32_t msk = 0b1111u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -40,7 +36,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
       arr[i] = (static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) | static_cast<uint8_t>(poly[off + 0].raw() & msk);
     }
   } else if constexpr (l == 5) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t mask5 = 0b11111u;
     constexpr uint32_t mask4 = 0b1111u;
     constexpr uint32_t mask3 = 0b111u;
@@ -67,7 +63,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
       arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3);
     }
   } else if constexpr (l == 10) {
-    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
     constexpr uint32_t mask6 = 0b111111u;
     constexpr uint32_t mask4 = 0b1111u;
     constexpr uint32_t mask2 = 0b11u;
@@ -88,7 +84,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
       arr[boff + 4] = static_cast<uint8_t>(t3 >> 2);
     }
   } else if constexpr (l == 11) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint32_t mask8 = 0b11111111u;
     constexpr uint32_t mask7 = 0b1111111u;
     constexpr uint32_t mask6 = 0b111111u;
@@ -126,7 +122,7 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
   } else {
     static_assert(l == 12, "l must be equal to 12 !");
 
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint32_t mask4 = 0b1111u;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -143,47 +139,45 @@ encode(std::span<const field::zq_t, ntt::N> poly, std::span<uint8_t, 32 * l> arr
   }
 }
 
-// Given a byte array of length 32 * l -bytes this routine deserializes it to a
-// polynomial of degree 255 s.t. significant portion of each ( total 256 of them
-// ) coefficient ∈ [0, 2^l)
+// Given a byte array of length 32 * l -bytes this routine deserializes it to a polynomial of degree 255 s.t. significant
+// portion of each ( total 256 of them ) coefficient ∈ [0, 2^l).
 //
-// See algorithm 3 described in section 1.1 ( page 7 ) of Kyber specification
-// https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf
+// See algorithm 5 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline void
-decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly)
-  requires(kyber_params::check_l(l))
+static inline constexpr void
+decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
+  requires(ml_kem_params::check_l(l))
 {
   if constexpr (l == 1) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t one = 0b1;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 3;
       const uint8_t byte = arr[i];
 
-      poly[off + 0] = field::zq_t((byte >> 0) & one);
-      poly[off + 1] = field::zq_t((byte >> 1) & one);
-      poly[off + 2] = field::zq_t((byte >> 2) & one);
-      poly[off + 3] = field::zq_t((byte >> 3) & one);
-      poly[off + 4] = field::zq_t((byte >> 4) & one);
-      poly[off + 5] = field::zq_t((byte >> 5) & one);
-      poly[off + 6] = field::zq_t((byte >> 6) & one);
-      poly[off + 7] = field::zq_t((byte >> 7) & one);
+      poly[off + 0] = ml_kem_field::zq_t((byte >> 0) & one);
+      poly[off + 1] = ml_kem_field::zq_t((byte >> 1) & one);
+      poly[off + 2] = ml_kem_field::zq_t((byte >> 2) & one);
+      poly[off + 3] = ml_kem_field::zq_t((byte >> 3) & one);
+      poly[off + 4] = ml_kem_field::zq_t((byte >> 4) & one);
+      poly[off + 5] = ml_kem_field::zq_t((byte >> 5) & one);
+      poly[off + 6] = ml_kem_field::zq_t((byte >> 6) & one);
+      poly[off + 7] = ml_kem_field::zq_t((byte >> 7) & one);
     }
   } else if constexpr (l == 4) {
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint8_t mask = 0b1111;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 1;
       const uint8_t byte = arr[i];
 
-      poly[off + 0] = field::zq_t((byte >> 0) & mask);
-      poly[off + 1] = field::zq_t((byte >> 4) & mask);
+      poly[off + 0] = ml_kem_field::zq_t((byte >> 0) & mask);
+      poly[off + 1] = ml_kem_field::zq_t((byte >> 4) & mask);
     }
   } else if constexpr (l == 5) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t mask5 = 0b11111;
     constexpr uint8_t mask4 = 0b1111;
     constexpr uint8_t mask3 = 0b111;
@@ -203,17 +197,17 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
       const auto t6 = static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) | static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
       const auto t7 = static_cast<uint16_t>((arr[boff + 4] >> 3) & mask5);
 
-      poly[poff + 0] = field::zq_t(t0);
-      poly[poff + 1] = field::zq_t(t1);
-      poly[poff + 2] = field::zq_t(t2);
-      poly[poff + 3] = field::zq_t(t3);
-      poly[poff + 4] = field::zq_t(t4);
-      poly[poff + 5] = field::zq_t(t5);
-      poly[poff + 6] = field::zq_t(t6);
-      poly[poff + 7] = field::zq_t(t7);
+      poly[poff + 0] = ml_kem_field::zq_t(t0);
+      poly[poff + 1] = ml_kem_field::zq_t(t1);
+      poly[poff + 2] = ml_kem_field::zq_t(t2);
+      poly[poff + 3] = ml_kem_field::zq_t(t3);
+      poly[poff + 4] = ml_kem_field::zq_t(t4);
+      poly[poff + 5] = ml_kem_field::zq_t(t5);
+      poly[poff + 6] = ml_kem_field::zq_t(t6);
+      poly[poff + 7] = ml_kem_field::zq_t(t7);
     }
   } else if constexpr (l == 10) {
-    constexpr size_t itr_cnt = ntt::N >> 2;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
     constexpr uint8_t mask6 = 0b111111;
     constexpr uint8_t mask4 = 0b1111;
     constexpr uint8_t mask2 = 0b11;
@@ -227,13 +221,13 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
       const auto t2 = (static_cast<uint16_t>(arr[boff + 3] & mask6) << 4) | static_cast<uint16_t>(arr[boff + 2] >> 4);
       const auto t3 = (static_cast<uint16_t>(arr[boff + 4]) << 2) | static_cast<uint16_t>(arr[boff + 3] >> 6);
 
-      poly[poff + 0] = field::zq_t(t0);
-      poly[poff + 1] = field::zq_t(t1);
-      poly[poff + 2] = field::zq_t(t2);
-      poly[poff + 3] = field::zq_t(t3);
+      poly[poff + 0] = ml_kem_field::zq_t(t0);
+      poly[poff + 1] = ml_kem_field::zq_t(t1);
+      poly[poff + 2] = ml_kem_field::zq_t(t2);
+      poly[poff + 3] = ml_kem_field::zq_t(t3);
     }
   } else if constexpr (l == 11) {
-    constexpr size_t itr_cnt = ntt::N >> 3;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
     constexpr uint8_t mask7 = 0b1111111;
     constexpr uint8_t mask6 = 0b111111;
     constexpr uint8_t mask5 = 0b11111;
@@ -255,19 +249,19 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
       const auto t6 = (static_cast<uint16_t>(arr[boff + 9] & mask5) << 6) | static_cast<uint16_t>(arr[boff + 8] >> 2);
       const auto t7 = (static_cast<uint16_t>(arr[boff + 10]) << 3) | static_cast<uint16_t>(arr[boff + 9] >> 5);
 
-      poly[poff + 0] = field::zq_t(t0);
-      poly[poff + 1] = field::zq_t(t1);
-      poly[poff + 2] = field::zq_t(t2);
-      poly[poff + 3] = field::zq_t(t3);
-      poly[poff + 4] = field::zq_t(t4);
-      poly[poff + 5] = field::zq_t(t5);
-      poly[poff + 6] = field::zq_t(t6);
-      poly[poff + 7] = field::zq_t(t7);
+      poly[poff + 0] = ml_kem_field::zq_t(t0);
+      poly[poff + 1] = ml_kem_field::zq_t(t1);
+      poly[poff + 2] = ml_kem_field::zq_t(t2);
+      poly[poff + 3] = ml_kem_field::zq_t(t3);
+      poly[poff + 4] = ml_kem_field::zq_t(t4);
+      poly[poff + 5] = ml_kem_field::zq_t(t5);
+      poly[poff + 6] = ml_kem_field::zq_t(t6);
+      poly[poff + 7] = ml_kem_field::zq_t(t7);
     }
   } else {
     static_assert(l == 12, "l must be equal to 12 !");
 
-    constexpr size_t itr_cnt = ntt::N >> 1;
+    constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
     constexpr uint8_t mask4 = 0b1111;
 
     for (size_t i = 0; i < itr_cnt; i++) {
@@ -277,8 +271,9 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<field::zq_t, ntt::N> poly
       const auto t0 = (static_cast<uint16_t>(arr[boff + 1] & mask4) << 8) | static_cast<uint16_t>(arr[boff + 0]);
       const auto t1 = (static_cast<uint16_t>(arr[boff + 2]) << 4) | static_cast<uint16_t>(arr[boff + 1] >> 4);
 
-      poly[poff + 0] = field::zq_t(t0);
-      poly[poff + 1] = field::zq_t(t1);
+      // Read line (786-792) of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+      poly[poff + 0] = ml_kem_field::zq_t::from_non_reduced(t0);
+      poly[poff + 1] = ml_kem_field::zq_t::from_non_reduced(t1);
     }
   }
 }

@@ -1,27 +1,27 @@
 > [!CAUTION]
-> This Kyber implementation is conformant with Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, be careful !*
+> This ML-KEM implementation is conformant with ML-KEM draft standard https://doi.org/10.6028/NIST.FIPS.203.ipd and I also *try* to make it timing leakage free, using **dudect** (see https://github.com/oreparaz/dudect) -based tests, but be informed that this implementation is not yet audited. *If you consider using it in production, please be careful !*
 
-# kyber
-CRYSTALS-Kyber: Post-Quantum Public-key Encryption &amp; Key-establishment Algorithm
+# ML-KEM (formerly known as Kyber)
+Module-Lattice -based Key Encapsulation Mechanism Standard by NIST.
 
 ## Motivation
 
-Kyber is being standardized by NIST as post-quantum secure key encapsulation mechanism (KEM), which can be used for key establishment.
+ML-KEM is being standardized by NIST as post-quantum secure key encapsulation mechanism (KEM), which can be used for key establishment, between two parties, communicating over insecure channel.
 
-Kyber offers an *IND-CCA2-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
+ML-KEM offers an *IND-CCA-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
 
-Kyber Key Encapsulation Mechanism is built on top of *IND-CPA-secure Kyber Public Key Encryption*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure Kyber PKE* - giving us the *IND-CCA2-secure KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel over public & insecure channel, can generate a shared secret key ( of arbitrary byte length ) from a key derivation function ( i.e. KDF which is SHAKE256 Xof in this context ) which is obtained by both of these parties as result of seeding SHAKE256 Xof with same secret. This secret is 32 -bytes and that's what is communicated by sender to receiver using underlying Kyber PKE scheme.
+ML-KEM is built on top of *IND-CPA-secure K-PKE*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure K-PKE* - giving us the *IND-CCA-secure ML-KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel, over public & insecure channel, can generate a 32 -bytes shared secret key. Now they can be use this 32 -bytes shared secret key in any symmetric key primitive, either for encrypting their communication (in much faster way) or deriving new/ longer keys.
 
 Algorithm | Input | Output
 --- | :-: | --:
-KEM KeyGen | - | Public Key and Secret Key
-Encapsulation | Public Key | Cipher Text and SHAKE256 KDF
-Decapsulation | Secret Key and Cipher Text | SHAKE256 KDF
+KeyGen | - | Public Key and Secret Key
+Encapsulation | Public Key | Cipher Text and 32B Shared Secret
+Decapsulation | Secret Key and Cipher Text | 32B Shared Secret
 
-Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usage](#usage) ) C++ library implementing Kyber KEM, supporting Kyber-{512, 768, 1024} parameter sets, as defined in table 1 of Kyber specification. `sha3`, `subtle` and `dudect` (for timing leakage tests) are dependencies of this library, which are pinned to specific git commits, using git submodule.
+Here I'm maintaining `kyber` - a C++20 header-only `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM draft standard. It's pretty easy to use, see [usage](#usage).
 
 > [!NOTE]
-> Find Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf - this is the document that I followed when implementing Kyber. I suggest you go through the specification to get an in-depth understanding of Kyber PQC suite.
+> Find ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
 
 ## Prerequisites
 
@@ -29,13 +29,10 @@ Here I'm maintaining `kyber` - a header-only and easy-to-use ( see more in [usag
 
 ```bash
 $ clang++ --version
-Ubuntu clang version 17.0.2 (1~exp1ubuntu2.1)
+Ubuntu clang version 17.0.6 (9ubuntu1)
 Target: x86_64-pc-linux-gnu
 Thread model: posix
 InstalledDir: /usr/bin
-
-$  g++ --version
-g++ (Ubuntu 13.2.0-4ubuntu3) 13.2.0
 ```
 
 - Build tools such as `make`, `cmake`.
@@ -48,18 +45,18 @@ $ cmake --version
 cmake version 3.25.1
 ```
 
-- For testing Kyber KEM implementation, you need to globally install `google-test` library and headers. Follow [this](https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project) guide, if you don't have it installed.
-- For benchmarking Kyber KEM implementation, targeting CPU systems, you'll need to have `google-benchmark` header and library globally installed. I found guide @ https://github.com/google/benchmark#installation helpful.
+- For testing ML-KEM implementation, you need to globally install `google-test` library and headers. Follow guide @ https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project, if you don't have it installed.
+- For benchmarking ML-KEM implementation, you'll need to have `google-benchmark` header and library globally installed. I found guide @ https://github.com/google/benchmark#installation helpful.
 
 > [!NOTE]
-> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
+> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
 
 > [!TIP]
-> Git submodule based dependencies will mostly be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init` from inside the root of this repository.
+> Git submodule based dependencies will normally be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init` from inside the root of this repository.
 
 ## Testing
 
-For testing functional correctness and conformance with Kyber specification, you have to issue
+For testing functional correctness of this implementation and conformance with ML-KEM draft standard, you have to issue
 
 > [!NOTE]
 > Known Answer Test (KAT) files living in [this](./kats/) directory are generated by following (reproducible) steps, described in https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
@@ -71,24 +68,22 @@ make ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled
 ```
 
 ```bash
-[10/10] KyberKEM.ArithmeticOverZq (149 ms)
-PASSED TESTS (10/10):
-       1 ms: build/test.out KyberKEM.NumberTheoreticTransform
-       1 ms: build/test.out KyberKEM.PolynomialSerialization
-       1 ms: build/test.out KyberKEM.Kyber768KeygenEncapsDecaps
-       2 ms: build/test.out KyberKEM.Kyber512KeygenEncapsDecaps
-       2 ms: build/test.out KyberKEM.Kyber1024KeygenEncapsDecaps
-      16 ms: build/test.out KyberKEM.Kyber512KnownAnswerTests
-      21 ms: build/test.out KyberKEM.Kyber1024KnownAnswerTests
-      22 ms: build/test.out KyberKEM.Kyber768KnownAnswerTests
-      99 ms: build/test.out KyberKEM.CompressDecompressZq
-     149 ms: build/test.out KyberKEM.ArithmeticOverZq
+PASSED TESTS (9/9):
+       3 ms: build/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
+       3 ms: build/test.out ML_KEM.PolynomialSerialization
+       4 ms: build/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
+       4 ms: build/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
+      41 ms: build/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
+      63 ms: build/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
+      64 ms: build/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
+     226 ms: build/test.out ML_KEM.CompressDecompressZq
+     284 ms: build/test.out ML_KEM.ArithmeticOverZq
 ```
 
 In case you're interested in running timing leakage tests using `dudect`, execute following
 
 > [!NOTE]
-> `dudect` is integrated into this library implementation of Kyber KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
+> `dudect` is integrated into this library implementation of ML-KEM to find any sort of timing leakages. It checks for constant-timeness of all *vital* functions including Fujisaki-Okamoto transform, used in decapsulation step. It doesn't check constant-timeness of function which samples public matrix `A`, because that fails the check anyway, due to use of uniform rejection sampling. As matrix `A` is public, it's not critical that it must be *strictly* constant-time.
 
 ```bash
 # Can only be built and run x86_64 machine.
@@ -98,9 +93,9 @@ make dudect_test_build -j
 # Before running the constant-time tests, it's a good idea to put all CPU cores on "performance" mode.
 # You may find guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md helpful.
 
-timeout 10m taskset -c 0 ./build/dudect/test_kyber512_kem.out
-timeout 10m taskset -c 0 ./build/dudect/test_kyber768_kem.out
-timeout 10m taskset -c 0 ./build/dudect/test_kyber1024_kem.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_512.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_768.out
+timeout 10m taskset -c 0 ./build/dudect/test_ml_kem_1024.out
 ```
 
 > [!TIP]
@@ -126,257 +121,254 @@ meas:   59.97 M, max t:   +2.64, max tau: 3.41e-04, (5/tau)^2: 2.14e+08. For the
 
 ## Benchmarking
 
-For benchmarking Kyber KEM routines ( i.e. keygen, encaps and decaps ) for various suggested parameter sets, you have to issue.
+For benchmarking ML-KEM public functions such as keygen, encaps and decaps, for various suggested parameter sets, you have to issue.
 
 ```bash
-make benchmark  # If you haven't built google-benchmark library with libPFM support.
-make perf       # If you have built google-benchmark library with libPFM support.
+make benchmark -j  # If you haven't built google-benchmark library with libPFM support.
+make perf -j       # If you have built google-benchmark library with libPFM support.
 ```
-
-> [!NOTE]
-> Benchmarking expects presence of `google-benchmark` header and library in global namespace ( so that it can be found by the compiler ).
 
 > [!CAUTION]
 > When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md.
 
 > [!NOTE]
-> `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing Kyber KEM routines in terms of CPU cycles. Follow [this](https://github.com/google/benchmark/blob/main/docs/perf_counters.md) for more details.
+> `make perf` - was issued when collecting following benchmarks. Notice, *cycles* column, denoting cost of executing ML-KEM functions, in terms of CPU cycles. Follow https://github.com/google/benchmark/blob/main/docs/perf_counters.md for more details.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
 
-Compiled with **gcc version 13.2.0 (Ubuntu 13.2.0-4ubuntu3)**.
+Compiled with **gcc (Ubuntu 14-20240412-0ubuntu1) 14.0.1 20240412**.
 
 ```bash
 $ uname -srm
-Linux 6.5.0-14-generic x86_64
+Linux 6.8.0-35-generic x86_64
 ```
 
 ```bash
-2024-01-22T19:09:06+04:00
+2024-06-18T21:12:04+04:00
 Running ./build/perf.out
-Run on (16 X 752.14 MHz CPU s)
+Run on (16 X 842.086 MHz CPU s)
 CPU Caches:
   L1 Data 48 KiB (x8)
   L1 Instruction 32 KiB (x8)
   L2 Unified 1280 KiB (x8)
   L3 Unified 18432 KiB (x1)
-Load Average: 1.35, 0.74, 0.64
----------------------------------------------------------------------------------------------------------
-Benchmark                        Time             CPU   Iterations     CYCLES items_per_second      rdtsc
----------------------------------------------------------------------------------------------------------
-kyber512/keygen_mean          14.1 us         14.1 us           10   64.8786k       71.1611k/s    35.056k
-kyber512/keygen_median        13.9 us         13.9 us           10   64.8328k       71.8418k/s    34.704k
-kyber512/keygen_stddev       0.363 us        0.362 us           10    533.391       1.73436k/s    903.837
-kyber512/keygen_cv            2.58 %          2.57 %            10      0.82%            2.44%      2.58%
-kyber512/keygen_min           13.8 us         13.8 us           10   64.1864k       66.4408k/s    34.367k
-kyber512/keygen_max           15.1 us         15.1 us           10   66.2011k       72.5455k/s    37.531k
-kyber1024/decap_mean          47.9 us         47.9 us           10   222.332k       20.8836k/s   119.488k
-kyber1024/decap_median        47.8 us         47.8 us           10    222.36k        20.909k/s   119.335k
-kyber1024/decap_stddev       0.345 us        0.345 us           10    847.653        149.328/s    860.065
-kyber1024/decap_cv            0.72 %          0.72 %            10      0.38%            0.72%      0.72%
-kyber1024/decap_min           47.4 us         47.4 us           10   220.724k        20.529k/s   118.295k
-kyber1024/decap_max           48.7 us         48.7 us           10   223.956k       21.0947k/s   121.542k
-kyber768/encap_mean           28.9 us         28.9 us           10   133.838k        34.632k/s   72.0448k
-kyber768/encap_median         28.8 us         28.8 us           10   133.943k       34.7766k/s    71.729k
-kyber768/encap_stddev        0.389 us        0.389 us           10    424.097        455.864/s    969.721
-kyber768/encap_cv             1.35 %          1.35 %            10      0.32%            1.32%      1.35%
-kyber768/encap_min            28.5 us         28.5 us           10   133.171k        33.474k/s    71.097k
-kyber768/encap_max            29.9 us         29.9 us           10   134.415k       35.0874k/s    74.524k
-kyber512/encap_mean           17.5 us         17.5 us           10   81.3077k       56.9959k/s   43.7583k
-kyber512/encap_median         17.5 us         17.5 us           10   81.3109k       57.1806k/s    43.614k
-kyber512/encap_stddev        0.178 us        0.178 us           10    224.364        572.266/s     443.14
-kyber512/encap_cv             1.01 %          1.01 %            10      0.28%            1.00%      1.01%
-kyber512/encap_min            17.3 us         17.3 us           10   80.9421k       55.7884k/s    43.182k
-kyber512/encap_max            17.9 us         17.9 us           10   81.6759k       57.7496k/s    44.702k
-kyber1024/encap_mean          44.1 us         44.1 us           10   204.634k       22.6603k/s   110.119k
-kyber1024/encap_median        44.0 us         44.0 us           10    204.79k       22.7169k/s   109.836k
-kyber1024/encap_stddev       0.358 us        0.356 us           10    751.071        180.658/s    891.891
-kyber1024/encap_cv            0.81 %          0.81 %            10      0.37%            0.80%      0.81%
-kyber1024/encap_min           43.7 us         43.7 us           10   202.876k       22.2099k/s   109.114k
-kyber1024/encap_max           45.0 us         45.0 us           10   205.644k       22.8667k/s   112.348k
-kyber1024/keygen_mean         37.6 us         37.6 us           10   174.399k       26.5696k/s   93.9229k
-kyber1024/keygen_median       37.7 us         37.7 us           10   174.662k       26.5444k/s    94.024k
-kyber1024/keygen_stddev      0.417 us        0.415 us           10   1.34601k        292.441/s   1.04079k
-kyber1024/keygen_cv           1.11 %          1.10 %            10      0.77%            1.10%      1.11%
-kyber1024/keygen_min          36.9 us         36.9 us           10   172.239k       26.0098k/s    91.983k
-kyber1024/keygen_max          38.5 us         38.4 us           10   176.088k       27.1239k/s    95.953k
-kyber768/keygen_mean          23.6 us         23.6 us           10    109.11k       42.3017k/s   58.9747k
-kyber768/keygen_median        23.7 us         23.7 us           10   109.577k       42.2725k/s   59.0055k
-kyber768/keygen_stddev       0.310 us        0.310 us           10    786.552        554.447/s    772.922
-kyber768/keygen_cv            1.31 %          1.31 %            10      0.72%            1.31%      1.31%
-kyber768/keygen_min           23.2 us         23.2 us           10   108.011k       41.3191k/s    57.748k
-kyber768/keygen_max           24.2 us         24.2 us           10   109.909k       43.1928k/s     60.37k
-kyber512/decap_mean           19.7 us         19.7 us           10   91.4808k       50.6517k/s   49.2443k
-kyber512/decap_median         19.7 us         19.7 us           10   91.4678k       50.6475k/s   49.2465k
-kyber512/decap_stddev        0.186 us        0.186 us           10    554.643        475.223/s    463.271
-kyber512/decap_cv             0.94 %          0.94 %            10      0.61%            0.94%      0.94%
-kyber512/decap_min            19.5 us         19.5 us           10   90.7913k       49.8154k/s    48.691k
-kyber512/decap_max            20.1 us         20.1 us           10   92.7485k       51.2228k/s    50.066k
-kyber768/decap_mean           31.8 us         31.8 us           10   147.512k       31.4865k/s   79.2379k
-kyber768/decap_median         31.7 us         31.7 us           10    147.59k       31.5118k/s   79.1735k
-kyber768/decap_stddev        0.129 us        0.128 us           10    344.756         126.89/s    320.866
-kyber768/decap_cv             0.41 %          0.40 %            10      0.23%            0.40%      0.40%
-kyber768/decap_min            31.6 us         31.6 us           10   146.652k       31.2195k/s    78.891k
-kyber768/decap_max            32.0 us         32.0 us           10   147.851k       31.6233k/s    79.914k
+Load Average: 0.59, 0.65, 0.66
+------------------------------------------------------------------------------------------------
+Benchmark                          Time             CPU   Iterations     CYCLES items_per_second
+------------------------------------------------------------------------------------------------
+ml_kem_1024/keygen_mean         37.7 us         37.7 us           10   168.625k       26.5586k/s
+ml_kem_1024/keygen_median       37.8 us         37.8 us           10   168.466k       26.4937k/s
+ml_kem_1024/keygen_stddev      0.867 us        0.856 us           10    883.281        605.108/s
+ml_kem_1024/keygen_cv           2.30 %          2.27 %            10      0.52%            2.28%
+ml_kem_1024/keygen_min          36.5 us         36.5 us           10   167.909k       25.8962k/s
+ml_kem_1024/keygen_max          38.7 us         38.6 us           10   171.052k       27.3982k/s
+ml_kem_512/decap_mean           20.4 us         20.4 us           10   92.5549k       49.0213k/s
+ml_kem_512/decap_median         20.3 us         20.3 us           10   92.4039k       49.1818k/s
+ml_kem_512/decap_stddev        0.258 us        0.252 us           10    577.305        600.776/s
+ml_kem_512/decap_cv             1.26 %          1.23 %            10      0.62%            1.23%
+ml_kem_512/decap_min            20.0 us         20.0 us           10   92.1723k       47.8732k/s
+ml_kem_512/decap_max            20.9 us         20.9 us           10   94.1701k        49.888k/s
+ml_kem_512/encap_mean           16.4 us         16.4 us           10   72.6916k       60.9038k/s
+ml_kem_512/encap_median         16.4 us         16.4 us           10   72.6753k       60.8974k/s
+ml_kem_512/encap_stddev        0.253 us        0.250 us           10    97.0585        935.823/s
+ml_kem_512/encap_cv             1.54 %          1.53 %            10      0.13%            1.54%
+ml_kem_512/encap_min            15.9 us         15.9 us           10   72.5484k       59.7296k/s
+ml_kem_512/encap_max            16.8 us         16.7 us           10   72.8346k       62.8025k/s
+ml_kem_768/decap_mean           33.0 us         33.0 us           10   148.191k       30.3166k/s
+ml_kem_768/decap_median         33.1 us         33.1 us           10   148.138k       30.1903k/s
+ml_kem_768/decap_stddev        0.518 us        0.509 us           10    212.758        473.277/s
+ml_kem_768/decap_cv             1.57 %          1.54 %            10      0.14%            1.56%
+ml_kem_768/decap_min            32.1 us         32.1 us           10   147.836k       29.7687k/s
+ml_kem_768/decap_max            33.6 us         33.6 us           10    148.61k       31.1568k/s
+ml_kem_512/keygen_mean          14.6 us         14.6 us           10   63.4765k       68.3813k/s
+ml_kem_512/keygen_median        14.8 us         14.8 us           10   63.4589k       67.7965k/s
+ml_kem_512/keygen_stddev       0.241 us        0.240 us           10     60.264       1.14394k/s
+ml_kem_512/keygen_cv            1.65 %          1.64 %            10      0.09%            1.67%
+ml_kem_512/keygen_min           14.1 us         14.1 us           10   63.3859k       67.5222k/s
+ml_kem_512/keygen_max           14.8 us         14.8 us           10   63.5564k       71.0285k/s
+ml_kem_1024/decap_mean          49.3 us         49.3 us           10   216.516k       20.2885k/s
+ml_kem_1024/decap_median        49.5 us         49.4 us           10   216.383k       20.2235k/s
+ml_kem_1024/decap_stddev       0.649 us        0.634 us           10    346.756        261.841/s
+ml_kem_1024/decap_cv            1.32 %          1.29 %            10      0.16%            1.29%
+ml_kem_1024/decap_min           48.3 us         48.3 us           10   216.031k        19.967k/s
+ml_kem_1024/decap_max           50.1 us         50.1 us           10   217.187k       20.6884k/s
+ml_kem_1024/encap_mean          41.8 us         41.8 us           10   183.083k       23.9532k/s
+ml_kem_1024/encap_median        41.8 us         41.8 us           10   183.077k       23.9381k/s
+ml_kem_1024/encap_stddev       0.563 us        0.551 us           10     218.08        315.804/s
+ml_kem_1024/encap_cv            1.35 %          1.32 %            10      0.12%            1.32%
+ml_kem_1024/encap_min           41.0 us         41.0 us           10   182.737k       23.5351k/s
+ml_kem_1024/encap_max           42.6 us         42.5 us           10   183.483k       24.4145k/s
+ml_kem_768/encap_mean           27.4 us         27.4 us           10   121.805k       36.5012k/s
+ml_kem_768/encap_median         27.4 us         27.4 us           10   121.632k        36.553k/s
+ml_kem_768/encap_stddev        0.692 us        0.687 us           10    644.207        909.698/s
+ml_kem_768/encap_cv             2.52 %          2.50 %            10      0.53%            2.49%
+ml_kem_768/encap_min            26.5 us         26.5 us           10   121.249k       35.0289k/s
+ml_kem_768/encap_max            28.6 us         28.5 us           10   123.228k       37.7644k/s
+ml_kem_768/keygen_mean          25.0 us         25.0 us           10   110.546k       40.0317k/s
+ml_kem_768/keygen_median        25.0 us         25.0 us           10   110.151k       40.0223k/s
+ml_kem_768/keygen_stddev       0.855 us        0.854 us           10    861.179       1.36001k/s
+ml_kem_768/keygen_cv            3.42 %          3.41 %            10      0.78%            3.40%
+ml_kem_768/keygen_min           24.1 us         24.1 us           10   109.801k       38.1413k/s
+ml_kem_768/keygen_max           26.2 us         26.2 us           10   112.141k       41.5697k/s
 ```
 
 ### On ARM Cortex-A72 i.e. Raspberry Pi 4B
 
-Compiled with **gcc version 13.2.0 (Ubuntu 13.2.0-4ubuntu3)**.
+Compiled with **gcc (Ubuntu 13.2.0-23ubuntu4) 13.2.0**.
 
 ```bash
 $ uname -srm
-Linux 6.5.0-1008-raspi aarch64
+Linux 6.8.0-1005-raspi aarch64
 ```
 
 ```bash
-2024-01-22T19:22:33+04:00
-Running ./build/perf.out
+2024-06-18T21:49:48+04:00
+Running ./build/bench.out
 Run on (4 X 1800 MHz CPU s)
 CPU Caches:
   L1 Data 32 KiB (x4)
   L1 Instruction 48 KiB (x4)
   L2 Unified 1024 KiB (x1)
-Load Average: 2.32, 2.85, 1.46
-----------------------------------------------------------------------------------------------
-Benchmark                        Time             CPU   Iterations     CYCLES items_per_second
-----------------------------------------------------------------------------------------------
-kyber1024/decap_mean           250 us          250 us           10    448.76k       4.00416k/s
-kyber1024/decap_median         250 us          250 us           10   448.888k       4.00246k/s
-kyber1024/decap_stddev       0.401 us        0.405 us           10    738.224        6.49398/s
-kyber1024/decap_cv            0.16 %          0.16 %            10      0.16%            0.16%
-kyber1024/decap_min            249 us          249 us           10    447.75k       3.99346k/s
-kyber1024/decap_max            251 us          250 us           10    450.06k       4.01306k/s
-kyber512/decap_mean            106 us          106 us           10   189.763k         9.469k/s
-kyber512/decap_median          106 us          106 us           10   189.753k        9.4696k/s
-kyber512/decap_stddev        0.293 us        0.291 us           10    529.974        26.0654/s
-kyber512/decap_cv             0.28 %          0.28 %            10      0.28%            0.28%
-kyber512/decap_min             105 us          105 us           10   189.096k       9.41547k/s
-kyber512/decap_max             106 us          106 us           10   190.852k       9.50263k/s
-kyber768/encap_mean            148 us          148 us           10   265.507k       6.76869k/s
-kyber768/encap_median          148 us          148 us           10    265.41k       6.77083k/s
-kyber768/encap_stddev        0.566 us        0.567 us           10    1.0282k        25.9589/s
-kyber768/encap_cv             0.38 %          0.38 %            10      0.39%            0.38%
-kyber768/encap_min             147 us          147 us           10   263.583k       6.71972k/s
-kyber768/encap_max             149 us          149 us           10   267.479k       6.81811k/s
-kyber512/encap_mean           90.0 us         90.0 us           10   161.649k        11.117k/s
-kyber512/encap_median         90.0 us         89.9 us           10   161.581k        11.121k/s
-kyber512/encap_stddev        0.345 us        0.347 us           10    626.388        42.6811/s
-kyber512/encap_cv             0.38 %          0.39 %            10      0.39%            0.38%
-kyber512/encap_min            89.6 us         89.6 us           10   160.933k       11.0122k/s
-kyber512/encap_max            90.9 us         90.8 us           10   163.199k       11.1667k/s
-kyber768/keygen_mean           119 us          119 us           10   213.516k         8.416k/s
-kyber768/keygen_median         119 us          119 us           10   213.534k       8.41435k/s
-kyber768/keygen_stddev       0.275 us        0.277 us           10    496.099        19.6189/s
-kyber768/keygen_cv            0.23 %          0.23 %            10      0.23%            0.23%
-kyber768/keygen_min            118 us          118 us           10   212.691k        8.3908k/s
-kyber768/keygen_max            119 us          119 us           10   214.168k       8.44783k/s
-kyber1024/keygen_mean          188 us          188 us           10   337.777k        5.3203k/s
-kyber1024/keygen_median        188 us          188 us           10   337.479k       5.32517k/s
-kyber1024/keygen_stddev      0.785 us        0.791 us           10   1.42498k        22.2604/s
-kyber1024/keygen_cv           0.42 %          0.42 %            10      0.42%            0.42%
-kyber1024/keygen_min           187 us          187 us           10   336.121k       5.26713k/s
-kyber1024/keygen_max           190 us          190 us           10   341.212k       5.34588k/s
-kyber512/keygen_mean          69.0 us         68.9 us           10   123.818k       14.5129k/s
-kyber512/keygen_median        69.0 us         68.9 us           10   123.807k       14.5138k/s
-kyber512/keygen_stddev       0.152 us        0.148 us           10    253.268        31.0736/s
-kyber512/keygen_cv            0.22 %          0.21 %            10      0.20%            0.21%
-kyber512/keygen_min           68.7 us         68.7 us           10   123.395k       14.4549k/s
-kyber512/keygen_max           69.2 us         69.2 us           10   124.311k       14.5653k/s
-kyber768/decap_mean            170 us          170 us           10   304.634k       5.89868k/s
-kyber768/decap_median          170 us          169 us           10   304.463k        5.9015k/s
-kyber768/decap_stddev        0.654 us        0.648 us           10   1.15668k        22.5143/s
-kyber768/decap_cv             0.39 %          0.38 %            10      0.38%            0.38%
-kyber768/decap_min             169 us          169 us           10   303.091k       5.86043k/s
-kyber768/decap_max             171 us          171 us           10   306.634k       5.92931k/s
-kyber1024/encap_mean           224 us          224 us           10   401.823k       4.47202k/s
-kyber1024/encap_median         224 us          223 us           10   401.482k        4.4752k/s
-kyber1024/encap_stddev       0.802 us        0.804 us           10   1.47807k         16.038/s
-kyber1024/encap_cv            0.36 %          0.36 %            10      0.37%            0.36%
-kyber1024/encap_min            223 us          223 us           10   400.254k       4.44088k/s
-kyber1024/encap_max            225 us          225 us           10   404.723k       4.48965k/s
+Load Average: 3.51, 3.90, 2.28
+-------------------------------------------------------------------------------------
+Benchmark                          Time             CPU   Iterations items_per_second
+-------------------------------------------------------------------------------------
+ml_kem_1024/decap_mean           258 us          258 us           10       3.87579k/s
+ml_kem_1024/decap_median         258 us          258 us           10       3.88038k/s
+ml_kem_1024/decap_stddev       0.963 us        0.959 us           10         14.346/s
+ml_kem_1024/decap_cv            0.37 %          0.37 %            10            0.37%
+ml_kem_1024/decap_min            257 us          257 us           10       3.84585k/s
+ml_kem_1024/decap_max            260 us          260 us           10       3.89065k/s
+ml_kem_768/decap_mean            174 us          174 us           10        5.7436k/s
+ml_kem_768/decap_median          174 us          174 us           10       5.74181k/s
+ml_kem_768/decap_stddev        0.323 us        0.324 us           10        10.6771/s
+ml_kem_768/decap_cv             0.19 %          0.19 %            10            0.19%
+ml_kem_768/decap_min             174 us          174 us           10       5.72691k/s
+ml_kem_768/decap_max             175 us          175 us           10       5.75986k/s
+ml_kem_768/keygen_mean           119 us          119 us           10       8.40489k/s
+ml_kem_768/keygen_median         119 us          119 us           10        8.4065k/s
+ml_kem_768/keygen_stddev       0.217 us        0.237 us           10        16.7154/s
+ml_kem_768/keygen_cv            0.18 %          0.20 %            10            0.20%
+ml_kem_768/keygen_min            119 us          119 us           10       8.37403k/s
+ml_kem_768/keygen_max            119 us          119 us           10       8.43292k/s
+ml_kem_1024/encap_mean           216 us          216 us           10        4.6302k/s
+ml_kem_1024/encap_median         216 us          216 us           10       4.63436k/s
+ml_kem_1024/encap_stddev        1.03 us         1.02 us           10        21.7423/s
+ml_kem_1024/encap_cv            0.48 %          0.47 %            10            0.47%
+ml_kem_1024/encap_min            215 us          215 us           10       4.59301k/s
+ml_kem_1024/encap_max            218 us          218 us           10       4.65477k/s
+ml_kem_512/decap_mean            109 us          109 us           10       9.21521k/s
+ml_kem_512/decap_median          108 us          108 us           10       9.22127k/s
+ml_kem_512/decap_stddev        0.248 us        0.243 us           10        20.5809/s
+ml_kem_512/decap_cv             0.23 %          0.22 %            10            0.22%
+ml_kem_512/decap_min             108 us          108 us           10       9.17837k/s
+ml_kem_512/decap_max             109 us          109 us           10       9.24305k/s
+ml_kem_768/encap_mean            140 us          140 us           10       7.12907k/s
+ml_kem_768/encap_median          140 us          140 us           10       7.13583k/s
+ml_kem_768/encap_stddev        0.597 us        0.596 us           10        30.1105/s
+ml_kem_768/encap_cv             0.43 %          0.42 %            10            0.42%
+ml_kem_768/encap_min             140 us          140 us           10       7.05566k/s
+ml_kem_768/encap_max             142 us          142 us           10       7.16165k/s
+ml_kem_1024/keygen_mean          188 us          188 us           10       5.32413k/s
+ml_kem_1024/keygen_median        188 us          188 us           10       5.32187k/s
+ml_kem_1024/keygen_stddev      0.537 us        0.534 us           10        15.1453/s
+ml_kem_1024/keygen_cv           0.29 %          0.28 %            10            0.28%
+ml_kem_1024/keygen_min           187 us          187 us           10       5.29511k/s
+ml_kem_1024/keygen_max           189 us          189 us           10       5.34655k/s
+ml_kem_512/encap_mean           83.7 us         83.7 us           10       11.9524k/s
+ml_kem_512/encap_median         83.5 us         83.5 us           10       11.9776k/s
+ml_kem_512/encap_stddev        0.421 us        0.420 us           10        59.8055/s
+ml_kem_512/encap_cv             0.50 %          0.50 %            10            0.50%
+ml_kem_512/encap_min            83.2 us         83.2 us           10       11.8419k/s
+ml_kem_512/encap_max            84.4 us         84.4 us           10       12.0191k/s
+ml_kem_512/keygen_mean          69.2 us         69.2 us           10       14.4436k/s
+ml_kem_512/keygen_median        69.2 us         69.2 us           10       14.4496k/s
+ml_kem_512/keygen_stddev       0.267 us        0.269 us           10        55.9869/s
+ml_kem_512/keygen_cv            0.39 %          0.39 %            10            0.39%
+ml_kem_512/keygen_min           68.9 us         68.9 us           10       14.3569k/s
+ml_kem_512/keygen_max           69.7 us         69.7 us           10       14.5198k/s
 ```
 
 ### On Apple M1 Max
 
-Compiled with **Apple clang version 15.0.0 (clang-1500.1.0.2.5)**.
+Compiled with **Apple clang version 15.0.0 (clang-1500.3.9.4)**.
 
 ```bash
 $ uname -srm
-Darwin 23.2.0 arm64
+Darwin 23.5.0 arm64
 ```
 
 ```bash
-2024-01-22T19:33:49+04:00
+2024-06-18T21:24:57+04:00
 Running ./build/bench.out
 Run on (10 X 24 MHz CPU s)
 CPU Caches:
   L1 Data 64 KiB
   L1 Instruction 128 KiB
   L2 Unified 4096 KiB (x10)
-Load Average: 2.44, 2.58, 2.80
------------------------------------------------------------------------------------
-Benchmark                        Time             CPU   Iterations items_per_second
------------------------------------------------------------------------------------
-kyber768/keygen_mean          20.2 us         20.2 us           10       49.5202k/s
-kyber768/keygen_median        20.2 us         20.2 us           10       49.5691k/s
-kyber768/keygen_stddev       0.078 us        0.075 us           10        182.819/s
-kyber768/keygen_cv            0.39 %          0.37 %            10            0.37%
-kyber768/keygen_min           20.2 us         20.1 us           10       49.0094k/s
-kyber768/keygen_max           20.5 us         20.4 us           10       49.6414k/s
-kyber1024/encap_mean          38.4 us         38.3 us           10       26.1344k/s
-kyber1024/encap_median        38.3 us         38.2 us           10       26.1544k/s
-kyber1024/encap_stddev       0.130 us        0.127 us           10        86.5122/s
-kyber1024/encap_cv            0.34 %          0.33 %            10            0.33%
-kyber1024/encap_min           38.2 us         38.1 us           10        25.957k/s
-kyber1024/encap_max           38.6 us         38.5 us           10       26.2225k/s
-kyber512/keygen_mean          12.0 us         11.9 us           10       83.7302k/s
-kyber512/keygen_median        12.0 us         11.9 us           10       83.7409k/s
-kyber512/keygen_stddev       0.019 us        0.020 us           10        141.747/s
-kyber512/keygen_cv            0.16 %          0.17 %            10            0.17%
-kyber512/keygen_min           11.9 us         11.9 us           10       83.5254k/s
-kyber512/keygen_max           12.0 us         12.0 us           10       83.9197k/s
-kyber768/encap_mean           25.0 us         24.9 us           10       40.0959k/s
-kyber768/encap_median         25.0 us         24.9 us           10        40.106k/s
-kyber768/encap_stddev        0.053 us        0.056 us           10        89.5965/s
-kyber768/encap_cv             0.21 %          0.22 %            10            0.22%
-kyber768/encap_min            24.9 us         24.8 us           10       39.9002k/s
-kyber768/encap_max            25.1 us         25.1 us           10       40.2567k/s
-kyber1024/keygen_mean         32.3 us         32.2 us           10       31.0263k/s
-kyber1024/keygen_median       32.3 us         32.2 us           10       31.0496k/s
-kyber1024/keygen_stddev      0.100 us        0.098 us           10        94.0295/s
-kyber1024/keygen_cv           0.31 %          0.31 %            10            0.30%
-kyber1024/keygen_min          32.2 us         32.2 us           10       30.7662k/s
-kyber1024/keygen_max          32.6 us         32.5 us           10       31.0832k/s
-kyber768/decap_mean           26.2 us         26.1 us           10       38.2517k/s
-kyber768/decap_median         26.2 us         26.1 us           10       38.2788k/s
-kyber768/decap_stddev        0.072 us        0.071 us           10        103.849/s
-kyber768/decap_cv             0.27 %          0.27 %            10            0.27%
-kyber768/decap_min            26.1 us         26.1 us           10       37.9778k/s
-kyber768/decap_max            26.4 us         26.3 us           10       38.3546k/s
-kyber512/encap_mean           15.2 us         15.1 us           10       66.0548k/s
-kyber512/encap_median         15.2 us         15.1 us           10       66.0441k/s
-kyber512/encap_stddev        0.019 us        0.018 us           10        76.3748/s
-kyber512/encap_cv             0.13 %          0.12 %            10            0.12%
-kyber512/encap_min            15.1 us         15.1 us           10       65.9247k/s
-kyber512/encap_max            15.2 us         15.2 us           10       66.1939k/s
-kyber1024/decap_mean          39.7 us         39.6 us           10       25.2636k/s
-kyber1024/decap_median        39.7 us         39.6 us           10       25.2559k/s
-kyber1024/decap_stddev       0.052 us        0.047 us           10        30.0564/s
-kyber1024/decap_cv            0.13 %          0.12 %            10            0.12%
-kyber1024/decap_min           39.6 us         39.5 us           10       25.2259k/s
-kyber1024/decap_max           39.8 us         39.6 us           10       25.3094k/s
-kyber512/decap_mean           16.1 us         16.1 us           10       62.1168k/s
-kyber512/decap_median         16.1 us         16.1 us           10       62.1323k/s
-kyber512/decap_stddev        0.023 us        0.024 us           10        93.9076/s
-kyber512/decap_cv             0.14 %          0.15 %            10            0.15%
-kyber512/decap_min            16.1 us         16.1 us           10       61.9199k/s
-kyber512/decap_max            16.2 us         16.1 us           10       62.2184k/s
+Load Average: 2.12, 4.39, 7.54
+-------------------------------------------------------------------------------------
+Benchmark                          Time             CPU   Iterations items_per_second
+-------------------------------------------------------------------------------------
+ml_kem_768/keygen_mean          20.7 us         20.7 us           10       48.4041k/s
+ml_kem_768/keygen_median        20.7 us         20.7 us           10       48.4089k/s
+ml_kem_768/keygen_stddev       0.031 us        0.029 us           10        68.1992/s
+ml_kem_768/keygen_cv            0.15 %          0.14 %            10            0.14%
+ml_kem_768/keygen_min           20.6 us         20.6 us           10       48.2768k/s
+ml_kem_768/keygen_max           20.7 us         20.7 us           10       48.5023k/s
+ml_kem_1024/keygen_mean         32.5 us         32.5 us           10       30.8076k/s
+ml_kem_1024/keygen_median       32.4 us         32.4 us           10       30.8861k/s
+ml_kem_1024/keygen_stddev      0.159 us        0.161 us           10        152.372/s
+ml_kem_1024/keygen_cv           0.49 %          0.50 %            10            0.49%
+ml_kem_1024/keygen_min          32.4 us         32.3 us           10       30.5386k/s
+ml_kem_1024/keygen_max          32.8 us         32.7 us           10       30.9448k/s
+ml_kem_768/encap_mean           22.7 us         22.7 us           10        44.144k/s
+ml_kem_768/encap_median         22.7 us         22.7 us           10       44.1494k/s
+ml_kem_768/encap_stddev        0.037 us        0.037 us           10         72.779/s
+ml_kem_768/encap_cv             0.16 %          0.16 %            10            0.16%
+ml_kem_768/encap_min            22.6 us         22.6 us           10       43.9993k/s
+ml_kem_768/encap_max            22.8 us         22.7 us           10         44.26k/s
+ml_kem_768/decap_mean           26.7 us         26.6 us           10       37.5449k/s
+ml_kem_768/decap_median         26.6 us         26.6 us           10       37.5935k/s
+ml_kem_768/decap_stddev        0.108 us        0.098 us           10        137.284/s
+ml_kem_768/decap_cv             0.40 %          0.37 %            10            0.37%
+ml_kem_768/decap_min            26.6 us         26.5 us           10       37.2779k/s
+ml_kem_768/decap_max            26.9 us         26.8 us           10       37.6739k/s
+ml_kem_512/keygen_mean          12.1 us         12.1 us           10       82.8747k/s
+ml_kem_512/keygen_median        12.1 us         12.1 us           10       82.9135k/s
+ml_kem_512/keygen_stddev       0.016 us        0.018 us           10        120.443/s
+ml_kem_512/keygen_cv            0.13 %          0.15 %            10            0.15%
+ml_kem_512/keygen_min           12.1 us         12.0 us           10       82.7218k/s
+ml_kem_512/keygen_max           12.1 us         12.1 us           10       83.0684k/s
+ml_kem_512/encap_mean           13.4 us         13.4 us           10       74.4965k/s
+ml_kem_512/encap_median         13.4 us         13.4 us           10        74.512k/s
+ml_kem_512/encap_stddev        0.016 us        0.016 us           10        88.0048/s
+ml_kem_512/encap_cv             0.12 %          0.12 %            10            0.12%
+ml_kem_512/encap_min            13.4 us         13.4 us           10       74.3506k/s
+ml_kem_512/encap_max            13.5 us         13.4 us           10       74.6472k/s
+ml_kem_1024/encap_mean          35.5 us         35.4 us           10       28.2336k/s
+ml_kem_1024/encap_median        35.5 us         35.4 us           10        28.209k/s
+ml_kem_1024/encap_stddev       0.133 us        0.134 us           10        106.629/s
+ml_kem_1024/encap_cv            0.38 %          0.38 %            10            0.38%
+ml_kem_1024/encap_min           35.3 us         35.2 us           10       28.0729k/s
+ml_kem_1024/encap_max           35.6 us         35.6 us           10       28.3909k/s
+ml_kem_1024/decap_mean          40.4 us         40.3 us           10       24.8064k/s
+ml_kem_1024/decap_median        40.4 us         40.3 us           10       24.8086k/s
+ml_kem_1024/decap_stddev       0.066 us        0.070 us           10        42.8027/s
+ml_kem_1024/decap_cv            0.16 %          0.17 %            10            0.17%
+ml_kem_1024/decap_min           40.3 us         40.2 us           10        24.734k/s
+ml_kem_1024/decap_max           40.5 us         40.4 us           10       24.8586k/s
+ml_kem_512/decap_mean           16.4 us         16.3 us           10       61.1867k/s
+ml_kem_512/decap_median         16.4 us         16.3 us           10       61.1979k/s
+ml_kem_512/decap_stddev        0.024 us        0.022 us           10        81.9971/s
+ml_kem_512/decap_cv             0.15 %          0.13 %            10            0.13%
+ml_kem_512/decap_min            16.3 us         16.3 us           10       61.0308k/s
+ml_kem_512/decap_max            16.4 us         16.4 us           10        61.308k/s
 ```
 
 ## Usage
 
-`kyber` is written as a header-only C++ library, majorly targeting 64 -bit platforms and it's pretty easy to get started with. All you need to do is following.
+`kyber` is written as a header-only C++20 `constexpr` library, majorly targeting 64 -bit desktop/ server grade platforms and it's pretty easy to get started with. All you need to do is following.
 
 - Clone `kyber` repository.
 
@@ -389,12 +381,12 @@ git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && git submodul
 git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
 ```
 
-- Write your program while including proper header files ( based on which variant of Kyber KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required KEM routines and constants ( such as byte length of public/ private keys and cipher text ).
+- Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
 
 ```cpp
 // main.cpp
 
-#include "kyber512_kem.hpp"
+#include "ml_kem/ml_kem_512.hpp"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -402,38 +394,37 @@ git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
 int
 main()
 {
-  std::array<uint8_t, 32> d{}; // seed
-  std::array<uint8_t, 32> z{}; // seed
-  std::array<uint8_t, kyber512_kem::PKEY_LEN> pkey{};
-  std::array<uint8_t, kyber512_kem::SKEY_LEN> skey{};
-  std::array<uint8_t, 32> m{}; // seed
-  std::array<uint8_t, kyber512_kem::CIPHER_LEN> cipher{};
+  std::array<uint8_t, ml_kem_512::SEED_D_BYTE_LEN> d{};
+  std::array<uint8_t, ml_kem_512::SEED_Z_BYTE_LEN> z{};
+
+  std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pkey{};
+  std::array<uint8_t, ml_kem_512::SKEY_BYTE_LEN> skey{};
+
+  std::array<uint8_t, ml_kem_512::SEED_M_BYTE_LEN> m{};
+  std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
+
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> sender_key{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> receiver_key{};
 
   // Be careful !
   //
-  // Read API documentation in include/prng.hpp
-  prng::prng_t prng;
+  // Read API documentation in include/ml_kem/internals/rng/prng.hpp
+  ml_kem_prng::prng_t<128> prng;
 
   prng.read(d);
   prng.read(z);
   prng.read(m);
 
-  kyber512_kem::keygen(d, z, pkey, skey);
-  auto skdf = kyber512_kem::encapsulate(m, pkey, cipher);
-  auto rkdf = kyber512_kem::decapsulate(skey, cipher);
+  ml_kem_512::keygen(d, z, pkey, skey);
+  assert(ml_kem_512::encapsulate(m, pkey, cipher, sender_key)); // Key Encapsulation might fail, if input public key is malformed
+  ml_kem_512::decapsulate(skey, cipher, receiver_key);
 
-  std::array<uint8_t, 32> sender_key{};
-  skdf.squeeze(sender_key);
-
-  std::array<uint8_t, 32> receiver_key{};
-  rkdf.squeeze(receiver_key);
-
-  assert(std::ranges::equal(sender_key, receiver_key));
+  assert(sender_key == receiver_key);
   return 0;
 }
 ```
 
-- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( kyber being a header-only library ) too.
+- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( all of them are header-only libraries ) too.
 
 ```bash
 # Assuming `kyber` was cloned just under $HOME
@@ -442,35 +433,35 @@ KYBER_HEADERS=~/kyber/include
 SHA3_HEADERS=~/kyber/sha3/include
 SUBTLE_HEADERS=~/kyber/subtle/include
 
-g++ -std=c++20 -Wall -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
 ```
 
-Kyber KEM Variant | Namespace | Header
+ML-KEM Variant | Namespace | Header
 :-- | :-: | --:
-Kyber512 KEM Routines | `kyber512_kem::` | [include/kyber512_kem.hpp](include/kyber512_kem.hpp)
-Kyber768 KEM Routines | `kyber768_kem::` | [include/kyber768_kem.hpp](include/kyber768_kem.hpp)
-Kyber1024 KEM Routines | `kyber1024_kem::` | [include/kyber1024_kem.hpp](include/kyber1024_kem.hpp)
+ML-KEM-512 Routines | `ml_kem_512::` | `include/ml_kem/ml_kem_512.hpp`
+ML-KEM-768 Routines | `ml_kem_768::` | `include/ml_kem/ml_kem_768.hpp`
+ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 
 > [!NOTE]
-> Kyber parameter sets are selected from table 1 of Kyber specification https://pq-crystals.org/kyber/data/kyber-specification-round3-20210804.pdf.
+> ML-KEM parameter sets are taken from table 2 of ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd.
 
-See example [program](./examples/kyber512_kem.cpp), where I show how to use Kyber512 KEM API. You can almost similarly use Kyber768 or Kyber1024 KEM API, by just importing correct header file and using KEM functions/ constants from respective namespace.
+See example [program](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-512 API.
 
 ```bash
-g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/kyber512_kem.cpp && ./a.out
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/ml_kem_768.cpp && ./a.out
 ```
 
 ```bash
-Kyber512 KEM
-
-pubkey        : 175782d35b2666833aee098617626d88dbcc47091a011882d52105acc218c9287a95276a3259a6a94aa386d8148886abdcc1841f39260ce4754ebacc1fd36102905d4c623d0b27930b4c249ee7380758c0ac5982b0e932eda95184a40f55c451d835861ca2b314dbce97829f1b92752dda592d8960b2540f464988ea1c974c63467c439b1de540490b0af0491a6507951ebc971887bd2b4a11327381d99586f10668c83abe92fb649b113da7ec666729bc1cc38a1de137dd3cc4e3a6abb9881a2ee63e7df3ad6cb680664ba1559ca17448c968b7c867ac5f324911ffd43993b8a7b8f57094c786877c1208fa7f53e51d6f1a46ae71bc81f78ebe5808d48200b7e1bc81ec3d31070a6993aa5db237eb3a4c592aa559a73bd769583a0ad095ec1669b952be4a71fe8603f5d597f007a048cc9d7fea6735383b6b8bbf896b74dc48a21840a92c497a9bc7434b0241a9e42e6428515d477c4e0b3678fab1d619b794f01b828648e7577bb2e5297915b9fdf33cb291a37de51b51c7aca6f07994193bd981134da2340c23a93cda8b68e429ac801d3748b8d112b57e388511e3305e50a51184b623607447468be94351cd0b9111a119b4b3c6f270c1cfea749a2ac89455590280c369163946481dbaeb4693dbb376202db2d8464c61aea6411cd887080f5c59e1587da01510cd1b0e8b030a5c200639ba26376134e88279891b90373cc92e7a76c0aaa33d084ab3f61e175010996652e441300ad5aefda9cc88f17fef2102b643179e0a49a60c47ce06c5b1a0b150b09ca4593e5dd48a9b1979d103ba862c43ed354d2ec99575b70e741808288aa0e1cb792c0a458d4584ddfa1870d7b797e2aac7d4cc08916015401338d8841d226d9656661cda93f53343e0f906b82bce8f25428b02a639a47f7dda5b946a3785656fb6d083df5a5ec7493cc017a2469b1f43c96f2e3bbc9d6cb07bec82d721a4cfba6ca2c59b0e01bda98585692b9da753923f830b52c843b6d963f959ad60189f42d61df7808f4d131c4d233e246c4735193e516452061701e6114cf1587a54c79105f48fdce9c2134bb60550b242945ea011ec54c570054b93d96f072426b7c9b524db8d2f136b7db2d1f38897
-seckey        : a598a250c2008688af8f71a285abae5b528a19479acf915cd2f92a7365bc757c670accc4b2190aa77b7d0c76355962a0ea9b6a1f4400be77797a6851776815032307913aa475b733a1ba698b2134ea25a57bd9b979e2bcb7d99f24f06ee760227486ae1cdaba79065bc3180d79a0906c514e5b973435c00f34b87e882643ef6b42bcbca4a3b65207abb5dca76e49a9be7a6013d256bc09b1211b70bb28e2151200c6c1e00082e88634600a29e3cf5ff541051c703ac373a91228a6d30491221df6749e22b21429612ed4ba07a7d7789717809e498f2e3a1b8a6a40afe0a7d2460350074a2a5127cc20c0b03446977a612a096324337cd5bc455f77cdbe4600e147b02fe58bc9c383b1e84ea3bc5755d3a87ce515b07c96741a72d9eb702d445acc3374531c70ef221216db2c9198110d83084f7b508da18fd34b8ee9f45d1204a627609d09a89c73e8bfc1f987c6bc906fac0d01720b169061b3d8015a5121a0d3beab454a03cc24a9bc5725e6c4aaf44d8f8b7242443f289c0751226448ec794a02a1ba411caeabb99f7a90510b8812a91a0ad69f1476408940381724a1dbfb7f69642788267b068c585bf41bf3f857fd14bcd9506b95b6a257d7481a07628004944e136a4c97842c13451e960cf4e08a8b6666e17a6aac016d701c1a00c82072939a092397c7104d7fd6332b860034f2ace5191e2792cf10e21f5166304bf329696128d63640b7882809b750f1f89e5d513fa08a8439e1ad5fe0affd887b0f06ab91798c35d48f39261af3dab7ddbc899be21d1f751b8d317b8e280f400b637ac6a471b4065973a6253235c94117e22083562b715ce680fafb78da9113f0f52692c52625ea8e1c24a1d8837beb963a5ab078455c8a43cbab68dc4eaa4c7646c9bb45803442250e935738944c7228aa3f7137567eb1231c63bff7552a7858525b92bdca832a41cb20fb24647a62af1da27e50c41f3cd070ed8c1d1213c22b1540a5c1412d67ab4ff334c2e5217c06a5f8a93c0637bd0fb4736c19591f67c378aa80f7c9587b346bbfe81eff8574c7e0acc3164c3df048019639a80377b97457175782d35b2666833aee098617626d88dbcc47091a011882d52105acc218c9287a95276a3259a6a94aa386d8148886abdcc1841f39260ce4754ebacc1fd36102905d4c623d0b27930b4c249ee7380758c0ac5982b0e932eda95184a40f55c451d835861ca2b314dbce97829f1b92752dda592d8960b2540f464988ea1c974c63467c439b1de540490b0af0491a6507951ebc971887bd2b4a11327381d99586f10668c83abe92fb649b113da7ec666729bc1cc38a1de137dd3cc4e3a6abb9881a2ee63e7df3ad6cb680664ba1559ca17448c968b7c867ac5f324911ffd43993b8a7b8f57094c786877c1208fa7f53e51d6f1a46ae71bc81f78ebe5808d48200b7e1bc81ec3d31070a6993aa5db237eb3a4c592aa559a73bd769583a0ad095ec1669b952be4a71fe8603f5d597f007a048cc9d7fea6735383b6b8bbf896b74dc48a21840a92c497a9bc7434b0241a9e42e6428515d477c4e0b3678fab1d619b794f01b828648e7577bb2e5297915b9fdf33cb291a37de51b51c7aca6f07994193bd981134da2340c23a93cda8b68e429ac801d3748b8d112b57e388511e3305e50a51184b623607447468be94351cd0b9111a119b4b3c6f270c1cfea749a2ac89455590280c369163946481dbaeb4693dbb376202db2d8464c61aea6411cd887080f5c59e1587da01510cd1b0e8b030a5c200639ba26376134e88279891b90373cc92e7a76c0aaa33d084ab3f61e175010996652e441300ad5aefda9cc88f17fef2102b643179e0a49a60c47ce06c5b1a0b150b09ca4593e5dd48a9b1979d103ba862c43ed354d2ec99575b70e741808288aa0e1cb792c0a458d4584ddfa1870d7b797e2aac7d4cc08916015401338d8841d226d9656661cda93f53343e0f906b82bce8f25428b02a639a47f7dda5b946a3785656fb6d083df5a5ec7493cc017a2469b1f43c96f2e3bbc9d6cb07bec82d721a4cfba6ca2c59b0e01bda98585692b9da753923f830b52c843b6d963f959ad60189f42d61df7808f4d131c4d233e246c4735193e516452061701e6114cf1587a54c79105f48fdce9c2134bb60550b242945ea011ec54c570054b93d96f072426b7c9b524db8d2f136b7db2d1f3889778f791d583227a702cdfa4a9f95014df019495f14e02318b3704dc3794af523705be75f29753f47b2888ceef235d82caca9f983b40bf10b29672da272113a973
-cipher        : bcee459c896ea378dcc458a532c35c029eff6b8cf8adc83f484fb6f9bfe32612f7c936cbf4dbd7c5262288dc3966a0d769f94a0bd57913a60a71efae09321c22c53839d836cef5fb8bf5c630bd3b3d657492eabfc7e67a42a631c95391656f0fce607a181e418144dff3d97f1192a2825a94da5113bcffc2e5f3e043f7583e6159902ddd009f8bcb18046a05695917bdef48accc2e3708f8536aabb420a7fd7989c60bca6c1941af45eac2f03cf71c8506721f8cd69bd3c573f036e3e8ae72b85632d06e0cab6fa1fea078d84aa1a116ac58ee632a0542b2d0e6a7026ae814ceeb46478d1cefd082c9b19efa7bb6ddd7abda8e43eab7b5a5204449273ea056b36d3797371f855d0c7ff0436279b21b831ad0970c26cc39f8627deb932689b8df48e73b1b5893987fa4dbc65571a78287f1573beeb85db52a3edbad6f50725bcbfa40423e3ce1ab00c16ea3922bc42e6782ce224ccfb3c978d8704584b9768a8edb6a950c0208b1c1c9a6a4e0d6300a9cfe788389697460efc41308448e9752d2022dfdecd118440346e2fabb07559b76301943f3b186adaaba09828efb28db1cd4a5e82e01f360451cb3c487f371af05725ea0e7d61932a8dc38108e99182e9b50d2aa828a773a2e18f5271ac75e5a5c50b9221f893e5f7076732beb0ffb9e4b82e1c0648192c9547870372b78c6a3e3a1b00d904a4a1492d5944e0510acee62e40c78cecef97922b04807cdd47d4d403a7bb16316598e6eee760b257382d9648c9920c3395717d8ac829bd37465c0f3e7f0c7e6fc351aac802edb722200776906eb36f622c0b8702958e44317961f583265a83b8cfcd9eed80f15b9ef848ebb7355df9718a60c532e20074854797685b3e4a25f929fce9ad02a5af114f92210abd3b73fddf28f116c2d4c27ceda6428a3892eb0c18fc12b07596e4153f2a3df9aa440957704bc56bbbee06cd99def3218c046344b4c5a811840a088bcbbad76fca4a20b9bf608873b2830afd6097b05022e8b1d42af3e5e4f00303adc9f130a84cdde3fef9335ccd1120b3f2050f17ef0c10fd226268965cbfc13738ada0632
-shared secret : 508ac79bf97e90d75267159ba5189b73c48ab41a91aec0f32edd6cd1e66465b5
+ML-KEM-768
+Pubkey         : 6653a1f5242faad7b37863433dc56538957f3c412102a17d28bc328c4781c566331f8c0b77093baef24a58d6312ddc719ac67ac2874f3adc8a3e6530adbc14cc069159a99e56277895c17c04da1644db23a6e9c16f31c21959400a8abd483a3fcfc0c5fd759917322a66a2aa77a6956f3b8387443640746b0ac8a282521dd784332d56aa745898c3fcc60a56a0716931bbe69b26c4514d529c79979355c8b40eb97fe7c485ceaa45d610145b4bce7da6343db46b6bf42182931a3ed98bafb66614e024cf8c9e51a90b1fc3702a2b4fe3b0c537fa9a1680b4d2f2044c557b1819300a6225be6c234d07d06a702eeb7110ef05c8973b0cab182efbb9ba07811b87b24e2a652cb428240c53423efcaf201973bf3342e86a8d477191d3544217f143586ba351fb7729ac8a51a51c8ab719fd3568c615a7a438b8967301754cac96a8552af82d8ce8840da56cb7481ad54581904c0d390732eceb23df4483cd7593d949bb0c985042f71018862b0d126702a7b55c8c7d9d44cfea157d4013c57ceb18bcfc2c95d8bb8d6178e0ac738ffcc1b3fca525a7ae83652e0b75836fe6c77d182626a8ca85262a17bc60645105a503b2f0f707e765552d49979273b0cb5870124933c6557ef795b36bf093f6c35ef722c9b2854999d20b5fd23dc6d2381ef38bcf547e37faa8ccda3dea2409deda7992a1951849ce3e7b11f3f98cb0d2283e458af854af9d74c57516a924e74222e9bcac529e88a02913d9ae29ec3cc42269d08ca1bf13a941f95d0bb05da9ac4a1ea2bb86b4c631853ec5f2129834a70ba923c8f1bc3fd5cad8692ef4401417b362f0e729497633794abc21e95a59319403002085b113a7b0544165210c1726346a088a933347a265ba055429e637fc40b111d38446461d77546166f923e5249427e5c62092b6ee2a2b585273c3d545b99673419194e54978d71ca606e238a053988db999904207b8326c5b27a38966c4d99460386c453d12821602b444320da205c980da3ab9d3461d405601a7226c143cf4492b8bf4c63a949a8ad81224c71005abcf6afb4ba7ba94ee437079494f9d78c69ac950711765a7e50ab42ba6bf64a5a7d30e64d14fb845ab37b4cc5b099c44e3cf4f9bc61f3640b5b98560474f9f1054dce9be10db77dea35a2375c66d0a26d7f73e7385b03ca8194dbaaf601184f826bd0a86b1d023ae9548b6d4602cd25c3f46e1c66dca6fd183007d043f6f3a6f5a56089180744d579bfe3cc65f003d91084adac4c0ac5811ea8a3e5aa6500eac125a423000297a7975585a083bcfc807b7722b5a0438c1b11b62abcb9a4623f8090c451690455acf97814074c0b6d6d19180f08afbd5ba0e259ee910a61f684d14e7996e47ba5a19994a13a642a1bb563411979bcaf7b302d70ba750a89867653b93596d03b260c7c0a024949bb7b1b110dc8267d5c5305390da26c7e6296add6ba7533b92540c28b337c5b392a6024c57cc09b899ec72e1466de604aa0c909baeb0b0078324e810481f760ae694b5e88cb034bca48bf70881047c7b6ab7ce04b96ad2bd0142b387bc1824a22742c7ce18ebac7744a616a5631e40ab817426c6130ece8641661ab863c44c2adb64029990aea24c94bec0ad7bfba46cd1894775ac6549b1a63446cade59357e125c589a73
+Seckey         : 7fc5b38c54324b214d9db93e4069c03a097931156a9e18291ac9b0ac787dfcd189a5971b3dd79fab1b5bacbb35a8d33d08faa3493c8d26886c0f487bee757b16837799912bbd99200502227ff510a4c39d924434af8233220084888b134fb608b9d424c66b8ec5c34069327c5ac591ee0b774ef42f922aceeae21d44738b74e644c5dc0fff4c8ed2cb25f495126840442370159a7c5bb6631c4b7aa4d0445a1fa63c104b492e986e1109bcab369fa0889ca41202d22c8511b8a35719163336a87ea672798168038439ab5645acf813f773a0a575169250c2a2062618aa3b77d015750abaf6a707019945e590beaf6cc499b8305ef66583e42c24f9b2d720ac286a8b513261d36a4c34eb7a6a012488aa3e58553e5245ac7e7089d327568ec66e9bccc96fa5ce0bcc8b1fda3343857adc564d4a631e695b7ecea241947561519b48a75b4f89ab992f201d3f5c958254c9c8653ee2d08756388152db8284d0a48db1a7b96282e4b168cf16a51362534c4c90ca21c28f5b76a12c6042f61a7de52c2bf8901f3738cec81c1ac75399b63320217ce8833e06c0b022b5883415009e08428cc07570660cd14a818cc2ad1a00aeb011b9622a48dde6632277b784d28651c17438d8457e67a6dbc016e387cdabf15e3c456c17c1b3825376bdb3c3f418ac251c96605b208f35c0027559405240bc419303ea9d1c9a36c10ccc0b443782e1c1e860ad0af914ab7a53cfaa0d7ef1100be74da5b43fcfe4bc60e7397cf009ddda713eb7610a15716e9b9e7ac55269c9494bc910a3753c0a0942ec654f1500826f900bb4776dde03166ef376dd67cc385406d2f4047ffc819b2657e596c964189727f3b8a9705f4dc011fda20c73846f62146085547d872519636697e16c7e89d741c917974e490812482ab704099e003acab375f1376536b85c5c12196b2a7514461a2fc2032bb65164f6cbe16c8fb6754a3cd75bb26635a1f5b96d113dfb1a3b301438608c39be68adb5b359d00b0b39a77f7167a18c75532b18798aea17d6ea64bf798c3ec0438a1c94d3445f906985f3791a3f4a98df13cd0af24d8feba0dbeb08b42635327c31cff5b6da791ad1c33055b18fa6d8b5c7f454c39a70d1e86f96660cea737e7ca52014a6c662e346a09bc25e4027602b4472dc93ee06c91a698be675bb39d2319e91a083b92e4b7b0bcc38771977c300e889ae60bb38b97ca68836d0bcabde4b6a0d70042ee67e051a1503927c422593df1668bb789d7060cc6b09d0a891384d5bbe90b480ba93afa99a079ea85e28a0236437a0ba397705356b0f90757e754f34fb5a591b3888eb5d719b79f462abab333ed078bb90c4b11dec276713c4cb06bca9d98068f48b90802451f69d2acb08abe66c61f6081f008d04fa7bad176da4201c9c2a3b3b29b3e7734b1961b6e2ea8d963350d8301a2dc48ce2e056156275cae8c23665b47a5a49c1abc5a01c98cee22a9dd7584c15b304e5c61cd449453208417075a6c3b999f626795379f1d556da168832a47ac638ce89a59c5a9c0a9746ad219142cf782280311b9cea87598c46ba673ac30a281a052dcd710e1bac328d822c19db8ee7e38925c7378431937b812e03382963b9c26653a1f5242faad7b37863433dc56538957f3c412102a17d28bc328c4781c566331f8c0b77093baef24a58d6312ddc719ac67ac2874f3adc8a3e6530adbc14cc069159a99e56277895c17c04da1644db23a6e9c16f31c21959400a8abd483a3fcfc0c5fd759917322a66a2aa77a6956f3b8387443640746b0ac8a282521dd784332d56aa745898c3fcc60a56a0716931bbe69b26c4514d529c79979355c8b40eb97fe7c485ceaa45d610145b4bce7da6343db46b6bf42182931a3ed98bafb66614e024cf8c9e51a90b1fc3702a2b4fe3b0c537fa9a1680b4d2f2044c557b1819300a6225be6c234d07d06a702eeb7110ef05c8973b0cab182efbb9ba07811b87b24e2a652cb428240c53423efcaf201973bf3342e86a8d477191d3544217f143586ba351fb7729ac8a51a51c8ab719fd3568c615a7a438b8967301754cac96a8552af82d8ce8840da56cb7481ad54581904c0d390732eceb23df4483cd7593d949bb0c985042f71018862b0d126702a7b55c8c7d9d44cfea157d4013c57ceb18bcfc2c95d8bb8d6178e0ac738ffcc1b3fca525a7ae83652e0b75836fe6c77d182626a8ca85262a17bc60645105a503b2f0f707e765552d49979273b0cb5870124933c6557ef795b36bf093f6c35ef722c9b2854999d20b5fd23dc6d2381ef38bcf547e37faa8ccda3dea2409deda7992a1951849ce3e7b11f3f98cb0d2283e458af854af9d74c57516a924e74222e9bcac529e88a02913d9ae29ec3cc42269d08ca1bf13a941f95d0bb05da9ac4a1ea2bb86b4c631853ec5f2129834a70ba923c8f1bc3fd5cad8692ef4401417b362f0e729497633794abc21e95a59319403002085b113a7b0544165210c1726346a088a933347a265ba055429e637fc40b111d38446461d77546166f923e5249427e5c62092b6ee2a2b585273c3d545b99673419194e54978d71ca606e238a053988db999904207b8326c5b27a38966c4d99460386c453d12821602b444320da205c980da3ab9d3461d405601a7226c143cf4492b8bf4c63a949a8ad81224c71005abcf6afb4ba7ba94ee437079494f9d78c69ac950711765a7e50ab42ba6bf64a5a7d30e64d14fb845ab37b4cc5b099c44e3cf4f9bc61f3640b5b98560474f9f1054dce9be10db77dea35a2375c66d0a26d7f73e7385b03ca8194dbaaf601184f826bd0a86b1d023ae9548b6d4602cd25c3f46e1c66dca6fd183007d043f6f3a6f5a56089180744d579bfe3cc65f003d91084adac4c0ac5811ea8a3e5aa6500eac125a423000297a7975585a083bcfc807b7722b5a0438c1b11b62abcb9a4623f8090c451690455acf97814074c0b6d6d19180f08afbd5ba0e259ee910a61f684d14e7996e47ba5a19994a13a642a1bb563411979bcaf7b302d70ba750a89867653b93596d03b260c7c0a024949bb7b1b110dc8267d5c5305390da26c7e6296add6ba7533b92540c28b337c5b392a6024c57cc09b899ec72e1466de604aa0c909baeb0b0078324e810481f760ae694b5e88cb034bca48bf70881047c7b6ab7ce04b96ad2bd0142b387bc1824a22742c7ce18ebac7744a616a5631e40ab817426c6130ece8641661ab863c44c2adb64029990aea24c94bec0ad7bfba46cd1894775ac6549b1a63446cade59357e125c589a73dd18d5e8aad6acb35a89e0958c3ae122197bb6fed165733ca120172d11335a4d60d73fb91d0ffac552692219ef3082477a0f6399aa5dce8a72fd0afaa3b627c9
+Encapsulated ? : true
+Cipher         : 1d04afad6cf4058acb290f72298587c8afb9e022fc0a4b3e1aa5fdc79cfbe44e7781317adbc1f92fd01a6ad3840386710a369276c50671d2b58272505793736bb9d0e8883c200270ddae19fbc86af41aba366b4ddfd67f8771905b3fccca6da805a1e13a9e697500779cfe52484811e906042fa6e6e93ef641e5e7a46c39969c4683ee7cb440fc4cc452dab5215d6ec32a36fa0e8d7501b5d7dcc9dbfb51cbb1c036b052a7354544a6707099ded7b5e5c5024e2a6f356b2d300585128a30d7b964842d5c06659990c85468b42f5f2b46c39b4fa740a3f7006da01ffa09fb2fd6b5b0e9174bd7a801972b647df2825842b8ad146220a1ddcc9eee6967954e8d960bbf5ea8a74ae0306061c44e2995eb451171bd3eb4679579922e48e713ad40cddcd14343dc57a181e3067f1b01895122a447cf002b600c96a30c5f809efcc459cebc8723ca5b5147d2f9d09186f31bba013f19e63294cc5a57c0184b838cb9d51c62e0303c9a029cf6a5c489ccb43bd0bdd4da61f147d6ef9c2b95a758d0c2b9a9265e7cf4255989c07799940c517ecd527cca2acf62d104e2d45a176e35852d81f42397c93d3b2b1c7fde3cc6f4cd5d6c166f7312e34f690a07ecbaac69a045358564142422b45c58784cd5d2d69d9084b7e9f33176893bee2f1589725ed1a443f4b9095e97294f740e8471f468a51db85cc66176af022db77314579776b69eaa8594dbed5d0e0b549675e12c742913da76e3de732c24f7811d8ee32ade2ac1bcb8763c0e898a67695aaab9478c80dc29cc3ae9f1c4b63c116bda64e1e8727881ebe4c1db30219a87d7ff8805675b56a4907d9408bb96438a5182c66a47739f8b12cd5241b5f4e995f4f1fc85041eeaeb158d7ea9c1601a9b3849c6977137a0e82afb72b16748efa456fbae5b28ed82107d79dec3da87d0c0261267a3dbe9dcedb374d96fc00b7478b30f917b2312e7e79133923c2d9aba394bfcdbd00539f7d2d4fdecf9821fdb4c15f253e5ad80d10e360fb84b45e01415a4d5759cd5000ea5c4e80f60a887f9e8ad35ef7cabab83eeb59bf81b3bb10b440707e877c558ca9c80df8d3d8741b838ddf9a5e0e7826a1f6ee0c4f2241687ab0573b18814d21a668861962400148b45a24fdfeb3638a1f16b7c344b088cfffc851317753c1e0602bb0cbfb5357132baf29d6123862eb8b29229a5fd9b173ad4c1b098d11ff23f6ee1c7d357235e647dd99451162cfbed33b7d05df5578859538a9edbeae2cf8ac0903c36e7db352c147c11725a3c5c611b149a4c87e24589d9e31d30a9a8b2cdd863b8dd3ab8c90cde061426a2afedb4aff424cde10e70f1e38207d0fc8be467b4f063739d920bb1906144a704c7ba5be6645899270e5da6380dabfb16e7f906a1f484501005cb383692e054533697a63c8a2f8e1b891b37d5b23afef1de8f9a257f7c9577466fbd87223c5773795ac23ab4cfc0043a965e8695e764174bdc1c778d3d1d6e2a65d9cb7a4b1eb31ca818b0c8abe779fd61a34ee78cfc49fd7682
+Shared secret  : ee30e0696c36480afb066fa2971535f195a30ce08aacc3dfc182ed0947a44f3a
 ```
 
 > [!CAUTION]
-> Before you consider using Psuedo Random Number Generator which comes with this library implementation, I strongly advice you to go through [include/prng.hpp](./include/prng.hpp).
+> Before you consider using Psuedo Random Number Generator which comes with this library implementation, I strongly advice you to go through [include/ml_kem/internals/rng/prng.hpp](./include/ml_kem/internals/rng/prng.hpp).
 
 > [!NOTE]
-> Looking at API documentation, in header files, can give you good idea of how to use Kyber KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different Kyber KEM parameters. This gives much better type safety and compile-time error reporting.
+> Looking at API documentation, in header files, can give you good idea of how to use ML-KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different ML-KEM parameters. This gives much better type safety and compile-time error reporting.

@@ -1,10 +1,12 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/rng/prng.hpp"
 #include <array>
 #include <cassert>
 #include <charconv>
 #include <cstddef>
 #include <cstdint>
+#include <limits>
 #include <span>
 #include <string_view>
 
@@ -53,4 +55,25 @@ make_malformed_pubkey(std::span<uint8_t, pubkey_byte_len> pubkey)
 
   pubkey[last_coeff_begins_at + 0] = static_cast<uint8_t>(updated_last_coeff >> 0);
   pubkey[last_coeff_begins_at + 1] = static_cast<uint8_t>(updated_last_coeff >> 8);
+}
+
+// Given a ML-KEM-{512, 768, 1024} cipher text, this function flips a random bit of it, while sampling choice of random index from input PRNG.
+template<size_t cipher_byte_len, size_t bit_sec_lvl>
+static inline constexpr void
+random_bitflip_in_cipher_text(std::span<uint8_t, cipher_byte_len> cipher, ml_kem_prng::prng_t<bit_sec_lvl>& prng)
+{
+  size_t random_u64 = 0;
+  prng.read(std::span<uint8_t, sizeof(random_u64)>(reinterpret_cast<uint8_t*>(&random_u64), sizeof(random_u64)));
+
+  const size_t random_byte_idx = random_u64 % cipher_byte_len;
+  const size_t random_bit_idx = random_u64 % 8;
+
+  const uint8_t hi_bit_mask = 0xffu << (random_bit_idx + 1);
+  const uint8_t lo_bit_mask = 0xffu >> (std::numeric_limits<uint8_t>::digits - random_bit_idx);
+
+  const uint8_t selected_byte = cipher[random_byte_idx];
+  const uint8_t selected_bit = (selected_byte >> random_bit_idx) & 0b1u;
+  const uint8_t selected_bit_flipped = (~selected_bit) & 0b1;
+
+  cipher[random_byte_idx] = (selected_byte & hi_bit_mask) ^ (selected_bit_flipped << random_bit_idx) ^ (selected_byte & lo_bit_mask);
 }

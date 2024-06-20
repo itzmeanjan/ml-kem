@@ -1,4 +1,5 @@
 #include "ml_kem/ml_kem_1024.hpp"
+#include "test_helper.hpp"
 #include <gtest/gtest.h>
 
 // For ML-KEM-1024
@@ -35,4 +36,34 @@ TEST(ML_KEM, ML_KEM_1024_KeygenEncapsDecaps)
 
   EXPECT_TRUE(is_encapsulated);
   EXPECT_EQ(shared_secret_sender, shared_secret_receiver);
+}
+
+// For ML-KEM-1024
+//
+// - Generate a valid keypair.
+// - Malform public key s.t. last coefficient of polynomial vector is not properly reduced.
+// - Attempt to encapsulate using malformed public key. It must fail.
+TEST(ML_KEM, ML_KEM_1024_EncapsFailureDueToNonReducedPubKey)
+{
+  std::array<uint8_t, ml_kem_1024::SEED_D_BYTE_LEN> seed_d{};
+  std::array<uint8_t, ml_kem_1024::SEED_Z_BYTE_LEN> seed_z{};
+  std::array<uint8_t, ml_kem_1024::SEED_M_BYTE_LEN> seed_m{};
+
+  std::array<uint8_t, ml_kem_1024::PKEY_BYTE_LEN> pubkey{};
+  std::array<uint8_t, ml_kem_1024::SKEY_BYTE_LEN> seckey{};
+  std::array<uint8_t, ml_kem_1024::CIPHER_TEXT_BYTE_LEN> cipher{};
+
+  std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret{};
+
+  ml_kem_prng::prng_t<256> prng{};
+  prng.read(seed_d);
+  prng.read(seed_z);
+  prng.read(seed_m);
+
+  ml_kem_1024::keygen(seed_d, seed_z, pubkey, seckey);
+
+  make_malformed_pubkey<pubkey.size()>(pubkey);
+  const auto is_encapsulated = ml_kem_1024::encapsulate(seed_m, pubkey, cipher, shared_secret);
+
+  EXPECT_FALSE(is_encapsulated);
 }

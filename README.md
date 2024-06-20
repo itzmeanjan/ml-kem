@@ -68,16 +68,22 @@ make ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled
 ```
 
 ```bash
-PASSED TESTS (9/9):
+PASSED TESTS (15/15):
+       2 ms: build/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
        3 ms: build/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
+       3 ms: build/test.out ML_KEM.ML_KEM_1024_EncapsFailureDueToNonReducedPubKey
+       3 ms: build/test.out ML_KEM.ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText
+       3 ms: build/test.out ML_KEM.ML_KEM_512_DecapsFailureDueToBitFlippedCipherText
+       3 ms: build/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
        3 ms: build/test.out ML_KEM.PolynomialSerialization
-       4 ms: build/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
-       4 ms: build/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
-      41 ms: build/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
-      63 ms: build/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
-      64 ms: build/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
-     226 ms: build/test.out ML_KEM.CompressDecompressZq
-     284 ms: build/test.out ML_KEM.ArithmeticOverZq
+       4 ms: build/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToNonReducedPubKey
+       4 ms: build/test.out ML_KEM.ML_KEM_768_DecapsFailureDueToBitFlippedCipherText
+       4 ms: build/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToNonReducedPubKey
+      27 ms: build/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
+      45 ms: build/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
+      60 ms: build/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
+     243 ms: build/test.out ML_KEM.CompressDecompressZq
+     304 ms: build/test.out ML_KEM.ArithmeticOverZq
 ```
 
 In case you're interested in running timing leakage tests using `dudect`, execute following

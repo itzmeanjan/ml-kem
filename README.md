@@ -385,9 +385,11 @@ cd
 git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && git submodule update --init && popd
 # Or do single step cloning and importing of submodules
 git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
+# Or clone and then run tests, which will automatically bring in dependencies
+git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && make -j && popd
 ```
 
-- Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
+- Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
 
 ```cpp
 // main.cpp
@@ -450,6 +452,57 @@ ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 
 > [!NOTE]
 > ML-KEM parameter sets are taken from table 2 of ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd.
+
+All the functions, in this Kyber header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
+
+```cpp
+// compile-time-ml-kem-512.cpp
+//
+// Compile and run this program with
+// $ g++ -std=c++20 -Wall -Wextra -pedantic -I include -I sha3/include -I subtle/include main.cpp && ./a.out
+// or
+// $ clang++ -std=c++20 -Wall -Wextra -pedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include main.cpp && ./a.out
+
+#include "ml_kem/ml_kem_512.hpp"
+
+// Compile-time evaluation of ML-KEM-512 key generation and encapsulation, using NIST official KAT no. (1).
+constexpr auto
+eval_encaps() -> auto
+{
+  using seed_t = std::array<uint8_t, ml_kem_512::SEED_D_BYTE_LEN>;
+
+  // 7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d
+  constexpr seed_t seed_d = { 124, 153, 53, 160, 176, 118, 148, 170, 12, 109, 16,  228, 219, 107, 26,  221, 47,  216, 26, 37,  204, 177, 72,  3,   45, 205, 115, 153, 54,  115, 127, 45 };
+  // b505d7cfad1b497499323c8686325e4792f267aafa3f87ca60d01cb54f29202a
+  constexpr seed_t seed_z = {181, 5, 215, 207, 173, 27, 73, 116, 153, 50, 60, 134, 134, 50, 94, 71, 146, 242, 103, 170, 250, 63, 135, 202, 96, 208, 28, 181, 79, 41, 32, 42};
+  // eb4a7c66ef4eba2ddb38c88d8bc706b1d639002198172a7b1942eca8f6c001ba
+  constexpr seed_t seed_m = {235, 74, 124, 102, 239, 78, 186, 45, 219, 56, 200, 141, 139, 199, 6, 177, 214, 57, 0, 33, 152, 23, 42, 123, 25, 66, 236, 168, 246, 192, 1, 186};
+
+  std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pubkey{};
+  std::array<uint8_t, ml_kem_512::SKEY_BYTE_LEN> seckey{};
+  std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
+
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret{};
+
+  ml_kem_512::keygen(seed_d, seed_z, pubkey, seckey);
+  (void)ml_kem_512::encapsulate(seed_m, pubkey, cipher, shared_secret);
+
+  return shared_secret;
+}
+
+int
+main()
+{
+  // This step is being evaluated at compile-time, thanks to the fact that my ML-KEM implementation is `constexpr`.
+  static constexpr auto computed_shared_secret = eval_encaps();
+  // 500c4424107df96b01749b95f47a14eea871c3742606e15d2b6c91d207d85965
+  constexpr std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> expected_shared_secret = { 80,  12,  68,  36,  16, 125, 249, 107, 1,  116, 155, 149, 244, 122, 20, 238, 168, 113, 195, 116, 38, 6,   225, 93,  43, 108, 145, 210, 7,   216, 89, 101 };
+
+  // Notice static_assert, yay !
+  static_assert(computed_shared_secret == expected_shared_secret, "Must be able to compute shared secret at compile-time !");
+  return 0;
+}
+```
 
 See example [program](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-512 API.
 

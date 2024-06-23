@@ -18,7 +18,7 @@ KeyGen | - | Public Key and Secret Key
 Encapsulation | Public Key | Cipher Text and 32B Shared Secret
 Decapsulation | Secret Key and Cipher Text | 32B Shared Secret
 
-Here I'm maintaining `kyber` - a C++20 header-only `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM draft standard. It's pretty easy to use, see [usage](#usage).
+Here I'm maintaining `ml-kem` - a C++20 header-only `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM draft standard. It's pretty easy to use, see [usage](#usage).
 
 > [!NOTE]
 > Find ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
@@ -374,19 +374,19 @@ ml_kem_512/decap_max            16.4 us         16.4 us           10        61.3
 
 ## Usage
 
-`kyber` is written as a header-only C++20 `constexpr` library, majorly targeting 64 -bit desktop/ server grade platforms and it's pretty easy to get started with. All you need to do is following.
+`ml-kem` is written as a header-only C++20 `constexpr` library, majorly targeting 64 -bit desktop/ server grade platforms and it's pretty easy to get started with. All you need to do is following.
 
-- Clone `kyber` repository.
+- Clone `ml-kem` repository.
 
 ```bash
 cd
 
 # Multi-step cloning and importing of submodules
-git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && git submodule update --init && popd
+git clone https://github.com/itzmeanjan/ml-kem.git && pushd ml-kem && git submodule update --init && popd
 # Or do single step cloning and importing of submodules
-git clone https://github.com/itzmeanjan/kyber.git --recurse-submodules
+git clone https://github.com/itzmeanjan/ml-kem.git --recurse-submodules
 # Or clone and then run tests, which will automatically bring in dependencies
-git clone https://github.com/itzmeanjan/kyber.git && pushd kyber && make -j && popd
+git clone https://github.com/itzmeanjan/ml-kem.git && pushd ml-kem && make -j && popd
 ```
 
 - Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
@@ -432,16 +432,16 @@ main()
 }
 ```
 
-- When compiling your program, let your compiler know where it can find `kyber`, `sha3` and `subtle` headers, which includes their definitions ( all of them are header-only libraries ) too.
+- When compiling your program, let your compiler know where it can find `ml-kem`, `sha3` and `subtle` headers, which includes their definitions ( all of them are header-only libraries ) too.
 
 ```bash
-# Assuming `kyber` was cloned just under $HOME
+# Assuming `ml-kem` was cloned just under $HOME
 
-KYBER_HEADERS=~/kyber/include
-SHA3_HEADERS=~/kyber/sha3/include
-SUBTLE_HEADERS=~/kyber/subtle/include
+ML_KEM_HEADERS=~/ml-kem/include
+SHA3_HEADERS=~/ml-kem/sha3/include
+SUBTLE_HEADERS=~/ml-kem/subtle/include
 
-g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I $KYBER_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
+g++ -std=c++20 -Wall -Wextra -pedantic -O3 -march=native -I $ML_KEM_HEADERS -I $SHA3_HEADERS -I $SUBTLE_HEADERS main.cpp
 ```
 
 ML-KEM Variant | Namespace | Header
@@ -453,21 +453,21 @@ ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 > [!NOTE]
 > ML-KEM parameter sets are taken from table 2 of ML-KEM draft standard @ https://doi.org/10.6028/NIST.FIPS.203.ipd.
 
-All the functions, in this Kyber header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
+All the functions, in this ML-KEM header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
 
 ```cpp
 // compile-time-ml-kem-512.cpp
 //
 // Compile and run this program with
-// $ g++ -std=c++20 -Wall -Wextra -pedantic -I include -I sha3/include -I subtle/include main.cpp && ./a.out
+// $ g++ -std=c++20 -Wall -Wextra -pedantic -I include -I sha3/include -I subtle/include compile-time-ml-kem-512.cpp && ./a.out
 // or
-// $ clang++ -std=c++20 -Wall -Wextra -pedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include main.cpp && ./a.out
+// $ clang++ -std=c++20 -Wall -Wextra -pedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include compile-time-ml-kem-512.cpp && ./a.out
 
 #include "ml_kem/ml_kem_512.hpp"
 
 // Compile-time evaluation of ML-KEM-512 key generation and encapsulation, using NIST official KAT no. (1).
 constexpr auto
-eval_encaps() -> auto
+eval_ml_kem_768_encaps() -> auto
 {
   using seed_t = std::array<uint8_t, ml_kem_512::SEED_D_BYTE_LEN>;
 
@@ -494,7 +494,7 @@ int
 main()
 {
   // This step is being evaluated at compile-time, thanks to the fact that my ML-KEM implementation is `constexpr`.
-  static constexpr auto computed_shared_secret = eval_encaps();
+  static constexpr auto computed_shared_secret = eval_ml_kem_768_encaps();
   // 500c4424107df96b01749b95f47a14eea871c3742606e15d2b6c91d207d85965
   constexpr std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> expected_shared_secret = { 80,  12,  68,  36,  16, 125, 249, 107, 1,  116, 155, 149, 244, 122, 20, 238, 168, 113, 195, 116, 38, 6,   225, 93,  43, 108, 145, 210, 7,   216, 89, 101 };
 

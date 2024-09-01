@@ -19,8 +19,13 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
   std::array<uint8_t, 64> g_out{};
   auto _g_out = std::span(g_out);
 
+  // Repurposing `g_out` (i.e. array for holding output of hash function G),
+  // for preparing the concatenated input to hash function G.
+  std::copy(d.begin(), d.end(), _g_out.begin());
+  _g_out[d.size()] = k; // Domain seperator to prevent misuse of key
+
   sha3_512::sha3_512_t h512;
-  h512.absorb(d);
+  h512.absorb(_g_out.template first<d.size() + 1>());
   h512.finalize();
   h512.digest(_g_out);
 

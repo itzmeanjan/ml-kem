@@ -13,7 +13,9 @@ namespace k_pke {
 // See algorithm 12 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1>
 static inline constexpr void
-keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubkey, std::span<uint8_t, k * 12 * 32> seckey)
+keygen(std::span<const uint8_t, 32> d,
+       std::span<uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey,
+       std::span<uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey)
   requires(ml_kem_params::check_keygen_params(k, eta1))
 {
   std::array<uint8_t, 64> g_out{};
@@ -71,10 +73,10 @@ keygen(std::span<const uint8_t, 32> d, std::span<uint8_t, k * 12 * 32 + 32> pubk
 // See algorithm 13 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result of modulus check on public key")]] static inline constexpr bool
-encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
+encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey,
         std::span<const uint8_t, 32> msg,
         std::span<const uint8_t, 32> rcoin,
-        std::span<uint8_t, k * du * 32 + dv * 32> enc)
+        std::span<uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> enc)
   requires(ml_kem_params::check_encrypt_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t pkoff = k * 12 * 32;
@@ -148,7 +150,9 @@ encrypt(std::span<const uint8_t, k * 12 * 32 + 32> pubkey,
 // See algorithm 14 defined in K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t du, size_t dv>
 static inline constexpr void
-decrypt(std::span<const uint8_t, k * 12 * 32> seckey, std::span<const uint8_t, k * du * 32 + dv * 32> enc, std::span<uint8_t, 32> dec)
+decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey,
+        std::span<const uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> enc,
+        std::span<uint8_t, 32> dec)
   requires(ml_kem_params::check_decrypt_params(k, du, dv))
 {
   constexpr size_t encoff = k * du * 32;

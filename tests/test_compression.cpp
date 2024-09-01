@@ -1,4 +1,5 @@
 #include "ml_kem/internals/poly/compression.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp"
 #include <gtest/gtest.h>
 
 // Decompression error that can happen for some given `d` s.t.
@@ -10,7 +11,7 @@
 // See eq. 2 of Ml_kem specification
 // https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t d>
-static inline constexpr size_t
+forceinline constexpr size_t
 compute_error()
 {
   constexpr double t0 = static_cast<double>(ml_kem_field::Q);

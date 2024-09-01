@@ -10,7 +10,7 @@ namespace ml_kem_utils {
 //
 // See algorithm 4 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline constexpr void
+constexpr void
 encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_t, 32 * l> arr)
   requires(ml_kem_params::check_l(l))
 {
@@ -144,7 +144,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
 //
 // See algorithm 5 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t l>
-static inline constexpr void
+constexpr void
 decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_l(l))
 {

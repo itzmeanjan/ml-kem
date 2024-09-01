@@ -1,6 +1,7 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include <span>
 
@@ -11,7 +12,7 @@ namespace ml_kem_utils {
 // See formula 4.5 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 // Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96/mlkem768.go#L395-L425.
 template<size_t d>
-static inline constexpr ml_kem_field::zq_t
+forceinline constexpr ml_kem_field::zq_t
 compress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
@@ -31,7 +32,7 @@ compress(const ml_kem_field::zq_t x)
 //
 // See formula 4.6 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t d>
-static inline constexpr ml_kem_field::zq_t
+forceinline constexpr ml_kem_field::zq_t
 decompress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
@@ -47,7 +48,7 @@ decompress(const ml_kem_field::zq_t x)
 
 // Utility function to compress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
-static inline constexpr void
+constexpr void
 poly_compress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
@@ -58,7 +59,7 @@ poly_compress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
 
 // Utility function to decompress each of 256 coefficients of a degree-255 polynomial while mutating the input.
 template<size_t d>
-static inline constexpr void
+constexpr void
 poly_decompress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {

@@ -12,7 +12,7 @@ namespace ml_kem {
 // ML-KEM key generation algorithm, generating byte serialized public key and secret key, given 32 -bytes seed `d` and `z`.
 // See algorithm 15 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1>
-static inline constexpr void
+constexpr void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<const uint8_t, 32> z, // used in CCA-KEM
        std::span<uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
@@ -50,7 +50,7 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 //
 // See algorithm 16 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-[[nodiscard("Use result, it might fail because of malformed input public key")]] static inline constexpr bool
+[[nodiscard("Use result, it might fail because of malformed input public key")]] constexpr bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
             std::span<uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
@@ -98,7 +98,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 //
 // See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline constexpr void
+constexpr void
 decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey,
             std::span<const uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)

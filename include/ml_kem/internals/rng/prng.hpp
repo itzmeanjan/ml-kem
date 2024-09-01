@@ -1,4 +1,5 @@
 #pragma once
+#include "ml_kem/internals/utility/force_inline.hpp"
 #include "shake256.hpp"
 #include <limits>
 #include <random>
@@ -24,7 +25,7 @@ private:
 
 public:
   // Default constructor which seeds PRNG with system randomness.
-  inline prng_t()
+  forceinline prng_t()
   {
     std::array<uint8_t, bit_security_level / std::numeric_limits<uint8_t>::digits> seed{};
     auto _seed = std::span(seed);
@@ -45,14 +46,14 @@ public:
   }
 
   // Explicit constructor which can be used for seeding PRNG.
-  inline explicit constexpr prng_t(std::span<const uint8_t, bit_security_level / std::numeric_limits<uint8_t>::digits> seed)
+  forceinline explicit constexpr prng_t(std::span<const uint8_t, bit_security_level / std::numeric_limits<uint8_t>::digits> seed)
   {
     state.absorb(seed);
     state.finalize();
   }
 
   // Once PRNG is seeded i.e. PRNG object is constructed, you can request arbitrary many pseudo-random bytes from PRNG.
-  inline constexpr void read(std::span<uint8_t> bytes) { state.squeeze(bytes); }
+  forceinline constexpr void read(std::span<uint8_t> bytes) { state.squeeze(bytes); }
 };
 
 }

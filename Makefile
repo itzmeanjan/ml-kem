@@ -14,14 +14,11 @@ RELEASE_UBSAN_FLAGS := -g $(RELEASE_FLAGS) $(UBSAN_FLAGS)
 I_FLAGS := -I ./include
 SHA3_INC_DIR = ./sha3/include
 SUBTLE_INC_DIR = ./subtle/include
-DUDECT_INC_DIR = ./dudect/src
 DEP_IFLAGS = -I $(SHA3_INC_DIR) -I $(SUBTLE_INC_DIR)
-DUDECT_DEP_IFLAGS = $(DEP_IFLAGS) -I $(DUDECT_INC_DIR)
 
 SRC_DIR := include
 ML_KEM_SOURCES := $(shell find $(SRC_DIR) -name '*.hpp')
 BUILD_DIR := build
-DUDECT_BUILD_DIR := $(BUILD_DIR)/dudect
 TEST_BUILD_DIR := $(BUILD_DIR)/test
 BENCHMARK_BUILD_DIR := $(BUILD_DIR)/benchmark
 ASAN_BUILD_DIR := $(BUILD_DIR)/asan
@@ -32,13 +29,10 @@ DEBUG_UBSAN_BUILD_DIR := $(UBSAN_BUILD_DIR)/debug
 RELEASE_UBSAN_BUILD_DIR := $(UBSAN_BUILD_DIR)/release
 
 TEST_DIR := tests
-DUDECT_TEST_DIR = $(TEST_DIR)/dudect
 TEST_SOURCES := $(wildcard $(TEST_DIR)/*.cpp)
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
-DUDECT_TEST_SOURCES := $(wildcard $(DUDECT_TEST_DIR)/*.cpp)
 TEST_OBJECTS := $(addprefix $(TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 TEST_BINARY := $(TEST_BUILD_DIR)/test.out
-DUDECT_TEST_BINARIES := $(addprefix $(DUDECT_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.out,$(DUDECT_TEST_SOURCES))))
 TEST_LINK_FLAGS := -lgtest -lgtest_main
 GTEST_PARALLEL := ./gtest-parallel/gtest-parallel
 DEBUG_ASAN_TEST_OBJECTS := $(addprefix $(DEBUG_ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
@@ -62,9 +56,6 @@ BENCHMARK_OUT_FILE := bench_result_on_$(shell uname -s)_$(shell uname -r)_$(shel
 
 all: test
 
-$(DUDECT_BUILD_DIR):
-	mkdir -p $@
-
 $(DEBUG_ASAN_BUILD_DIR):
 	mkdir -p $@
 
@@ -83,10 +74,7 @@ $(TEST_BUILD_DIR):
 $(BENCHMARK_BUILD_DIR):
 	mkdir -p $@
 
-$(DUDECT_INC_DIR):
-	git submodule update --init dudect
-
-$(SUBTLE_INC_DIR): $(DUDECT_INC_DIR)
+$(SUBTLE_INC_DIR):
 	git submodule update --init subtle
 
 $(SHA3_INC_DIR): $(SUBTLE_INC_DIR)
@@ -113,9 +101,6 @@ $(RELEASE_UBSAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp $(RELEASE_UBSAN_BUILD_DIR) $(S
 $(TEST_BINARY): $(TEST_OBJECTS)
 	$(CXX) $(RELEASE_FLAGS) $(LINK_OPT_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
-$(DUDECT_BUILD_DIR)/%.out: $(DUDECT_TEST_DIR)/%.cpp $(DUDECT_BUILD_DIR) $(SHA3_INC_DIR) $(SUBTLE_INC_DIR) $(DUDECT_INC_DIR)
-	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(OPT_FLAGS) $(I_FLAGS) $(DUDECT_DEP_IFLAGS) -lm $(LINK_FLAGS) $< -o $@
-
 $(DEBUG_ASAN_TEST_BINARY): $(DEBUG_ASAN_TEST_OBJECTS)
 	$(CXX) $(DEBUG_ASAN_FLAGS) $^ $(TEST_LINK_FLAGS) -o $@
 
@@ -130,8 +115,6 @@ $(RELEASE_UBSAN_TEST_BINARY): $(RELEASE_UBSAN_TEST_OBJECTS)
 
 test: $(TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
-
-dudect_test_build: $(DUDECT_TEST_BINARIES)
 
 debug_asan_test: $(DEBUG_ASAN_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
@@ -167,5 +150,5 @@ perf: $(PERF_BINARY)
 clean:
 	rm -rf $(BUILD_DIR)
 
-format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(DUDECT_TEST_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
+format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS)
 	clang-format -i $^

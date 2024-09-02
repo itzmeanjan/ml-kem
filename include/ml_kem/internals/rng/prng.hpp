@@ -28,20 +28,20 @@ public:
   forceinline prng_t()
   {
     std::array<uint8_t, bit_security_level / std::numeric_limits<uint8_t>::digits> seed{};
-    auto _seed = std::span(seed);
+    auto seed_span = std::span(seed);
 
     // Read more @ https://en.cppreference.com/w/cpp/numeric/random/random_device/random_device
     std::random_device rd{};
 
     size_t off = 0;
-    while (off < _seed.size()) {
+    while (off < seed_span.size()) {
       const uint32_t v = rd();
-      std::memcpy(_seed.subspan(off, sizeof(v)).data(), &v, sizeof(v));
+      std::memcpy(seed_span.subspan(off, sizeof(v)).data(), &v, sizeof(v));
 
       off += sizeof(v);
     }
 
-    state.absorb(_seed);
+    state.absorb(seed_span);
     state.finalize();
   }
 

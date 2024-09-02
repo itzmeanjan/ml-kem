@@ -4,7 +4,7 @@
 namespace ml_kem_512 {
 
 // ML-KEM Key Encapsulation Mechanism instantiated with ML-KEM-512 parameters
-// See row 1 of table 2 of ML-KEM specification @ https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See row 1 of table 2 of ML-KEM specification @ https://doi.org/10.6028/NIST.FIPS.203.
 
 inline constexpr size_t k = 2;
 inline constexpr size_t η1 = 3;

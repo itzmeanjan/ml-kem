@@ -6,14 +6,11 @@
 // Test if
 //
 // - Is ML-KEM-768 implemented correctly ?
-// - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203.ipd ?
+// - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
 //
-// using Known Answer Tests, generated following
-// https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
+// using Known Answer Tests, generated following https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
 TEST(ML_KEM, ML_KEM_768_KnownAnswerTests)
 {
-  using namespace std::literals;
-
   const std::string kat_file = "./kats/ml_kem_768.kat";
   std::fstream file(kat_file);
 

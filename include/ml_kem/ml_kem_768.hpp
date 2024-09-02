@@ -4,7 +4,7 @@
 namespace ml_kem_768 {
 
 // ML-KEM Key Encapsulation Mechanism instantiated with ML-KEM-768 parameters
-// See row 2 of table 2 of ML-KEM specification @ https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See row 2 of table 2 of ML-KEM specification @ https://doi.org/10.6028/NIST.FIPS.203.
 
 inline constexpr size_t k = 3;
 inline constexpr size_t η1 = 2;

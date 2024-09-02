@@ -8,8 +8,7 @@
 //
 // |(x' - x) mod q| <= round(q / 2 ^ (d + 1))
 //
-// See eq. 2 of Ml_kem specification
-// https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See eq. 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t d>
 forceinline constexpr size_t
 compute_error()

@@ -1,9 +1,8 @@
 #include "ml_kem/internals/math/field.hpp"
 #include <gtest/gtest.h>
 
-// Test functional correctness of Ml_kem prime field operations ( using
-// Montgomery Arithmetic ), by running through multiple rounds of execution of
-// field operations on randomly sampled field elements.
+// Test functional correctness of ML-KEM prime field operations, by running through multiple rounds
+// of execution of field operations on randomly sampled field elements.
 TEST(ML_KEM, ArithmeticOverZq)
 {
   constexpr size_t ITERATION_COUNT = 1ul << 20;

@@ -10,7 +10,7 @@
 namespace k_pke {
 
 // K-PKE key generation algorithm, generating byte serialized public key and secret keym given a 32 -bytes input seed `d`.
-// See algorithm 12 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 13 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1>
 constexpr void
 keygen(std::span<const uint8_t, 32> d,
@@ -19,20 +19,20 @@ keygen(std::span<const uint8_t, 32> d,
   requires(ml_kem_params::check_keygen_params(k, eta1))
 {
   std::array<uint8_t, 64> g_out{};
-  auto _g_out = std::span(g_out);
+  auto g_out_span = std::span(g_out);
 
   // Repurposing `g_out` (i.e. array for holding output of hash function G),
   // for preparing the concatenated input to hash function G.
-  std::copy(d.begin(), d.end(), _g_out.begin());
-  _g_out[d.size()] = k; // Domain seperator to prevent misuse of key
+  std::copy(d.begin(), d.end(), g_out_span.begin());
+  g_out_span[d.size()] = k; // Domain seperator to prevent misuse of key
 
   sha3_512::sha3_512_t h512;
-  h512.absorb(_g_out.template first<d.size() + 1>());
+  h512.absorb(g_out_span.template first<d.size() + 1>());
   h512.finalize();
-  h512.digest(_g_out);
+  h512.digest(g_out_span);
 
-  const auto rho = _g_out.template subspan<0, 32>();
-  const auto sigma = _g_out.template subspan<rho.size(), 32>();
+  const auto rho = g_out_span.template subspan<0, 32>();
+  const auto sigma = g_out_span.template subspan<rho.size(), 32>();
 
   std::array<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> A_prime{};
   ml_kem_utils::generate_matrix<k, false>(A_prime, rho);
@@ -68,9 +68,9 @@ keygen(std::span<const uint8_t, 32> d,
 // ( from where all randomness is deterministically sampled ), this routine encrypts message using
 // K-PKE encryption algorithm, computing compressed cipher text.
 //
-// If modulus check, as described in point (2) of section 6.2 of ML-KEM draft standard, fails, it returns false.
+// If modulus check, as described in point (2) of section 7.2 of ML-KEM standard, fails, it returns false.
 //
-// See algorithm 13 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 14 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 [[nodiscard("Use result of modulus check on public key")]] constexpr bool
 encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey,
@@ -147,7 +147,7 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
 // Given K-PKE secret key and cipher text, this routine recovers 32 -bytes plain text which
 // was encrypted using K-PKE public key i.e. associated with this secret key.
 //
-// See algorithm 14 defined in K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 15 defined in K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t du, size_t dv>
 constexpr void
 decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey,

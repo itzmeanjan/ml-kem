@@ -9,7 +9,7 @@ namespace ml_kem_utils {
 
 // Given an element x ∈ Z_q | q = 3329, this routine compresses it by discarding some low-order bits, computing y ∈ [0, 2^d) | d < round(log2(q)).
 //
-// See formula 4.5 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See formula 4.7 on page 21 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 // Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96/mlkem768.go#L395-L425.
 template<size_t d>
 forceinline constexpr ml_kem_field::zq_t
@@ -30,7 +30,7 @@ compress(const ml_kem_field::zq_t x)
 
 // Given an element x ∈ [0, 2^d) | d < round(log2(q)), this routine decompresses it back to y ∈ Z_q | q = 3329.
 //
-// See formula 4.6 on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See formula 4.8 on page 21 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t d>
 forceinline constexpr ml_kem_field::zq_t
 decompress(const ml_kem_field::zq_t x)

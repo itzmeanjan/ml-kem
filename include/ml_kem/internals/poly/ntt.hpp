@@ -11,6 +11,7 @@ inline constexpr size_t N = 1 << LOG2N;
 //
 // Meaning, 17 ** 256 == 1 mod q
 inline constexpr auto ζ = ml_kem_field::zq_t(17);
+static_assert((ζ ^ N) == ml_kem_field::zq_t::one(), "ζ must be 256th root of unity modulo Q");
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
@@ -74,7 +75,7 @@ inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() ->
 // Note, this routine mutates input i.e. it's an in-place NTT implementation.
 //
 // Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144.
-// See algorithm 8 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 9 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 forceinline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
@@ -110,7 +111,7 @@ ntt(std::span<ml_kem_field::zq_t, N> poly)
 // Note, this routine mutates input i.e. it's an in-place iNTT implementation.
 //
 // Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224.
-// See algorithm 9 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 10 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 forceinline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
@@ -146,7 +147,7 @@ intt(std::span<ml_kem_field::zq_t, N> poly)
 }
 
 // Given two degree-1 polynomials, this routine computes resulting degree-1 polynomial h.
-// See algorithm 11 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 12 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 forceinline constexpr void
 basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::zq_t, 2> g, std::span<ml_kem_field::zq_t, 2> h, const ml_kem_field::zq_t ζ)
 {
@@ -178,7 +179,7 @@ basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::
 //
 // h = f ◦ g
 //
-// See algorithm 10 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 11 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 constexpr void
 polymul(std::span<const ml_kem_field::zq_t, N> f, std::span<const ml_kem_field::zq_t, N> g, std::span<ml_kem_field::zq_t, N> h)
 {

@@ -19,7 +19,7 @@ matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ml_kem_ntt
   using poly_t = std::span<const ml_kem_field::zq_t, ml_kem_ntt::N>;
 
   std::array<ml_kem_field::zq_t, ml_kem_ntt::N> tmp{};
-  auto _tmp = std::span(tmp);
+  auto tmp_span = std::span(tmp);
 
   for (size_t i = 0; i < a_rows; i++) {
     for (size_t j = 0; j < b_cols; j++) {
@@ -29,7 +29,7 @@ matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ml_kem_ntt
         const size_t aoff = (i * a_cols + k) * ml_kem_ntt::N;
         const size_t boff = (k * b_cols + j) * ml_kem_ntt::N;
 
-        ml_kem_ntt::polymul(poly_t(a.subspan(aoff, ml_kem_ntt::N)), poly_t(b.subspan(boff, ml_kem_ntt::N)), _tmp);
+        ml_kem_ntt::polymul(poly_t(a.subspan(aoff, ml_kem_ntt::N)), poly_t(b.subspan(boff, ml_kem_ntt::N)), tmp_span);
 
         for (size_t l = 0; l < ml_kem_ntt::N; l++) {
           c[coff + l] += tmp[l];

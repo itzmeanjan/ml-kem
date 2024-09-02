@@ -3,7 +3,6 @@
 #include "ml_kem/internals/poly/compression.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/poly/serialize.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 
 namespace ml_kem_utils {

@@ -1,6 +1,7 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/rng/prng.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp"
 #include <array>
 #include <cassert>
 #include <charconv>
@@ -12,7 +13,7 @@
 
 // Given a hex encoded string of length 2*L, this routine can be used for parsing it as a byte array of length L.
 template<size_t L>
-static inline std::array<uint8_t, L>
+static forceinline std::array<uint8_t, L>
 from_hex(std::string_view bytes)
 {
   const size_t blen = bytes.length();
@@ -35,10 +36,24 @@ from_hex(std::string_view bytes)
   return res;
 }
 
+// Given a string of following format, this lambda function can extract out the hex string portion
+// and then it can parse it, returning a byte array of requested length.
+//
+// DATA = 010203....0d0e0f
+template<size_t byte_len>
+static forceinline std::array<uint8_t, byte_len>
+extract_and_parse_hex_string(std::string_view in_str)
+{
+  using namespace std::literals;
+
+  const auto hex_str = in_str.substr(in_str.find("="sv) + 2, in_str.size());
+  return from_hex<byte_len>(hex_str);
+};
+
 // Given a valid ML-KEM-{512, 768, 1024} public key, this function mutates the last coefficient
 // of serialized polynomial vector s.t. it produces a malformed (i.e. non-reduced) polynomial vector.
 template<size_t pubkey_byte_len>
-static inline constexpr void
+static forceinline constexpr void
 make_malformed_pubkey(std::span<uint8_t, pubkey_byte_len> pubkey)
 {
   constexpr auto last_coeff_ends_at = pubkey_byte_len - 32;
@@ -59,7 +74,7 @@ make_malformed_pubkey(std::span<uint8_t, pubkey_byte_len> pubkey)
 
 // Given a ML-KEM-{512, 768, 1024} cipher text, this function flips a random bit of it, while sampling choice of random index from input PRNG.
 template<size_t cipher_byte_len, size_t bit_sec_lvl>
-static inline constexpr void
+static forceinline constexpr void
 random_bitflip_in_cipher_text(std::span<uint8_t, cipher_byte_len> cipher, ml_kem_prng::prng_t<bit_sec_lvl>& prng)
 {
   size_t random_u64 = 0;

@@ -10,9 +10,9 @@
 namespace ml_kem {
 
 // ML-KEM key generation algorithm, generating byte serialized public key and secret key, given 32 -bytes seed `d` and `z`.
-// See algorithm 15 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See algorithm 16 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1>
-static inline constexpr void
+constexpr void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<const uint8_t, 32> z, // used in CCA-KEM
        std::span<uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
@@ -48,9 +48,9 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 //
 // If invalid ML-KEM public key is input, this function execution will fail, returning false.
 //
-// See algorithm 16 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd
+// See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-[[nodiscard("Use result, it might fail because of malformed input public key")]] static inline constexpr bool
+[[nodiscard("Use result, it might fail because of malformed input public key")]] constexpr bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
             std::span<uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
@@ -60,33 +60,33 @@ encapsulate(std::span<const uint8_t, 32> m,
   std::array<uint8_t, m.size() + sha3_256::DIGEST_LEN> g_in{};
   std::array<uint8_t, sha3_512::DIGEST_LEN> g_out{};
 
-  auto _g_in = std::span(g_in);
-  auto _g_in0 = _g_in.template first<m.size()>();
-  auto _g_in1 = _g_in.template last<sha3_256::DIGEST_LEN>();
+  auto g_in_span = std::span(g_in);
+  auto g_in_span0 = g_in_span.template first<m.size()>();
+  auto g_in_span1 = g_in_span.template last<sha3_256::DIGEST_LEN>();
 
-  auto _g_out = std::span(g_out);
-  auto _g_out0 = _g_out.template first<shared_secret.size()>();
-  auto _g_out1 = _g_out.template last<_g_out.size() - _g_out0.size()>();
+  auto g_out_span = std::span(g_out);
+  auto g_out_span0 = g_out_span.template first<shared_secret.size()>();
+  auto g_out_span1 = g_out_span.template last<g_out_span.size() - g_out_span0.size()>();
 
-  std::copy(m.begin(), m.end(), _g_in0.begin());
+  std::copy(m.begin(), m.end(), g_in_span0.begin());
 
   sha3_256::sha3_256_t h256{};
   h256.absorb(pubkey);
   h256.finalize();
-  h256.digest(_g_in1);
+  h256.digest(g_in_span1);
 
   sha3_512::sha3_512_t h512{};
-  h512.absorb(_g_in);
+  h512.absorb(g_in_span);
   h512.finalize();
-  h512.digest(_g_out);
+  h512.digest(g_out_span);
 
-  const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, _g_out1, cipher);
+  const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, g_out_span1, cipher);
   if (!has_mod_check_passed) {
     // Got an invalid public key
     return has_mod_check_passed;
   }
 
-  std::copy(_g_out0.begin(), _g_out0.end(), shared_secret.begin());
+  std::copy(g_out_span0.begin(), g_out_span0.end(), shared_secret.begin());
   return true;
 }
 
@@ -96,9 +96,9 @@ encapsulate(std::span<const uint8_t, 32> m,
 // Recovered 32 -bytes plain text is used for deriving a 32 -bytes shared secret key, which can now be
 // used for encrypting communication between two participating parties, using fast symmetric key algorithms.
 //
-// See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 18 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-static inline constexpr void
+constexpr void
 decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey,
             std::span<const uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
@@ -122,21 +122,21 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   std::array<uint8_t, shared_secret.size()> j_out{};
   std::array<uint8_t, cipher.size()> c_prime{};
 
-  auto _g_in = std::span(g_in);
-  auto _g_in0 = _g_in.template first<32>();
-  auto _g_in1 = _g_in.template last<h.size()>();
+  auto g_in_span = std::span(g_in);
+  auto g_in_span0 = g_in_span.template first<32>();
+  auto g_in_span1 = g_in_span.template last<h.size()>();
 
-  auto _g_out = std::span(g_out);
-  auto _g_out0 = _g_out.template first<shared_secret.size()>();
-  auto _g_out1 = _g_out.template last<32>();
+  auto g_out_span = std::span(g_out);
+  auto g_out_span0 = g_out_span.template first<shared_secret.size()>();
+  auto g_out_span1 = g_out_span.template last<32>();
 
-  k_pke::decrypt<k, du, dv>(pke_sk, cipher, _g_in0);
-  std::copy(h.begin(), h.end(), _g_in1.begin());
+  k_pke::decrypt<k, du, dv>(pke_sk, cipher, g_in_span0);
+  std::copy(h.begin(), h.end(), g_in_span1.begin());
 
   sha3_512::sha3_512_t h512{};
-  h512.absorb(_g_in);
+  h512.absorb(g_in_span);
   h512.finalize();
-  h512.digest(_g_out);
+  h512.digest(g_out_span);
 
   shake256::shake256_t xof256{};
   xof256.absorb(z);
@@ -145,12 +145,12 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   xof256.squeeze(j_out);
 
   // Explicitly ignore return value, because public key, held as part of secret key is *assumed* to be valid.
-  (void)k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, _g_in0, _g_out1, c_prime);
+  (void)k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in_span0, g_out_span1, c_prime);
 
   // line 9-12 of algorithm 17, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;
   const uint32_t cond = ml_kem_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
-  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(_g_out0), kdf_t(z));
+  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(z));
 }
 
 }

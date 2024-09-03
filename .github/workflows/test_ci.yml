@@ -1,4 +1,4 @@
-name: Test Ml_kem Key Encapsulation Mechanism
+name: Test ML-KEM Key Encapsulation Mechanism (NIST FIPS 203)
 
 on:
   push:
@@ -11,14 +11,15 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-latest]
+        compiler: [g++, clang++]
 
     steps:
     - uses: actions/checkout@v4
     - name: Setup Google-Test
       run: |
         pushd ~
-        git clone https://github.com/google/googletest.git -b v1.14.0
+        git clone https://github.com/google/googletest.git -b v1.15.0
         pushd googletest
         mkdir build
         pushd build
@@ -28,9 +29,13 @@ jobs:
         popd
         popd
         popd
-    - name: Execute Tests on ${{matrix.os}}
-      run: make -j
-    - name: Execute Tests with AddressSanitizer on ${{matrix.os}}
-      run: make asan_test -j
-    - name: Execute Tests with UndefinedBehaviourSanitizer on ${{matrix.os}}
-      run: make ubsan_test -j
+    - name: Execute Tests on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      run: CXX=${{matrix.compiler}} make -j
+    - name: Execute Tests with AddressSanitizer, in DEBUG mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      run: CXX=${{matrix.compiler}} make debug_asan_test -j
+    - name: Execute Tests with AddressSanitizer, in RELEASE mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      run: CXX=${{matrix.compiler}} make release_asan_test -j
+    - name: Execute Tests with UndefinedBehaviourSanitizer, in DEBUG mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      run: CXX=${{matrix.compiler}} make debug_ubsan_test -j
+    - name: Execute Tests with UndefinedBehaviourSanitizer, in RELEASE mode, on ${{matrix.os}}, compiled with ${{matrix.compiler}}
+      run: CXX=${{matrix.compiler}} make release_ubsan_test -j

@@ -1,4 +1,5 @@
 #pragma once
+#include "ml_kem/internals/math/field.hpp"
 #include <cstddef>
 
 // Holds compile-time executable functions, ensuring that functions are invoked with proper arguments.
@@ -7,17 +8,11 @@ namespace ml_kem_params {
 // Compile-time check to ensure that number of bits ( read `d` ) to consider during
 // polynomial coefficient compression/ decompression is within tolerable bounds.
 //
-// See "Compression and Decompression" section on page 18 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See "Compression and Decompression" section on page 21 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_d(const size_t d)
 {
-  // $ python3
-  // >>> import math
-  // >>> Q = 3329
-  // >>> a = math.log2(Q) # == 11.700873155140263
-  // >>> math.round(a) # == 12
-  constexpr size_t log2d = 12ul;
-  return d < log2d;
+  return d < ml_kem_field::Q_BIT_WIDTH;
 }
 
 // Compile-time check to ensure that functions requiring `η` as parameter are invoked with proper argument.
@@ -50,7 +45,7 @@ check_matrix_dim(const size_t a_cols, const size_t b_rows)
 
 // Compile-time check to ensure that both K-PKE, ML-KEM key generation routine is invoked with proper parameter set.
 //
-// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_keygen_params(const size_t k, const size_t eta1)
 {
@@ -63,7 +58,7 @@ check_keygen_params(const size_t k, const size_t eta1)
 
 // Compile-time check to ensure that K-PKE encryption routine is invoked with proper parameter set.
 //
-// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_encrypt_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
@@ -76,7 +71,7 @@ check_encrypt_params(const size_t k, const size_t η1, const size_t η2, const s
 
 // Compile-time check to ensure that K-PKE decryption routine is invoked with proper parameter set.
 //
-// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_decrypt_params(const size_t k, const size_t du, const size_t dv)
 {
@@ -89,7 +84,7 @@ check_decrypt_params(const size_t k, const size_t du, const size_t dv)
 
 // Compile-time check to ensure that ML-KEM encapsulation routine is invoked with proper parameter set.
 //
-// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_encap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {
@@ -98,7 +93,7 @@ check_encap_params(const size_t k, const size_t η1, const size_t η2, const siz
 
 // Compile-time check to ensure that ML-KEM encapsulation routine is invoked with proper parameter set.
 //
-// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See table 2 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 consteval bool
 check_decap_params(const size_t k, const size_t η1, const size_t η2, const size_t du, const size_t dv)
 {

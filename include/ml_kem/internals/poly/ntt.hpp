@@ -1,27 +1,29 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp"
 
 namespace ml_kem_ntt {
 
-static constexpr size_t LOG2N = 8;
-static constexpr size_t N = 1 << LOG2N;
+inline constexpr size_t LOG2N = 8;
+inline constexpr size_t N = 1 << LOG2N;
 
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-static constexpr auto ζ = ml_kem_field::zq_t(17);
+inline constexpr auto ζ = ml_kem_field::zq_t(17);
+static_assert((ζ ^ N) == ml_kem_field::zq_t::one(), "ζ must be 256th root of unity modulo Q");
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
 // Meaning (N/ 2) * INV_N = 1 mod q
-static constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
+inline constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
 
 // Given a 64 -bit unsigned integer, this routine extracts specified many contiguous bits from ( least significant bits ) LSB side
 // and reverses their bit order, returning bit reversed `mbw` -bit wide number.
 //
 // See https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38 for source of inspiration.
 template<size_t mbw>
-static inline constexpr size_t
+forceinline constexpr size_t
 bit_rev(const size_t v)
 {
   size_t v_rev = 0ul;
@@ -35,7 +37,7 @@ bit_rev(const size_t v)
 }
 
 // Compile-time computed constants ( powers of ζ ), used for polynomial evaluation i.e. computation of NTT form.
-static constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
@@ -46,7 +48,7 @@ static constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto
 }();
 
 // Compile-time computed constants ( negated powers of ζ ), used for polynomial interpolation i.e. computation of iNTT form.
-static constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
@@ -57,7 +59,7 @@ static constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = []() -> aut
 }();
 
 // Compile-time computed constants ( powers of ζ ), used when multiplying two degree-255 polynomials in NTT domain.
-static constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
@@ -73,8 +75,8 @@ static constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() ->
 // Note, this routine mutates input i.e. it's an in-place NTT implementation.
 //
 // Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L69-L144.
-// See algorithm 8 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
-static inline constexpr void
+// See algorithm 9 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
+forceinline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
   for (size_t l = LOG2N - 1; l >= 1; l--) {
@@ -109,8 +111,8 @@ ntt(std::span<ml_kem_field::zq_t, N> poly)
 // Note, this routine mutates input i.e. it's an in-place iNTT implementation.
 //
 // Implementation inspired from https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L146-L224.
-// See algorithm 9 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
-static inline constexpr void
+// See algorithm 10 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
+forceinline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
   for (size_t l = 1; l < LOG2N; l++) {
@@ -145,8 +147,8 @@ intt(std::span<ml_kem_field::zq_t, N> poly)
 }
 
 // Given two degree-1 polynomials, this routine computes resulting degree-1 polynomial h.
-// See algorithm 11 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
-static inline constexpr void
+// See algorithm 12 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
+forceinline constexpr void
 basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::zq_t, 2> g, std::span<ml_kem_field::zq_t, 2> h, const ml_kem_field::zq_t ζ)
 {
   ml_kem_field::zq_t f0 = f[0];
@@ -177,8 +179,8 @@ basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::
 //
 // h = f ◦ g
 //
-// See algorithm 10 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
-static inline constexpr void
+// See algorithm 11 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
+constexpr void
 polymul(std::span<const ml_kem_field::zq_t, N> f, std::span<const ml_kem_field::zq_t, N> g, std::span<ml_kem_field::zq_t, N> h)
 {
   using poly_t = std::span<const ml_kem_field::zq_t, 2>;

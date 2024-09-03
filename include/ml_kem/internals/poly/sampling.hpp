@@ -1,6 +1,7 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "shake128.hpp"
 #include "shake256.hpp"
@@ -14,8 +15,8 @@ namespace ml_kem_utils {
 // If the byte stream is statistically close to uniform random byte stream, produced polynomial coefficients are also
 // statiscally close to randomly sampled elements of R_q.
 //
-// See algorithm 6 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
-inline constexpr void
+// See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
+forceinline constexpr void
 sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
 {
   constexpr size_t n = poly.size();
@@ -46,9 +47,9 @@ sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_nt
 // Generate public matrix A ( consists of degree-255 polynomials ) in NTT domain, by sampling from a XOF ( read SHAKE128 ),
 // which is seeded with 32 -bytes key and two nonces ( each of 1 -byte ).
 //
-// See step (4-8) of algorithm 12/ 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See step (3-7) of algorithm 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, bool transpose>
-static inline constexpr void
+constexpr void
 generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::span<const uint8_t, 32> rho)
   requires(ml_kem_params::check_k(k))
 {
@@ -80,9 +81,9 @@ generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::s
 // Centered Binomial Distribution.
 // A degree 255 polynomial deterministically sampled from `64 * eta` -bytes output of a pseudorandom function ( PRF ).
 //
-// See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// See algorithm 8 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t eta>
-static inline constexpr void
+constexpr void
 sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_eta(eta))
 {
@@ -130,9 +131,9 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
   }
 }
 
-// Sample a polynomial vector from Bη, following step (9-12) of algorithm 12/ 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.ipd.
+// Sample a polynomial vector from Bη, following step (8-11) of algorithm 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta>
-static inline constexpr void
+constexpr void
 generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
   requires((k == 1) || ml_kem_params::check_k(k))
 {

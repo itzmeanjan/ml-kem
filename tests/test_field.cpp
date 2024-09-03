@@ -1,16 +1,15 @@
 #include "ml_kem/internals/math/field.hpp"
 #include <gtest/gtest.h>
 
-// Test functional correctness of Ml_kem prime field operations ( using
-// Montgomery Arithmetic ), by running through multiple rounds of execution of
-// field operations on randomly sampled field elements.
+// Test functional correctness of ML-KEM prime field operations, by running through multiple rounds
+// of execution of field operations on randomly sampled field elements.
 TEST(ML_KEM, ArithmeticOverZq)
 {
-  static constexpr size_t itr_cnt = 1ul << 20;
+  constexpr size_t ITERATION_COUNT = 1ul << 20;
 
   ml_kem_prng::prng_t<128> prng{};
 
-  for (size_t i = 0; i < itr_cnt; i++) {
+  for (size_t i = 0; i < ITERATION_COUNT; i++) {
     const auto a = ml_kem_field::zq_t::random(prng);
     const auto b = ml_kem_field::zq_t::random(prng);
 
@@ -27,13 +26,13 @@ TEST(ML_KEM, ArithmeticOverZq)
     const auto g = f / b;
     const auto h = f / a;
 
-    if (b != ml_kem_field::zq_t()) {
+    if (b != ml_kem_field::zq_t::zero()) {
       EXPECT_EQ(g, a);
     } else {
       EXPECT_EQ(g, ml_kem_field::zq_t());
     }
 
-    if (a != ml_kem_field::zq_t()) {
+    if (a != ml_kem_field::zq_t::zero()) {
       EXPECT_EQ(h, b);
     } else {
       EXPECT_EQ(h, ml_kem_field::zq_t());

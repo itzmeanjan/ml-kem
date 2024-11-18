@@ -1,4 +1,4 @@
-name: Test ML-KEM Key Encapsulation Mechanism (NIST FIPS 203)
+name: Test ML-KEM i.e. NIST FIPS 203
 
 on:
   push:

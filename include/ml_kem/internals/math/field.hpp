@@ -1,5 +1,4 @@
 #pragma once
-#include "ml_kem/internals/utility/force_inline.hpp"
 #include "randomshake/randomshake.hpp"
 #include <bit>
 #include <cstdint>

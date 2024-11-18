@@ -4,7 +4,7 @@
 #include "ml_kem/internals/poly/sampling.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
-#include "sha3_512.hpp"
+#include "sha3/sha3_512.hpp"
 
 // Public Key Encryption Scheme
 namespace k_pke {

@@ -1,4 +1,5 @@
 #include "ml_kem/internals/math/field.hpp"
+#include "randomshake/randomshake.hpp"
 #include <gtest/gtest.h>
 
 // Test functional correctness of ML-KEM prime field operations, by running through multiple rounds
@@ -7,11 +8,11 @@ TEST(ML_KEM, ArithmeticOverZq)
 {
   constexpr size_t ITERATION_COUNT = 1ul << 20;
 
-  ml_kem_prng::prng_t<128> prng{};
+  randomshake::randomshake_t<128> csprng{};
 
   for (size_t i = 0; i < ITERATION_COUNT; i++) {
-    const auto a = ml_kem_field::zq_t::random(prng);
-    const auto b = ml_kem_field::zq_t::random(prng);
+    const auto a = ml_kem_field::zq_t::random(csprng);
+    const auto b = ml_kem_field::zq_t::random(csprng);
 
     // Addition, Subtraction and Negation
     const auto c = a + b;

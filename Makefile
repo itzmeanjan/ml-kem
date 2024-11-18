@@ -15,9 +15,10 @@ RELEASE_FLAGS := -O3 -march=native
 LINK_OPT_FLAGS := -flto
 
 I_FLAGS := -I ./include
-SHA3_INC_DIR = ./sha3/include
-SUBTLE_INC_DIR = ./subtle/include
-DEP_IFLAGS = -I $(SHA3_INC_DIR) -I $(SUBTLE_INC_DIR)
+SHA3_INC_DIR := ./sha3/include
+SUBTLE_INC_DIR := ./subtle/include
+RANDOMSHAKE_INC_DIR := ./RandomShake/include
+DEP_IFLAGS := -I $(SHA3_INC_DIR) -I $(SUBTLE_INC_DIR) -I $(RANDOMSHAKE_INC_DIR)
 
 SRC_DIR := include
 ML_KEM_SOURCES := $(shell find $(SRC_DIR) -name '*.hpp')
@@ -29,7 +30,10 @@ include benchmarks/bench.mk
 $(SUBTLE_INC_DIR):
 	git submodule update --init subtle
 
-$(SHA3_INC_DIR): $(SUBTLE_INC_DIR)
+$(RANDOMSHAKE_INC_DIR): $(SUBTLE_INC_DIR)
+	git submodule update --init RandomShake
+
+$(SHA3_INC_DIR): $(RANDOMSHAKE_INC_DIR)
 	git submodule update --init sha3
 
 $(GTEST_PARALLEL): $(SHA3_INC_DIR)

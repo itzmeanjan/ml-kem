@@ -1,9 +1,9 @@
 #pragma once
 #include "k_pke.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
-#include "sha3_256.hpp"
-#include "sha3_512.hpp"
-#include "shake256.hpp"
+#include "sha3/sha3_256.hpp"
+#include "sha3/sha3_512.hpp"
+#include "sha3/shake256.hpp"
 #include <algorithm>
 
 // Key Encapsulation Mechanism

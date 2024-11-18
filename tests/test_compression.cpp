@@ -1,5 +1,6 @@
 #include "ml_kem/internals/poly/compression.hpp"
 #include "ml_kem/internals/utility/force_inline.hpp"
+#include "randomshake/randomshake.hpp"
 #include <gtest/gtest.h>
 
 // Decompression error that can happen for some given `d` s.t.
@@ -36,10 +37,10 @@ test_zq_compression()
   requires(itr_cnt > 0)
 {
   bool res = true;
-  ml_kem_prng::prng_t<256> prng{};
+  randomshake::randomshake_t<256> csprng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {
-    const auto a = ml_kem_field::zq_t::random(prng);
+    const auto a = ml_kem_field::zq_t::random(csprng);
 
     const auto b = ml_kem_utils::compress<d>(a);
     const auto c = ml_kem_utils::decompress<d>(b);

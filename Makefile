@@ -32,7 +32,7 @@ $(SUBTLE_INC_DIR):
 	git submodule update --init subtle
 
 $(RANDOMSHAKE_INC_DIR): $(SUBTLE_INC_DIR)
-	git submodule update --init RandomShake
+	git submodule update --init --recursive RandomShake
 
 $(SHA3_INC_DIR): $(RANDOMSHAKE_INC_DIR)
 	git submodule update --init sha3

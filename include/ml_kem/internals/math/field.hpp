@@ -1,6 +1,5 @@
 #pragma once
-#include "ml_kem/internals/rng/prng.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
+#include "randomshake/randomshake.hpp"
 #include <bit>
 #include <cstdint>
 
@@ -117,10 +116,10 @@ public:
 
   // Samples a random Zq element, using pseudo random number generator.
   template<size_t bit_security_level>
-  static forceinline zq_t random(ml_kem_prng::prng_t<bit_security_level>& prng)
+  static forceinline zq_t random(randomshake::randomshake_t<bit_security_level>& csprng)
   {
     uint16_t res = 0;
-    prng.read(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
+    csprng.generate(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
 
     return zq_t::from_non_reduced(static_cast<uint32_t>(res));
   }

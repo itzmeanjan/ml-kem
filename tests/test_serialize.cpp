@@ -1,4 +1,5 @@
 #include "ml_kem/internals/poly/serialize.hpp"
+#include "randomshake/randomshake.hpp"
 #include <gtest/gtest.h>
 
 // Ensure that degree-255 polynomial serialization to byte array ( of length 32*l -bytes ) and deserialization of
@@ -16,10 +17,10 @@ test_serialize_deserialize()
   std::vector<ml_kem_field::zq_t> dst(ml_kem_ntt::N);
   std::vector<uint8_t> bytes(blen);
 
-  ml_kem_prng::prng_t<256> prng{};
+  randomshake::randomshake_t<256> csprng{};
 
   for (size_t i = 0; i < ml_kem_ntt::N; i++) {
-    src[i] = ml_kem_field::zq_t::random(prng);
+    src[i] = ml_kem_field::zq_t::random(csprng);
   }
 
   using poly_t = std::span<ml_kem_field::zq_t, ml_kem_ntt::N>;

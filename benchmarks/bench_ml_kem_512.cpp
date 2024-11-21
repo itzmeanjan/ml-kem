@@ -13,10 +13,10 @@ bench_ml_kem_512_keygen(benchmark::State& state)
   std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pubkey{};
   std::array<uint8_t, ml_kem_512::SKEY_BYTE_LEN> seckey{};
 
-  ml_kem_prng::prng_t<128> prng{};
+  randomshake::randomshake_t<128> csprng{};
 
-  prng.read(seed_d);
-  prng.read(seed_z);
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
 
   for (auto _ : state) {
     ml_kem_512::keygen(seed_d, seed_z, pubkey, seckey);
@@ -45,11 +45,11 @@ bench_ml_kem_512_encapsulate(benchmark::State& state)
   std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
   std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret{};
 
-  ml_kem_prng::prng_t<128> prng{};
+  randomshake::randomshake_t<128> csprng{};
 
-  prng.read(seed_d);
-  prng.read(seed_z);
-  prng.read(seed_m);
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
+  csprng.generate(seed_m);
 
   ml_kem_512::keygen(seed_d, seed_z, pubkey, seckey);
 
@@ -84,11 +84,11 @@ bench_ml_kem_512_decapsulate(benchmark::State& state)
   std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  ml_kem_prng::prng_t<128> prng{};
+  randomshake::randomshake_t<128> csprng{};
 
-  prng.read(seed_d);
-  prng.read(seed_z);
-  prng.read(seed_m);
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
+  csprng.generate(seed_m);
 
   ml_kem_512::keygen(seed_d, seed_z, pubkey, seckey);
   (void)ml_kem_512::encapsulate(seed_m, pubkey, cipher, shared_secret_sender);

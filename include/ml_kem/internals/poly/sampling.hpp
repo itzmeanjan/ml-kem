@@ -3,8 +3,8 @@
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/utility/force_inline.hpp"
 #include "ml_kem/internals/utility/params.hpp"
-#include "shake128.hpp"
-#include "shake256.hpp"
+#include "sha3/shake128.hpp"
+#include "sha3/shake256.hpp"
 #include <limits>
 
 namespace ml_kem_utils {

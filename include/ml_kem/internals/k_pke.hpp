@@ -4,7 +4,7 @@
 #include "ml_kem/internals/poly/sampling.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
-#include "sha3_512.hpp"
+#include "sha3/sha3_512.hpp"
 
 // Public Key Encryption Scheme
 namespace k_pke {
@@ -55,12 +55,12 @@ keygen(std::span<const uint8_t, 32> d,
   ml_kem_utils::matrix_multiply<k, k, k, 1>(A_prime, s, t_prime);
   ml_kem_utils::poly_vec_add_to<k>(e, t_prime);
 
-  constexpr size_t pkoff = k * 12 * 32;
-  auto _pubkey0 = pubkey.template subspan<0, pkoff>();
-  auto _pubkey1 = pubkey.template subspan<pkoff, 32>();
+  constexpr size_t pubkey_offset = k * 12 * 32;
+  auto encoded_t_prime_in_pubkey = pubkey.template subspan<0, pubkey_offset>();
+  auto rho_in_pubkey = pubkey.template subspan<pubkey_offset, 32>();
 
-  ml_kem_utils::poly_vec_encode<k, 12>(t_prime, _pubkey0);
-  std::copy(rho.begin(), rho.end(), _pubkey1.begin());
+  ml_kem_utils::poly_vec_encode<k, 12>(t_prime, encoded_t_prime_in_pubkey);
+  std::copy(rho.begin(), rho.end(), rho_in_pubkey.begin());
   ml_kem_utils::poly_vec_encode<k, 12>(s, seckey);
 }
 
@@ -76,21 +76,21 @@ template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
 encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey,
         std::span<const uint8_t, 32> msg,
         std::span<const uint8_t, 32> rcoin,
-        std::span<uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> enc)
+        std::span<uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> ctxt)
   requires(ml_kem_params::check_encrypt_params(k, eta1, eta2, du, dv))
 {
   constexpr size_t pkoff = k * 12 * 32;
-  auto _pubkey0 = pubkey.template subspan<0, pkoff>();
+  auto encoded_t_prime_in_pubkey = pubkey.template subspan<0, pkoff>();
   auto rho = pubkey.template subspan<pkoff, 32>();
 
   std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> t_prime{};
-  std::array<uint8_t, _pubkey0.size()> encoded_tprime{};
+  std::array<uint8_t, encoded_t_prime_in_pubkey.size()> encoded_tprime{};
 
-  ml_kem_utils::poly_vec_decode<k, 12>(_pubkey0, t_prime);
+  ml_kem_utils::poly_vec_decode<k, 12>(encoded_t_prime_in_pubkey, t_prime);
   ml_kem_utils::poly_vec_encode<k, 12>(t_prime, encoded_tprime);
 
-  using encoded_pkey_t = std::span<const uint8_t, _pubkey0.size()>;
-  const auto are_equal = ml_kem_utils::ct_memcmp(encoded_pkey_t(_pubkey0), encoded_pkey_t(encoded_tprime));
+  using encoded_pkey_t = std::span<const uint8_t, encoded_t_prime_in_pubkey.size()>;
+  const auto are_equal = ml_kem_utils::ct_memcmp(encoded_pkey_t(encoded_t_prime_in_pubkey), encoded_pkey_t(encoded_tprime));
   if (are_equal == 0u) {
     // Got an invalid public key
     return false;
@@ -131,15 +131,15 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
   ml_kem_utils::poly_decompress<1>(m);
   ml_kem_utils::poly_vec_add_to<1>(m, v);
 
-  constexpr size_t encoff = k * du * 32;
-  auto _enc0 = enc.template subspan<0, encoff>();
-  auto _enc1 = enc.template subspan<encoff, dv * 32>();
+  constexpr size_t ctxt_offset = k * du * 32;
+  auto polyvec_u_in_ctxt = ctxt.template first<ctxt_offset>();
+  auto poly_v_in_ctxt = ctxt.template last<dv * 32>();
 
   ml_kem_utils::poly_vec_compress<k, du>(u);
-  ml_kem_utils::poly_vec_encode<k, du>(u, _enc0);
+  ml_kem_utils::poly_vec_encode<k, du>(u, polyvec_u_in_ctxt);
 
   ml_kem_utils::poly_compress<dv>(v);
-  ml_kem_utils::encode<dv>(v, _enc1);
+  ml_kem_utils::encode<dv>(v, poly_v_in_ctxt);
 
   return true;
 }
@@ -151,22 +151,21 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
 template<size_t k, size_t du, size_t dv>
 constexpr void
 decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey,
-        std::span<const uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> enc,
-        std::span<uint8_t, 32> dec)
+        std::span<const uint8_t, ml_kem_utils::get_pke_cipher_text_len(k, du, dv)> ctxt,
+        std::span<uint8_t, 32> ptxt)
   requires(ml_kem_params::check_decrypt_params(k, du, dv))
 {
-  constexpr size_t encoff = k * du * 32;
-  auto _enc0 = enc.template subspan<0, encoff>();
-  auto _enc1 = enc.template subspan<encoff, dv * 32>();
+  constexpr size_t ctxt_offset = k * du * 32;
+  auto polyvec_u_in_ctxt = ctxt.template subspan<0, ctxt_offset>();
+  auto poly_v_in_ctxt = ctxt.template subspan<ctxt_offset, dv * 32>();
 
   std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> u{};
-
-  ml_kem_utils::poly_vec_decode<k, du>(_enc0, u);
-  ml_kem_utils::poly_vec_decompress<k, du>(u);
-
   std::array<ml_kem_field::zq_t, ml_kem_ntt::N> v{};
 
-  ml_kem_utils::decode<dv>(_enc1, v);
+  ml_kem_utils::poly_vec_decode<k, du>(polyvec_u_in_ctxt, u);
+  ml_kem_utils::poly_vec_decompress<k, du>(u);
+
+  ml_kem_utils::decode<dv>(poly_v_in_ctxt, v);
   ml_kem_utils::poly_decompress<dv>(v);
 
   std::array<ml_kem_field::zq_t, k * ml_kem_ntt::N> s_prime{};
@@ -181,7 +180,7 @@ decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey
   ml_kem_utils::poly_vec_sub_from<1>(t, v);
 
   ml_kem_utils::poly_compress<1>(v);
-  ml_kem_utils::encode<1>(v, dec);
+  ml_kem_utils::encode<1>(v, ptxt);
 }
 
 }

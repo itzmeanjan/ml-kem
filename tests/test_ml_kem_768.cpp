@@ -1,4 +1,5 @@
 #include "ml_kem/ml_kem_768.hpp"
+#include "randomshake/randomshake.hpp"
 #include "test_helper.hpp"
 #include <gtest/gtest.h>
 
@@ -25,10 +26,10 @@ TEST(ML_KEM, ML_KEM_768_KeygenEncapsDecaps)
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  ml_kem_prng::prng_t<192> prng{};
-  prng.read(seed_d);
-  prng.read(seed_z);
-  prng.read(seed_m);
+  randomshake::randomshake_t<192> csprng{};
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
+  csprng.generate(seed_m);
 
   ml_kem_768::keygen(seed_d, seed_z, pubkey, seckey);
   const auto is_encapsulated = ml_kem_768::encapsulate(seed_m, pubkey, cipher, shared_secret_sender);
@@ -55,10 +56,10 @@ TEST(ML_KEM, ML_KEM_768_EncapsFailureDueToNonReducedPubKey)
 
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret{};
 
-  ml_kem_prng::prng_t<192> prng{};
-  prng.read(seed_d);
-  prng.read(seed_z);
-  prng.read(seed_m);
+  randomshake::randomshake_t<192> csprng{};
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
+  csprng.generate(seed_m);
 
   ml_kem_768::keygen(seed_d, seed_z, pubkey, seckey);
 
@@ -89,15 +90,15 @@ TEST(ML_KEM, ML_KEM_768_DecapsFailureDueToBitFlippedCipherText)
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  ml_kem_prng::prng_t<192> prng{};
-  prng.read(seed_d);
-  prng.read(seed_z);
-  prng.read(seed_m);
+  randomshake::randomshake_t<192> csprng{};
+  csprng.generate(seed_d);
+  csprng.generate(seed_z);
+  csprng.generate(seed_m);
 
   ml_kem_768::keygen(seed_d, seed_z, pubkey, seckey);
   const auto is_encapsulated = ml_kem_768::encapsulate(seed_m, pubkey, cipher, shared_secret_sender);
 
-  random_bitflip_in_cipher_text<cipher.size()>(cipher, prng);
+  random_bitflip_in_cipher_text<cipher.size()>(cipher, csprng);
   ml_kem_768::decapsulate(seckey, cipher, shared_secret_receiver);
 
   EXPECT_TRUE(is_encapsulated);

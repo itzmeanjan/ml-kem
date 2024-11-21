@@ -1,9 +1,9 @@
 #pragma once
 #include "k_pke.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
-#include "sha3_256.hpp"
-#include "sha3_512.hpp"
-#include "shake256.hpp"
+#include "sha3/sha3_256.hpp"
+#include "sha3/sha3_512.hpp"
+#include "sha3/shake256.hpp"
 #include <algorithm>
 
 // Key Encapsulation Mechanism
@@ -19,23 +19,23 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey)
   requires(ml_kem_params::check_keygen_params(k, eta1))
 {
-  constexpr size_t skoff0 = k * 12 * 32;
-  constexpr size_t skoff1 = skoff0 + pubkey.size();
-  constexpr size_t skoff2 = skoff1 + 32;
+  constexpr size_t seckey_offset_kpke_skey = k * 12 * 32;
+  constexpr size_t seckey_offset_kpke_pkey = seckey_offset_kpke_skey + pubkey.size();
+  constexpr size_t seckey_offset_z = seckey_offset_kpke_pkey + 32;
 
-  auto _seckey0 = seckey.template subspan<0, skoff0>();
-  auto _seckey1 = seckey.template subspan<skoff0, skoff1 - skoff0>();
-  auto _seckey2 = seckey.template subspan<skoff1, skoff2 - skoff1>();
-  auto _seckey3 = seckey.template subspan<skoff2, seckey.size() - skoff2>();
+  auto kpke_skey_in_seckey = seckey.template subspan<0, seckey_offset_kpke_skey>();
+  auto kpke_pkey_in_seckey = seckey.template subspan<seckey_offset_kpke_skey, seckey_offset_kpke_pkey - seckey_offset_kpke_skey>();
+  auto kpke_pkey_digest_in_seckey = seckey.template subspan<seckey_offset_kpke_pkey, seckey_offset_z - seckey_offset_kpke_pkey>();
+  auto z_in_seckey = seckey.template subspan<seckey_offset_z, seckey.size() - seckey_offset_z>();
 
-  k_pke::keygen<k, eta1>(d, pubkey, _seckey0);
-  std::copy(pubkey.begin(), pubkey.end(), _seckey1.begin());
-  std::copy(z.begin(), z.end(), _seckey3.begin());
+  k_pke::keygen<k, eta1>(d, kpke_pkey_in_seckey, kpke_skey_in_seckey);
+  std::copy(kpke_pkey_in_seckey.begin(), kpke_pkey_in_seckey.end(), pubkey.begin());
+  std::copy(z.begin(), z.end(), z_in_seckey.begin());
 
   sha3_256::sha3_256_t hasher{};
   hasher.absorb(pubkey);
   hasher.finalize();
-  hasher.digest(_seckey2);
+  hasher.digest(kpke_pkey_digest_in_seckey);
   hasher.reset();
 }
 

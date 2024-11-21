@@ -1,4 +1,5 @@
 #include "ml_kem/ml_kem_768.hpp"
+#include "randomshake/randomshake.hpp"
 #include <algorithm>
 #include <cassert>
 #include <iomanip>
@@ -54,17 +55,17 @@ main()
   auto receiver_key_span = std::span<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN>(receiver_key);
 
   // Pseudo-randomness source
-  ml_kem_prng::prng_t<128> prng{};
+  randomshake::randomshake_t<192> csprng{};
 
   // Fill up seeds using PRNG
-  prng.read(d_span);
-  prng.read(z_span);
+  csprng.generate(d_span);
+  csprng.generate(z_span);
 
   // Generate a keypair
   ml_kem_768::keygen(d_span, z_span, pkey_span, skey_span);
 
   // Fill up seed required for key encapsulation, using PRNG
-  prng.read(m_span);
+  csprng.generate(m_span);
 
   // Encapsulate key, compute cipher text and obtain KDF
   const bool is_encapsulated = ml_kem_768::encapsulate(m_span, pkey_span, cipher_span, sender_key_span);

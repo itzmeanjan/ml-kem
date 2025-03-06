@@ -20,44 +20,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Google Test
-        uses: Bacondish2023/setup-googletest@v1
-        with:
-          tag: v1.15.2
-
+      - name: Setup Google-Test
+        run: |
+          pushd ~
+          git clone https://github.com/google/googletest.git -b v1.16.0
+          pushd googletest
+          mkdir build
+          pushd build
+          cmake .. -DBUILD_GMOCK=OFF
+          make
+          sudo make install
+          popd
+          popd
+          popd
 
       - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.build_type }}, ${{ matrix.test_type }})
         run: |
           CXX=${{ matrix.compiler }}
           if [[ ${{ matrix.test_type }} == "standard" ]]; then
-            make test -j 2>&1 | tee build.log
+            make test -j
           else
-            make ${{ matrix.build_type }}_${{ matrix.test_type }}_test -j 2>&1 | tee build.log
+            make ${{ matrix.build_type }}_${{ matrix.test_type }}_test -j
           fi
-          if [ $? -ne 0 ]; then
-            echo "Build or Test Failed! See build.log for details."
-            exit 1
-          fi
-
-      - name: Upload Build Log
-        uses: actions/upload-artifact@v3
-        with:
-          name: build-log-${{ matrix.compiler }}-${{ matrix.build_type }}-${{ matrix.test_type }}
-          path: build.log
-
 
       - name: Run Examples
         if: ${{ matrix.test_type == 'standard' && matrix.build_type == 'release' }}
         run: |
-          CXX=${{ matrix.compiler }} make example -j 2>&1 | tee example.log
-          if [ $? -ne 0 ]; then
-            echo "Example execution Failed! See example.log for details."
-            exit 1
-          fi
-
-      - name: Upload Example Log (if failed)
-        if: ${{ steps.Run_Examples.outcome != 'success' && matrix.test_type == 'standard' && matrix.build_type == 'release' }}
-        uses: actions/upload-artifact@v3
-        with:
-          name: example-log-${{ matrix.compiler }}
-          path: example.log
+          CXX=${{ matrix.compiler }} make example -j

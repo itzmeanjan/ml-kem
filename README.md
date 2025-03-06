@@ -20,11 +20,11 @@ Decapsulation | Secret Key and Cipher Text | 32B Shared Secret
 
 Here I'm maintaining `ml-kem` - a C++20 header-only fully `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM standard. It's pretty easy to use, see [usage](#usage). It shows following performance characteristics on desktop and server grade CPUs.
 
-ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" | Time taken on "Raspberry Pi 4B" | Time taken on "AWS EC2 Instance c8g.large"
---- | --: | --: | --:
-keygen | 23.9us | 114.3us | 35.5us
-encaps | 27.7us | 133.8us | 40.4us
-decaps | 30.1us | 157.6us | 45us
+ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" | Time taken on "AWS EC2 Instance c8g.large"
+--- | --: | --:
+keygen | 22.3us | 31.5us
+encaps | 25.6us | 35.9us
+decaps | 30.1us | 43.7us
 
 > [!NOTE]
 > Find ML-KEM standard @ https://doi.org/10.6028/NIST.FIPS.203 - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
@@ -103,22 +103,10 @@ make perf -j       # If you have built google-benchmark library with libPFM supp
 > When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
-
-Compiled with **g++ (Ubuntu 14.2.0-4ubuntu2) 14.2.0**, while running kernel `Linux 6.8.0-41-generic x86_64`.
-
-Benchmark results are in JSON format @ [bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-9-generic_x86_64_with_g++_14.json).
-
-### On ARM Cortex-A72 i.e. Raspberry Pi 4B
-
-Compiled with **g++ (Debian 12.2.0-14) 12.2.0**, while running kernel `Linux 6.6.51+rpt-rpi-v8 aarch64`.
-
-Benchmark results are in JSON format @ [bench_result_on_Linux_6.6.51+rpt-rpi-v8_aarch64_with_g++_12](./bench_result_on_Linux_6.6.51+rpt-rpi-v8_aarch64_with_g++_12.json).
+Benchmark results are in JSON format @ [bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14.json).
 
 ### On AWS EC2 Instance `c8g.large` i.e. AWS Graviton4
-
-Compiled with **g++ (Ubuntu 13.2.0-23ubuntu4) 13.2.0**, while running kernel `Linux 6.8.0-1016-aws aarch64`. More about this EC2 instance @ https://aws.amazon.com/ec2/instance-types/c8g.
-
-Benchmark results are in JSON format @ [bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1016-aws_aarch64_with_g++_13.json).
+Benchmark results are in JSON format @ [bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13.json).
 
 ## Usage
 

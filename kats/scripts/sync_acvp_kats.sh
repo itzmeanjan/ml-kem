@@ -15,6 +15,7 @@ else
 fi
 
 cat ./ACVP-Server/gen-val/json-files/ML-KEM-keyGen-FIPS203/internalProjection.json | python parse_ml_kem_keygen_acvp_kat.py
+cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_encaps_acvp_kat.py
 mv *.acvp.kat ..
 
 echo "> Generated all NIST ACVP KATs."

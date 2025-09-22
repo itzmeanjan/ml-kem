@@ -4,9 +4,9 @@ import json
 import sys
 import typing
 
-ML_KEM_512_ACVP_KAT_FILE_NAME="ml_kem_512.acvp.kat"
-ML_KEM_768_ACVP_KAT_FILE_NAME="ml_kem_768.acvp.kat"
-ML_KEM_1024_ACVP_KAT_FILE_NAME="ml_kem_1024.acvp.kat"
+ML_KEM_512_ACVP_KAT_FILE_NAME="ml_kem_512_keygen.acvp.kat"
+ML_KEM_768_ACVP_KAT_FILE_NAME="ml_kem_768_keygen.acvp.kat"
+ML_KEM_1024_ACVP_KAT_FILE_NAME="ml_kem_1024_keygen.acvp.kat"
 
 def extract_and_write_ml_kem_keygen_kats(test_group: dict[str, typing.Any], write_to_file: str):
     assert test_group["testType"] == "AFT"

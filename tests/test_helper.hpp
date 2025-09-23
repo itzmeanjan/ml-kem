@@ -14,12 +14,12 @@
 // Given a hex encoded string of length 2*L, this routine can be used for parsing it as a byte array of length L.
 template<size_t L>
 static forceinline std::array<uint8_t, L>
-from_hex(std::string_view bytes)
+from_hex(std::string_view chars)
 {
-  const size_t blen = bytes.length();
+  const size_t clen = chars.length();
 
-  assert(blen % 2 == 0);
-  assert(blen / 2 == L);
+  assert(clen % 2 == 0);
+  assert(clen / 2 == L);
 
   std::array<uint8_t, L> res{};
 
@@ -27,7 +27,7 @@ from_hex(std::string_view bytes)
     const size_t off = i * 2;
 
     uint8_t byte = 0;
-    auto sstr = bytes.substr(off, 2);
+    auto sstr = chars.substr(off, 2);
     std::from_chars(sstr.data(), sstr.data() + 2, byte, 16);
 
     res[i] = byte;

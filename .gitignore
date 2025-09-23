@@ -38,3 +38,6 @@ __pycache__
 # For Clangd
 compile_commands.json
 .cache
+
+# ACVP server
+ACVP-Server/

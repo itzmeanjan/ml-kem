@@ -1,8 +1,13 @@
-> [!CAUTION]
-> This ML-KEM implementation is conformant with ML-KEM standard https://doi.org/10.6028/NIST.FIPS.203 and I also *try* to make it timing leakage free, but be informed that this implementation is not *yet* audited. **If you consider using it in production, please be careful !**
-
 # ML-KEM (formerly known as Kyber)
-Module-Lattice -based Key Encapsulation Mechanism Standard by NIST i.e. FIPS 203.
+
+NIST FIPS 203 (ML-KEM) standard compliant, C++20, fully `constexpr`, header-only library implementation.
+FIPS 203 compliance is assured by testing this implementation against ACVP Known Answer Tests and tons of property based tests.
+
+> [!NOTE]
+> `constexpr` ? Yes, you can compile-time execute keygen, encaps or decaps. But why? I don't know, some usecase might arise.
+
+> [!CAUTION]
+> This ML-KEM implementation is conformant with ML-KEM standard <https://doi.org/10.6028/NIST.FIPS.203> and I also *try* to make it timing leakage free, but be informed that this implementation is not *yet* audited. **If you consider using it in production, please be careful !**
 
 ## Motivation
 
@@ -10,7 +15,7 @@ ML-KEM has been standardized by NIST as post-quantum secure key encapsulation me
 
 ML-KEM offers an *IND-CCA-secure* Key Encapsulation Mechanism - its security is based on the hardness of solving the learning-with-errors (LWE) problem in module (i.e. structured) lattices.
 
-ML-KEM is built on top of *IND-CPA-secure K-PKE*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure K-PKE* - giving us the *IND-CCA-secure ML-KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel, over public & insecure channel, can generate a 32 -bytes shared secret key. Now they can be use this 32 -bytes shared secret key in any symmetric key primitive, either for encrypting their communication (in much faster way) or deriving new/ longer keys.
+ML-KEM is built on top of *IND-CPA-secure K-PKE*, where two communicating parties, both generating their key pairs, while publishing only their public keys to each other, can encrypt fixed length ( = 32 -bytes ) message using peer's public key. Cipher text can be decrypted by corresponding secret key ( which is private to the keypair owner ) and 32 -bytes message can be recovered back. Then a slightly tweaked Fujisaki–Okamoto (FO) transform is applied on *IND-CPA-secure K-PKE* - giving us the *IND-CCA-secure ML-KEM* construction. In KEM scheme, two parties interested in establishing a secure communication channel, over public & insecure channel, can generate a 32 -bytes shared secret key. Now they can use this 32 -bytes shared secret key in any symmetric key primitive, either for encrypting their communication (in much faster way) or deriving new/ longer keys.
 
 Algorithm | Input | Output
 --- | :-: | --:
@@ -18,45 +23,48 @@ KeyGen | - | Public Key and Secret Key
 Encapsulation | Public Key | Cipher Text and 32B Shared Secret
 Decapsulation | Secret Key and Cipher Text | 32B Shared Secret
 
-Here I'm maintaining `ml-kem` - a C++20 header-only fully `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM standard. It's pretty easy to use, see [usage](#usage). It shows following performance characteristics on desktop and server grade CPUs.
+Here I'm maintaining `ml-kem` - a C++20 header-only fully `constexpr` library, implementing ML-KEM, supporting ML-KEM-{512, 768, 1024} parameter sets, as defined in table 2 of ML-KEM standard. It's easy to use, see [usage](#usage).
 
-ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" | Time taken on "AWS EC2 Instance c8g.large"
+ML-KEM-768 shows following performance characteristics on desktop and server grade CPUs.
+
+ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" (`x86_64`) | Time taken on "AWS EC2 Instance c8g.large" (`aarch64`)
 --- | --: | --:
 keygen | 22.3us | 31.5us
 encaps | 25.6us | 35.9us
 decaps | 30.1us | 43.7us
 
 > [!NOTE]
-> Find ML-KEM standard @ https://doi.org/10.6028/NIST.FIPS.203 - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
+> Find ML-KEM standard @ <https://doi.org/10.6028/NIST.FIPS.203> - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
 
 ## Prerequisites
 
 - A C++ compiler such as `clang++`/ `g++`, with support for compiling C++20 programs.
 
 ```bash
+# I was using Clang-19 when developing this library.
 $ clang++ --version
-Ubuntu clang version 17.0.6 (9ubuntu1)
+Ubuntu clang version 19.1.7 (3ubuntu1)
 Target: x86_64-pc-linux-gnu
 Thread model: posix
-InstalledDir: /usr/bin
+InstalledDir: /usr/lib/llvm-19/bin
 ```
 
 - Build tools such as `make`, `cmake`.
-- For testing ML-KEM implementation, you need to globally install `google-test` library and headers. Follow guide @ https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project, if you don't have it installed.
-- For benchmarking ML-KEM implementation, you'll need to have `google-benchmark` header and library globally installed. I found guide @ https://github.com/google/benchmark#installation helpful.
+- For testing ML-KEM implementation, you need to globally install `google-test` library and headers. Follow guide @ <https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project>, if you don't have it installed.
+- For benchmarking ML-KEM implementation, you'll need to have `google-benchmark` header and library globally installed. I found guide @ <https://github.com/google/benchmark#installation> helpful.
 
 > [!NOTE]
-> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7, a step-by-step guide. Find more about libPFM @ https://perfmon2.sourceforge.net.
+> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>, a step-by-step guide. Find more about libPFM @ <https://perfmon2.sourceforge.net>.
 
 > [!TIP]
 > Git submodule based dependencies will normally be imported automatically, but in case that doesn't work, you can manually initialize and update them by issuing `$ git submodule update --init --recursive` from inside the root of this repository.
 
 ## Testing
 
-For testing functional correctness of this implementation and conformance with ML-KEM standard, you have to issue
+For testing functional correctness of this implementation and conformance with ML-KEM standard, you have to run following command(s).
 
 > [!NOTE]
-> Known Answer Test (KAT) files living in [this](./kats/) directory are generated by following (reproducible) steps, described in https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710.
+> All Known Answer Test (KAT) files live inside [kats](./kats/) directory. KAT files from official reference implementation, are generated by following (reproducible) steps, described in <https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710>. ACVP KATs are generated by running `$ make sync_acvp_kats` command.
 
 ```bash
 make test -j               # Run tests without any sort of sanitizers, with default C++ compiler.
@@ -69,22 +77,31 @@ make release_ubsan_test -j # Run tests with UndefinedBehaviourSanitizer enabled,
 ```
 
 ```bash
-PASSED TESTS (15/15):
-       1 ms: build/test/test.out ML_KEM.ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText
+PASSED TESTS (24/24):
        1 ms: build/test/test.out ML_KEM.ML_KEM_512_DecapsFailureDueToBitFlippedCipherText
+       1 ms: build/test/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
        1 ms: build/test/test.out ML_KEM.PolynomialSerialization
-       2 ms: build/test/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToNonReducedPubKey
-       2 ms: build/test/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
-       2 ms: build/test/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
-       2 ms: build/test/test.out ML_KEM.ML_KEM_768_DecapsFailureDueToBitFlippedCipherText
-       2 ms: build/test/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToNonReducedPubKey
+       1 ms: build/test/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
+       1 ms: build/test/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToNonReducedPubKey
+       1 ms: build/test/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToNonReducedPubKey
+       1 ms: build/test/test.out ML_KEM.ML_KEM_768_DecapsFailureDueToBitFlippedCipherText
        2 ms: build/test/test.out ML_KEM.ML_KEM_1024_EncapsFailureDueToNonReducedPubKey
-       3 ms: build/test/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
-      15 ms: build/test/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
-      24 ms: build/test/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
-      30 ms: build/test/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
-     111 ms: build/test/test.out ML_KEM.CompressDecompressZq
-     136 ms: build/test/test.out ML_KEM.ArithmeticOverZq
+       2 ms: build/test/test.out ML_KEM.ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText
+       2 ms: build/test/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
+       3 ms: build/test/test.out ML_KEM.ML_KEM_512_SeckeyCheck_ACVP_KnownAnswerTests
+       4 ms: build/test/test.out ML_KEM.ML_KEM_512_Keygen_ACVP_KnownAnswerTests
+       4 ms: build/test/test.out ML_KEM.ML_KEM_512_Encaps_ACVP_KnownAnswerTests
+       4 ms: build/test/test.out ML_KEM.ML_KEM_768_Keygen_ACVP_KnownAnswerTests
+       4 ms: build/test/test.out ML_KEM.ML_KEM_768_Encaps_ACVP_KnownAnswerTests
+       5 ms: build/test/test.out ML_KEM.ML_KEM_768_SeckeyCheck_ACVP_KnownAnswerTests
+       6 ms: build/test/test.out ML_KEM.ML_KEM_1024_Encaps_ACVP_KnownAnswerTests
+       6 ms: build/test/test.out ML_KEM.ML_KEM_1024_Keygen_ACVP_KnownAnswerTests
+       6 ms: build/test/test.out ML_KEM.ML_KEM_1024_SeckeyCheck_ACVP_KnownAnswerTests
+      14 ms: build/test/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
+      26 ms: build/test/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
+      28 ms: build/test/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
+     125 ms: build/test/test.out ML_KEM.CompressDecompressZq
+     162 ms: build/test/test.out ML_KEM.ArithmeticOverZq
 ```
 
 > [!NOTE]
@@ -92,7 +109,7 @@ PASSED TESTS (15/15):
 
 ## Benchmarking
 
-For benchmarking ML-KEM public functions such as keygen, encaps and decaps, for various suggested parameter sets, you have to issue.
+For benchmarking ML-KEM public functions such as keygen, encaps and decaps, for various suggested parameter sets, you have to run following command(s).
 
 ```bash
 make benchmark -j  # If you haven't built google-benchmark library with libPFM support.
@@ -100,17 +117,19 @@ make perf -j       # If you have built google-benchmark library with libPFM supp
 ```
 
 > [!CAUTION]
-> When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ https://github.com/google/benchmark/blob/main/docs/reducing_variance.md.
+> When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ <https://github.com/google/benchmark/blob/main/docs/reducing_variance.md>.
 
 ### On 12th Gen Intel(R) Core(TM) i7-1260P
+
 Benchmark results are in JSON format @ [bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14.json).
 
 ### On AWS EC2 Instance `c8g.large` i.e. AWS Graviton4
+
 Benchmark results are in JSON format @ [bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13.json).
 
 ## Usage
 
-`ml-kem` is written as a header-only C++20 fully `constexpr` library, majorly targeting 64 -bit desktop/ server grade platforms and it's pretty easy to get started with. All you need to do is following.
+`ml-kem` is written as a header-only C++20 fully `constexpr` library, mainly targeting 64 -bit mobile/ desktop/ server grade platforms and it's easy to get started with. All you need to do is following.
 
 - Clone `ml-kem` repository.
 
@@ -123,7 +142,7 @@ git clone https://github.com/itzmeanjan/ml-kem.git --recurse-submodules
 git clone https://github.com/itzmeanjan/ml-kem.git && pushd ml-kem && make test -j && popd
 ```
 
-- Write your program while including proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
+- Write your program; include proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
 
 ```cpp
 // main.cpp
@@ -184,17 +203,19 @@ ML-KEM-768 Routines | `ml_kem_768::` | `include/ml_kem/ml_kem_768.hpp`
 ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 
 > [!NOTE]
-> ML-KEM parameter sets are taken from table 2 of ML-KEM standard @ https://doi.org/10.6028/NIST.FIPS.203.
+> ML-KEM parameter sets are taken from table 2 of ML-KEM standard @ <https://doi.org/10.6028/NIST.FIPS.203>.
 
-All the functions, in this ML-KEM header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
+All the functions, in this ML-KEM header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with the following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
 
 ```cpp
-// compile-time-ml-kem-512.cpp
-//
-// Compile and run this program with
-// $ g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -I sha3/include -I subtle/include compile-time-ml-kem-512.cpp && ./a.out
-// or
-// $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include compile-time-ml-kem-512.cpp && ./a.out
+/**
+ * Filename: compile-time-ml-kem-512.cpp
+ *
+ * Compile and run this program with
+ * $ g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
+ * or
+ * $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
+ */
 
 #include "ml_kem/ml_kem_512.hpp"
 
@@ -237,7 +258,7 @@ main()
 }
 ```
 
-See example [program](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-768 API. Issue following command to build and execute example.
+See example [ml_kem_768.cpp](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-768 API. Execute following command to build and execute example.
 
 ```bash
 make example -j

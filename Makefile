@@ -60,7 +60,3 @@ clean: ## Remove build directory
 .PHONY: format
 format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) ## Format source code
 	clang-format -i $^
-
-.PHONY: sync_acvp_kats
-sync_acvp_kats: ## Downloads NIST ACVP KAT vectors and updates local KATs
-	cd kats/scripts && ./sync_acvp_kats.sh && cd -

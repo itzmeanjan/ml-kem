@@ -10,3 +10,6 @@
 [submodule "RandomShake"]
 	path = RandomShake
 	url = https://github.com/itzmeanjan/RandomShake.git
+[submodule "BLAKE3"]
+	path = BLAKE3
+	url = https://github.com/BLAKE3-team/BLAKE3.git

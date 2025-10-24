@@ -1,9 +1,9 @@
 #pragma once
 #include "k_pke.hpp"
+#include "ml_kem/internals/hashing/blake3.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
 #include "sha3/sha3_256.hpp"
 #include "sha3/sha3_512.hpp"
-#include "sha3/shake256.hpp"
 #include <algorithm>
 
 // Key Encapsulation Mechanism
@@ -12,7 +12,7 @@ namespace ml_kem {
 // ML-KEM key generation algorithm, generating byte serialized public key and secret key, given 32 -bytes seed `d` and `z`.
 // See algorithm 16 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1>
-constexpr void
+void
 keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
        std::span<const uint8_t, 32> z, // used in CCA-KEM
        std::span<uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
@@ -32,10 +32,10 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
   std::copy(kpke_pkey_in_seckey.begin(), kpke_pkey_in_seckey.end(), pubkey.begin());
   std::copy(z.begin(), z.end(), z_in_seckey.begin());
 
-  sha3_256::sha3_256_t hasher{};
+  ml_kem_hashing::blake3_hasher_t hasher;
   hasher.absorb(pubkey);
   hasher.finalize();
-  hasher.digest(kpke_pkey_digest_in_seckey);
+  hasher.squeeze(kpke_pkey_digest_in_seckey);
   hasher.reset();
 }
 
@@ -50,7 +50,7 @@ keygen(std::span<const uint8_t, 32> d, // used in CPA-PKE
 //
 // See algorithm 17 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-[[nodiscard("Use result, it might fail because of malformed input public key")]] constexpr bool
+[[nodiscard("Use result, it might fail because of malformed input public key")]] bool
 encapsulate(std::span<const uint8_t, 32> m,
             std::span<const uint8_t, ml_kem_utils::get_kem_public_key_len(k)> pubkey,
             std::span<uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
@@ -70,15 +70,15 @@ encapsulate(std::span<const uint8_t, 32> m,
 
   std::copy(m.begin(), m.end(), g_in_span0.begin());
 
-  sha3_256::sha3_256_t h256{};
+  ml_kem_hashing::blake3_hasher_t h256;
   h256.absorb(pubkey);
   h256.finalize();
-  h256.digest(g_in_span1);
+  h256.squeeze(g_in_span1);
 
-  sha3_512::sha3_512_t h512{};
+  ml_kem_hashing::blake3_hasher_t h512;
   h512.absorb(g_in_span);
   h512.finalize();
-  h512.digest(g_out_span);
+  h512.squeeze(g_out_span);
 
   const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, g_out_span1, cipher);
   if (!has_mod_check_passed) {
@@ -98,7 +98,7 @@ encapsulate(std::span<const uint8_t, 32> m,
 //
 // See algorithm 18 defined in ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1, size_t eta2, size_t du, size_t dv>
-constexpr void
+void
 decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> seckey,
             std::span<const uint8_t, ml_kem_utils::get_kem_cipher_text_len(k, du, dv)> cipher,
             std::span<uint8_t, 32> shared_secret)
@@ -133,12 +133,12 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   k_pke::decrypt<k, du, dv>(pke_sk, cipher, g_in_span0);
   std::copy(h.begin(), h.end(), g_in_span1.begin());
 
-  sha3_512::sha3_512_t h512{};
+  ml_kem_hashing::blake3_hasher_t h512;
   h512.absorb(g_in_span);
   h512.finalize();
-  h512.digest(g_out_span);
+  h512.squeeze(g_out_span);
 
-  shake256::shake256_t xof256{};
+  ml_kem_hashing::blake3_hasher_t xof256{};
   xof256.absorb(z);
   xof256.absorb(cipher);
   xof256.finalize();

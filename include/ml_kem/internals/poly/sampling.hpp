@@ -1,10 +1,10 @@
 #pragma once
+#include "ml_kem/internals/hashing/blake3.hpp"
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/utility/force_inline.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "sha3/shake128.hpp"
-#include "sha3/shake256.hpp"
 #include <limits>
 
 namespace ml_kem_utils {
@@ -16,8 +16,8 @@ namespace ml_kem_utils {
 // statiscally close to randomly sampled elements of R_q.
 //
 // See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
-forceinline constexpr void
-sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
+forceinline void
+sample_ntt(ml_kem_hashing::blake3_hasher_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
 {
   constexpr size_t n = poly.size();
 
@@ -44,12 +44,12 @@ sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_nt
   }
 }
 
-// Generate public matrix A ( consists of degree-255 polynomials ) in NTT domain, by sampling from a XOF ( read SHAKE128 ),
+// Generate public matrix A ( consists of degree-255 polynomials ) in NTT domain, by sampling from a XOF ( read BLAKE3 ),
 // which is seeded with 32 -bytes key and two nonces ( each of 1 -byte ).
 //
 // See step (3-7) of algorithm 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, bool transpose>
-constexpr void
+void
 generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::span<const uint8_t, 32> rho)
   requires(ml_kem_params::check_k(k))
 {
@@ -68,7 +68,7 @@ generate_matrix(std::span<ml_kem_field::zq_t, k * k * ml_kem_ntt::N> mat, std::s
         xof_in[33] = static_cast<uint8_t>(i);
       }
 
-      shake128::shake128_t hasher;
+      ml_kem_hashing::blake3_hasher_t hasher;
       hasher.absorb(xof_in);
       hasher.finalize();
 
@@ -133,7 +133,7 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
 
 // Sample a polynomial vector from Bη, following step (8-11) of algorithm 13 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta>
-constexpr void
+void
 generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<const uint8_t, 32> sigma, const uint8_t nonce)
   requires((k == 1) || ml_kem_params::check_k(k))
 {
@@ -146,7 +146,7 @@ generate_vector(std::span<ml_kem_field::zq_t, k * ml_kem_ntt::N> vec, std::span<
 
     prf_in[32] = nonce + static_cast<uint8_t>(i);
 
-    shake256::shake256_t hasher;
+    ml_kem_hashing::blake3_hasher_t hasher;
     hasher.absorb(prf_in);
     hasher.finalize();
     hasher.squeeze(prf_out);

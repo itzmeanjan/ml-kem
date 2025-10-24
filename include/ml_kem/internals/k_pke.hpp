@@ -1,10 +1,10 @@
 #pragma once
+#include "ml_kem/internals/hashing/blake3.hpp"
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/poly_vec.hpp"
 #include "ml_kem/internals/poly/sampling.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
-#include "sha3/sha3_512.hpp"
 
 // Public Key Encryption Scheme
 namespace k_pke {
@@ -12,7 +12,7 @@ namespace k_pke {
 // K-PKE key generation algorithm, generating byte serialized public key and secret keym given a 32 -bytes input seed `d`.
 // See algorithm 13 of K-PKE specification https://doi.org/10.6028/NIST.FIPS.203.
 template<size_t k, size_t eta1>
-constexpr void
+void
 keygen(std::span<const uint8_t, 32> d,
        std::span<uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey,
        std::span<uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey)
@@ -26,10 +26,10 @@ keygen(std::span<const uint8_t, 32> d,
   std::copy(d.begin(), d.end(), g_out_span.begin());
   g_out_span[d.size()] = k; // Domain seperator to prevent misuse of key
 
-  sha3_512::sha3_512_t h512;
+  ml_kem_hashing::blake3_hasher_t h512;
   h512.absorb(g_out_span.template first<d.size() + 1>());
   h512.finalize();
-  h512.digest(g_out_span);
+  h512.squeeze(g_out_span);
 
   const auto rho = g_out_span.template subspan<0, 32>();
   const auto sigma = g_out_span.template subspan<rho.size(), 32>();

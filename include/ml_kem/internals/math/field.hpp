@@ -1,6 +1,7 @@
 #pragma once
 #include "randomshake/randomshake.hpp"
 #include <bit>
+#include <cstddef>
 #include <cstdint>
 
 namespace ml_kem_field {

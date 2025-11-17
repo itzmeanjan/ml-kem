@@ -200,7 +200,7 @@ TEST(ML_KEM, ML_KEM_512_SeckeyCheck_ACVP_KnownAnswerTests)
       std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> computed_shared_secret_sender{};
       std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> computed_shared_secret_receiver{};
 
-      randomshake::randomshake_t<128> csprng;
+      randomshake::randomshake_t csprng;
       csprng.generate(random_m);
 
       EXPECT_TRUE(ml_kem_512::encapsulate(random_m, pk, computed_ctxt, computed_shared_secret_sender));

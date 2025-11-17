@@ -55,7 +55,7 @@ main()
   auto receiver_key_span = std::span<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN>(receiver_key);
 
   // Pseudo-randomness source
-  randomshake::randomshake_t<192> csprng{};
+  randomshake::randomshake_t csprng{};
 
   // Fill up seeds using PRNG
   csprng.generate(d_span);

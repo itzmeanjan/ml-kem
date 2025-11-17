@@ -17,7 +17,7 @@ test_serialize_deserialize()
   std::vector<ml_kem_field::zq_t> dst(ml_kem_ntt::N);
   std::vector<uint8_t> bytes(blen);
 
-  randomshake::randomshake_t<256> csprng{};
+  randomshake::randomshake_t csprng{};
 
   for (size_t i = 0; i < ml_kem_ntt::N; i++) {
     src[i] = ml_kem_field::zq_t::random(csprng);

@@ -8,7 +8,7 @@ TEST(ML_KEM, ArithmeticOverZq)
 {
   constexpr size_t ITERATION_COUNT = 1ul << 20;
 
-  randomshake::randomshake_t<128> csprng{};
+  randomshake::randomshake_t csprng{};
 
   for (size_t i = 0; i < ITERATION_COUNT; i++) {
     const auto a = ml_kem_field::zq_t::random(csprng);

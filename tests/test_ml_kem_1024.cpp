@@ -26,7 +26,7 @@ TEST(ML_KEM, ML_KEM_1024_KeygenEncapsDecaps)
   std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  randomshake::randomshake_t<256> csprng{};
+  randomshake::randomshake_t csprng{};
   csprng.generate(seed_d);
   csprng.generate(seed_z);
   csprng.generate(seed_m);
@@ -56,7 +56,7 @@ TEST(ML_KEM, ML_KEM_1024_EncapsFailureDueToNonReducedPubKey)
 
   std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret{};
 
-  randomshake::randomshake_t<256> csprng{};
+  randomshake::randomshake_t csprng{};
   csprng.generate(seed_d);
   csprng.generate(seed_z);
   csprng.generate(seed_m);
@@ -90,7 +90,7 @@ TEST(ML_KEM, ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText)
   std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_1024::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  randomshake::randomshake_t<256> csprng{};
+  randomshake::randomshake_t csprng{};
   csprng.generate(seed_d);
   csprng.generate(seed_z);
   csprng.generate(seed_m);

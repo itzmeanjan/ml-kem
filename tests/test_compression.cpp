@@ -37,7 +37,7 @@ test_zq_compression()
   requires(itr_cnt > 0)
 {
   bool res = true;
-  randomshake::randomshake_t<256> csprng{};
+  randomshake::randomshake_t csprng{};
 
   for (size_t i = 0; i < itr_cnt; i++) {
     const auto a = ml_kem_field::zq_t::random(csprng);

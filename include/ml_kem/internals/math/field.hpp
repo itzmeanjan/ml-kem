@@ -115,8 +115,7 @@ public:
   forceinline constexpr auto operator<=>(const zq_t&) const = default;
 
   // Samples a random Zq element, using pseudo random number generator.
-  template<size_t bit_security_level>
-  static forceinline zq_t random(randomshake::randomshake_t<bit_security_level>& csprng)
+  static forceinline zq_t random(randomshake::randomshake_t<>& csprng)
   {
     uint16_t res = 0;
     csprng.generate(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));

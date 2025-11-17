@@ -13,7 +13,7 @@ bench_ml_kem_768_keygen(benchmark::State& state)
   std::array<uint8_t, ml_kem_768::PKEY_BYTE_LEN> pubkey{};
   std::array<uint8_t, ml_kem_768::SKEY_BYTE_LEN> seckey{};
 
-  randomshake::randomshake_t<192> csprng{};
+  randomshake::randomshake_t csprng{};
 
   csprng.generate(seed_d);
   csprng.generate(seed_z);
@@ -45,7 +45,7 @@ bench_ml_kem_768_encapsulate(benchmark::State& state)
   std::array<uint8_t, ml_kem_768::CIPHER_TEXT_BYTE_LEN> cipher{};
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret{};
 
-  randomshake::randomshake_t<192> csprng{};
+  randomshake::randomshake_t csprng{};
 
   csprng.generate(seed_d);
   csprng.generate(seed_z);
@@ -84,7 +84,7 @@ bench_ml_kem_768_decapsulate(benchmark::State& state)
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_sender{};
   std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> shared_secret_receiver{};
 
-  randomshake::randomshake_t<192> csprng{};
+  randomshake::randomshake_t csprng{};
 
   csprng.generate(seed_d);
   csprng.generate(seed_z);

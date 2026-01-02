@@ -1,6 +1,7 @@
 #pragma once
 #include "randomshake/randomshake.hpp"
 #include <bit>
+#include <limits>
 #include <cstdint>
 
 namespace ml_kem_field {
@@ -93,7 +94,7 @@ public:
     zq_t res = br[n & 0b1ul];
 
     const size_t zeros = std::countl_zero(n);
-    const size_t till = 64ul - zeros;
+    const size_t till = std::numeric_limits<size_t>::digits - zeros;
 
     for (size_t i = 1; i < till; i++) {
       base = base * base;

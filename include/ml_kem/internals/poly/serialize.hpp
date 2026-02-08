@@ -22,10 +22,10 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 3;
-      arr[i] = (static_cast<uint8_t>(poly[off + 7].raw() & one) << 7) | (static_cast<uint8_t>(poly[off + 6].raw() & one) << 6) |
-               (static_cast<uint8_t>(poly[off + 5].raw() & one) << 5) | (static_cast<uint8_t>(poly[off + 4].raw() & one) << 4) |
-               (static_cast<uint8_t>(poly[off + 3].raw() & one) << 3) | (static_cast<uint8_t>(poly[off + 2].raw() & one) << 2) |
-               (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) | (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0);
+      arr[i] = static_cast<uint8_t>((static_cast<uint8_t>(poly[off + 7].raw() & one) << 7) | (static_cast<uint8_t>(poly[off + 6].raw() & one) << 6) |
+                                    (static_cast<uint8_t>(poly[off + 5].raw() & one) << 5) | (static_cast<uint8_t>(poly[off + 4].raw() & one) << 4) |
+                                    (static_cast<uint8_t>(poly[off + 3].raw() & one) << 3) | (static_cast<uint8_t>(poly[off + 2].raw() & one) << 2) |
+                                    (static_cast<uint8_t>(poly[off + 1].raw() & one) << 1) | (static_cast<uint8_t>(poly[off + 0].raw() & one) << 0));
     }
   } else if constexpr (l == 4) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
@@ -33,7 +33,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 1;
-      arr[i] = (static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) | static_cast<uint8_t>(poly[off + 0].raw() & msk);
+      arr[i] = static_cast<uint8_t>((static_cast<uint8_t>(poly[off + 1].raw() & msk) << 4) | static_cast<uint8_t>(poly[off + 0].raw() & msk));
     }
   } else if constexpr (l == 5) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
@@ -56,11 +56,11 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
       const auto t6 = poly[poff + 6].raw();
       const auto t7 = poly[poff + 7].raw();
 
-      arr[boff + 0] = (static_cast<uint8_t>(t1 & mask3) << 5) | (static_cast<uint8_t>(t0 & mask5) << 0);
-      arr[boff + 1] = (static_cast<uint8_t>(t3 & mask1) << 7) | (static_cast<uint8_t>(t2 & mask5) << 2) | static_cast<uint8_t>((t1 >> 3) & mask2);
-      arr[boff + 2] = (static_cast<uint8_t>(t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 1) & mask4);
-      arr[boff + 3] = (static_cast<uint8_t>(t6 & mask2) << 6) | (static_cast<uint8_t>(t5 & mask5) << 1) | static_cast<uint8_t>((t4 >> 4) & mask1);
-      arr[boff + 4] = (static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3);
+      arr[boff + 0] = static_cast<uint8_t>((static_cast<uint8_t>(t1 & mask3) << 5) | (static_cast<uint8_t>(t0 & mask5) << 0));
+      arr[boff + 1] = static_cast<uint8_t>((static_cast<uint8_t>(t3 & mask1) << 7) | (static_cast<uint8_t>(t2 & mask5) << 2) | static_cast<uint8_t>((t1 >> 3) & mask2));
+      arr[boff + 2] = static_cast<uint8_t>((static_cast<uint8_t>(t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 1) & mask4));
+      arr[boff + 3] = static_cast<uint8_t>((static_cast<uint8_t>(t6 & mask2) << 6) | (static_cast<uint8_t>(t5 & mask5) << 1) | static_cast<uint8_t>((t4 >> 4) & mask1));
+      arr[boff + 4] = static_cast<uint8_t>((static_cast<uint8_t>(t7 & mask5) << 3) | static_cast<uint8_t>((t6 >> 2) & mask3));
     }
   } else if constexpr (l == 10) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
@@ -78,9 +78,9 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
       const auto t3 = poly[poff + 3].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask6) << 2) | static_cast<uint8_t>((t0 >> 8) & mask2);
-      arr[boff + 2] = static_cast<uint8_t>((t2 & mask4) << 4) | static_cast<uint8_t>((t1 >> 6) & mask4);
-      arr[boff + 3] = static_cast<uint8_t>((t3 & mask2) << 6) | static_cast<uint8_t>((t2 >> 4) & mask6);
+      arr[boff + 1] = static_cast<uint8_t>(static_cast<uint8_t>((t1 & mask6) << 2) | static_cast<uint8_t>((t0 >> 8) & mask2));
+      arr[boff + 2] = static_cast<uint8_t>(static_cast<uint8_t>((t2 & mask4) << 4) | static_cast<uint8_t>((t1 >> 6) & mask4));
+      arr[boff + 3] = static_cast<uint8_t>(static_cast<uint8_t>((t3 & mask2) << 6) | static_cast<uint8_t>((t2 >> 4) & mask6));
       arr[boff + 4] = static_cast<uint8_t>(t3 >> 2);
     }
   } else if constexpr (l == 11) {
@@ -108,15 +108,15 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
       const auto t7 = poly[poff + 7].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0 & mask8);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask5) << 3) | static_cast<uint8_t>((t0 >> 8) & mask3);
-      arr[boff + 2] = static_cast<uint8_t>((t2 & mask2) << 6) | static_cast<uint8_t>((t1 >> 5) & mask6);
+      arr[boff + 1] = static_cast<uint8_t>(static_cast<uint8_t>((t1 & mask5) << 3) | static_cast<uint8_t>((t0 >> 8) & mask3));
+      arr[boff + 2] = static_cast<uint8_t>(static_cast<uint8_t>((t2 & mask2) << 6) | static_cast<uint8_t>((t1 >> 5) & mask6));
       arr[boff + 3] = static_cast<uint8_t>((t2 >> 2) & mask8);
-      arr[boff + 4] = static_cast<uint8_t>((t3 & mask7) << 1) | static_cast<uint8_t>((t2 >> 10) & mask1);
-      arr[boff + 5] = static_cast<uint8_t>((t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 7) & mask4);
-      arr[boff + 6] = static_cast<uint8_t>((t5 & mask1) << 7) | static_cast<uint8_t>((t4 >> 4) & mask7);
+      arr[boff + 4] = static_cast<uint8_t>(static_cast<uint8_t>((t3 & mask7) << 1) | static_cast<uint8_t>((t2 >> 10) & mask1));
+      arr[boff + 5] = static_cast<uint8_t>(static_cast<uint8_t>((t4 & mask4) << 4) | static_cast<uint8_t>((t3 >> 7) & mask4));
+      arr[boff + 6] = static_cast<uint8_t>(static_cast<uint8_t>((t5 & mask1) << 7) | static_cast<uint8_t>((t4 >> 4) & mask7));
       arr[boff + 7] = static_cast<uint8_t>((t5 >> 1) & mask8);
-      arr[boff + 8] = static_cast<uint8_t>((t6 & mask6) << 2) | static_cast<uint8_t>((t5 >> 9) & mask2);
-      arr[boff + 9] = static_cast<uint8_t>((t7 & mask3) << 5) | static_cast<uint8_t>((t6 >> 6) & mask5);
+      arr[boff + 8] = static_cast<uint8_t>(static_cast<uint8_t>((t6 & mask6) << 2) | static_cast<uint8_t>((t5 >> 9) & mask2));
+      arr[boff + 9] = static_cast<uint8_t>(static_cast<uint8_t>((t7 & mask3) << 5) | static_cast<uint8_t>((t6 >> 6) & mask5));
       arr[boff + 10] = static_cast<uint8_t>((t7 >> 3) & mask8);
     }
   } else {
@@ -133,7 +133,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
       const auto t1 = poly[poff + 1].raw();
 
       arr[boff + 0] = static_cast<uint8_t>(t0);
-      arr[boff + 1] = static_cast<uint8_t>((t1 & mask4) << 4) | static_cast<uint8_t>((t0 >> 8) & mask4);
+      arr[boff + 1] = static_cast<uint8_t>(static_cast<uint8_t>((t1 & mask4) << 4) | static_cast<uint8_t>((t0 >> 8) & mask4));
       arr[boff + 2] = static_cast<uint8_t>(t1 >> 4);
     }
   }
@@ -197,14 +197,14 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_ke
       const auto t6 = static_cast<uint16_t>((arr[boff + 4] & mask3) << 2) | static_cast<uint16_t>((arr[boff + 3] >> 6) & mask2);
       const auto t7 = static_cast<uint16_t>((arr[boff + 4] >> 3) & mask5);
 
-      poly[poff + 0] = ml_kem_field::zq_t(t0);
-      poly[poff + 1] = ml_kem_field::zq_t(t1);
-      poly[poff + 2] = ml_kem_field::zq_t(t2);
-      poly[poff + 3] = ml_kem_field::zq_t(t3);
-      poly[poff + 4] = ml_kem_field::zq_t(t4);
-      poly[poff + 5] = ml_kem_field::zq_t(t5);
-      poly[poff + 6] = ml_kem_field::zq_t(t6);
-      poly[poff + 7] = ml_kem_field::zq_t(t7);
+      poly[poff + 0] = ml_kem_field::zq_t(static_cast<uint32_t>(t0));
+      poly[poff + 1] = ml_kem_field::zq_t(static_cast<uint32_t>(t1));
+      poly[poff + 2] = ml_kem_field::zq_t(static_cast<uint32_t>(t2));
+      poly[poff + 3] = ml_kem_field::zq_t(static_cast<uint32_t>(t3));
+      poly[poff + 4] = ml_kem_field::zq_t(static_cast<uint32_t>(t4));
+      poly[poff + 5] = ml_kem_field::zq_t(static_cast<uint32_t>(t5));
+      poly[poff + 6] = ml_kem_field::zq_t(static_cast<uint32_t>(t6));
+      poly[poff + 7] = ml_kem_field::zq_t(static_cast<uint32_t>(t7));
     }
   } else if constexpr (l == 10) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
@@ -221,10 +221,10 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_ke
       const auto t2 = (static_cast<uint16_t>(arr[boff + 3] & mask6) << 4) | static_cast<uint16_t>(arr[boff + 2] >> 4);
       const auto t3 = (static_cast<uint16_t>(arr[boff + 4]) << 2) | static_cast<uint16_t>(arr[boff + 3] >> 6);
 
-      poly[poff + 0] = ml_kem_field::zq_t(t0);
-      poly[poff + 1] = ml_kem_field::zq_t(t1);
-      poly[poff + 2] = ml_kem_field::zq_t(t2);
-      poly[poff + 3] = ml_kem_field::zq_t(t3);
+      poly[poff + 0] = ml_kem_field::zq_t(static_cast<uint32_t>(t0));
+      poly[poff + 1] = ml_kem_field::zq_t(static_cast<uint32_t>(t1));
+      poly[poff + 2] = ml_kem_field::zq_t(static_cast<uint32_t>(t2));
+      poly[poff + 3] = ml_kem_field::zq_t(static_cast<uint32_t>(t3));
     }
   } else if constexpr (l == 11) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
@@ -249,14 +249,14 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_ke
       const auto t6 = (static_cast<uint16_t>(arr[boff + 9] & mask5) << 6) | static_cast<uint16_t>(arr[boff + 8] >> 2);
       const auto t7 = (static_cast<uint16_t>(arr[boff + 10]) << 3) | static_cast<uint16_t>(arr[boff + 9] >> 5);
 
-      poly[poff + 0] = ml_kem_field::zq_t(t0);
-      poly[poff + 1] = ml_kem_field::zq_t(t1);
-      poly[poff + 2] = ml_kem_field::zq_t(t2);
-      poly[poff + 3] = ml_kem_field::zq_t(t3);
-      poly[poff + 4] = ml_kem_field::zq_t(t4);
-      poly[poff + 5] = ml_kem_field::zq_t(t5);
-      poly[poff + 6] = ml_kem_field::zq_t(t6);
-      poly[poff + 7] = ml_kem_field::zq_t(t7);
+      poly[poff + 0] = ml_kem_field::zq_t(static_cast<uint32_t>(t0));
+      poly[poff + 1] = ml_kem_field::zq_t(static_cast<uint32_t>(t1));
+      poly[poff + 2] = ml_kem_field::zq_t(static_cast<uint32_t>(t2));
+      poly[poff + 3] = ml_kem_field::zq_t(static_cast<uint32_t>(t3));
+      poly[poff + 4] = ml_kem_field::zq_t(static_cast<uint32_t>(t4));
+      poly[poff + 5] = ml_kem_field::zq_t(static_cast<uint32_t>(t5));
+      poly[poff + 6] = ml_kem_field::zq_t(static_cast<uint32_t>(t6));
+      poly[poff + 7] = ml_kem_field::zq_t(static_cast<uint32_t>(t7));
     }
   } else {
     static_assert(l == 12, "l must be equal to 12 !");
@@ -272,8 +272,8 @@ decode(std::span<const uint8_t, 32 * l> arr, std::span<ml_kem_field::zq_t, ml_ke
       const auto t1 = (static_cast<uint16_t>(arr[boff + 2]) << 4) | static_cast<uint16_t>(arr[boff + 1] >> 4);
 
       // Read line (786-792) of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
-      poly[poff + 0] = ml_kem_field::zq_t::from_non_reduced(t0);
-      poly[poff + 1] = ml_kem_field::zq_t::from_non_reduced(t1);
+      poly[poff + 0] = ml_kem_field::zq_t::from_non_reduced(static_cast<uint32_t>(t0));
+      poly[poff + 1] = ml_kem_field::zq_t::from_non_reduced(static_cast<uint32_t>(t1));
     }
   }
 }

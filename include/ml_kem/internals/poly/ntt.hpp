@@ -10,8 +10,8 @@ inline constexpr size_t N = 1 << LOG2N;
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-inline constexpr auto ζ = ml_kem_field::zq_t(17);
-static_assert((ζ ^ N) == ml_kem_field::zq_t::one(), "ζ must be 256th root of unity modulo Q");
+inline constexpr auto ZETA = ml_kem_field::zq_t(17);
+static_assert((ZETA ^ N) == ml_kem_field::zq_t::one(), "ZETA must be 256th root of unity modulo Q");
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
@@ -41,7 +41,7 @@ inline constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
-    res[i] = ζ ^ bit_rev<LOG2N - 1>(i);
+    res[i] = ZETA ^ bit_rev<LOG2N - 1>(i);
   }
 
   return res;
@@ -63,7 +63,7 @@ inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() ->
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
-    res[i] = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
+    res[i] = ZETA ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
   }
 
   return res;

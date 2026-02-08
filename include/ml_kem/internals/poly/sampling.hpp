@@ -28,8 +28,8 @@ sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_nt
     hasher.squeeze(buf);
 
     for (size_t off = 0; (off < buf.size()) && (coeff_idx < n); off += 3) {
-      const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) | static_cast<uint16_t>(buf[off + 0]);
-      const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) | (static_cast<uint16_t>(buf[off + 1] >> 4));
+      const uint16_t d1 = static_cast<uint16_t>((static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) | static_cast<uint16_t>(buf[off + 0]));
+      const uint16_t d2 = static_cast<uint16_t>((static_cast<uint16_t>(buf[off + 2]) << 4) | (static_cast<uint16_t>(buf[off + 1] >> 4)));
 
       if (d1 < ml_kem_field::Q) {
         poly[coeff_idx] = ml_kem_field::zq_t(d1);

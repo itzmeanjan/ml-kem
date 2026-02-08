@@ -1,8 +1,8 @@
 #pragma once
 #include "randomshake/randomshake.hpp"
 #include <bit>
-#include <limits>
 #include <cstdint>
+#include <limits>
 
 namespace ml_kem_field {
 
@@ -59,8 +59,8 @@ private:
 public:
   // Constructor(s)
   forceinline constexpr zq_t() = default;
-  forceinline constexpr zq_t(const uint16_t a /* Expects a ∈ [0, Q) */) { this->v = a; }
-  static forceinline constexpr zq_t from_non_reduced(const uint16_t a /* Doesn't expect that a ∈ [0, Q) */) { return barrett_reduce(a); }
+  forceinline constexpr zq_t(const uint32_t a /* Expects a ∈ [0, Q) */) { this->v = a; }
+  static forceinline constexpr zq_t from_non_reduced(const uint32_t a /* Doesn't expect that a ∈ [0, Q) */) { return zq_t(barrett_reduce(a)); }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   forceinline constexpr uint32_t raw() const { return this->v; }
@@ -93,14 +93,14 @@ public:
     const zq_t br[]{ zq_t(1), base };
     zq_t res = br[n & 0b1ul];
 
-    const size_t zeros = std::countl_zero(n);
+    const size_t zeros = static_cast<size_t>(std::countl_zero(n));
     const size_t till = std::numeric_limits<size_t>::digits - zeros;
 
     for (size_t i = 1; i < till; i++) {
       base = base * base;
 
-      const zq_t br[]{ zq_t(1), base };
-      res = res * br[(n >> i) & 0b1ul];
+      const zq_t br_next[]{ zq_t(1), base };
+      res = res * br_next[(n >> i) & 0b1ul];
     }
 
     return res;

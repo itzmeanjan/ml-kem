@@ -40,6 +40,10 @@ $(SHA3_INC_DIR): $(RANDOMSHAKE_INC_DIR)
 $(GTEST_PARALLEL): $(SHA3_INC_DIR)
 	git submodule update --init gtest-parallel
 
+.PHONY: submodules
+submodules: ## Update and initialize all git submodules
+	git submodule update --init --recursive
+
 .PHONY: clean
 clean: ## Remove build directory
 	rm -rf $(BUILD_DIR)

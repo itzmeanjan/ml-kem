@@ -11,32 +11,32 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [
+            ubuntu-latest, # x86_64
+            macos-latest, # aarch64
+          ]
         compiler: [g++, clang++]
       max-parallel: 4
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Google-Test
-        run: |
-          pushd ~
-          git clone https://github.com/google/googletest.git -b v1.17.0
-          pushd googletest
-          mkdir build
-          pushd build
-          cmake .. -DBUILD_GMOCK=OFF
-          make
-          sudo make install
-          popd
-          popd
-          popd
+      - name: Setup Google Test
+        uses: Bacondish2023/setup-googletest@v1
+        with:
+          tag: v1.17.0
+
+      - name: Sync Submodules
+        run: make submodules
+
+      - name: Static Analysis (clang-tidy)
+        if: runner.os == 'Linux' && matrix.compiler == 'clang++'
+        run: make tidy
 
       - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.os }})
         run: |
           CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
           JOBS=$(( (CORES + 1) / 2 ))
-          make submodules
           make test -j$JOBS CXX=${{ matrix.compiler }}
 
       - name: Fuzz (${{ matrix.compiler }}, ${{ matrix.os }})

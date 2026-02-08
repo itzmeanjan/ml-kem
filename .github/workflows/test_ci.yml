@@ -27,7 +27,7 @@ jobs:
           tag: v1.17.0
 
       - name: Sync Submodules
-        run: make submodules
+        run: make sync_submodules
 
       - name: Static Analysis (clang-tidy)
         if: runner.os == 'Linux' && matrix.compiler == 'clang++'

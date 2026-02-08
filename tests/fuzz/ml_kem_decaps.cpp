@@ -1,10 +1,10 @@
+#include "ml_kem/ml_kem_1024.hpp"
 #include "ml_kem/ml_kem_512.hpp"
 #include "ml_kem/ml_kem_768.hpp"
-#include "ml_kem/ml_kem_1024.hpp"
+#include <algorithm>
+#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <array>
-#include <algorithm>
 
 extern "C" int
 LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)

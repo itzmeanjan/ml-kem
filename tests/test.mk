@@ -22,6 +22,7 @@ TEST_DIR := tests
 vpath %.cpp $(TEST_DIR)/kat $(TEST_DIR)/prop $(TEST_DIR)/fuzz
 
 TEST_SOURCES := $(shell find $(TEST_DIR)/kat $(TEST_DIR)/prop -name '*.cpp')
+FUZZ_SOURCES := $(wildcard $(TEST_DIR)/fuzz/*.cpp)
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
 RELEASE_TEST_OBJECTS := $(addprefix $(RELEASE_TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 RELEASE_TEST_BINARY := $(RELEASE_TEST_BUILD_DIR)/test.out
@@ -37,7 +38,7 @@ DEBUG_UBSAN_TEST_OBJECTS := $(addprefix $(DEBUG_UBSAN_BUILD_DIR)/, $(notdir $(pa
 RELEASE_UBSAN_TEST_OBJECTS := $(addprefix $(RELEASE_UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 DEBUG_UBSAN_TEST_BINARY := $(DEBUG_UBSAN_BUILD_DIR)/test.out
 RELEASE_UBSAN_TEST_BINARY := $(RELEASE_UBSAN_BUILD_DIR)/test.out
-FUZZ_BINARY := $(FUZZ_BUILD_DIR)/fuzz_decaps
+FUZZ_BINARY := $(FUZZ_BUILD_DIR)/ml_kem_decaps
 
 $(DEBUG_TEST_BUILD_DIR):
 	mkdir -p $@
@@ -78,7 +79,7 @@ $(DEBUG_UBSAN_BUILD_DIR)/%.o: %.cpp $(DEBUG_UBSAN_BUILD_DIR) $(SHA3_INC_DIR) $(A
 $(RELEASE_UBSAN_BUILD_DIR)/%.o: %.cpp $(RELEASE_UBSAN_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_UBSAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(FUZZ_BINARY): fuzz_decaps.cpp $(FUZZ_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(FUZZ_BINARY): ml_kem_decaps.cpp $(FUZZ_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(FUZZ_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) $< -o $@
 
 $(DEBUG_TEST_BINARY): $(DEBUG_TEST_OBJECTS)

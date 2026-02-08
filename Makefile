@@ -49,7 +49,7 @@ clean: ## Remove build directory
 	rm -rf $(BUILD_DIR)
 
 .PHONY: format
-format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) ## Format source code
+format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(FUZZ_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) $(EXAMPLE_SOURCES) $(EXAMPLE_HEADERS) ## Format source code
 	clang-format -i $^
 
 .PHONY: sync_acvp_kats

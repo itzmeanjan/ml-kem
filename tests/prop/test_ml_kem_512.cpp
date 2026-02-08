@@ -107,3 +107,34 @@ TEST(ML_KEM, ML_KEM_512_DecapsFailureDueToBitFlippedCipherText)
   EXPECT_EQ(shared_secret_receiver, seed_z);
   EXPECT_TRUE(std::equal(shared_secret_receiver.begin(), shared_secret_receiver.end(), std::span(seckey).last<32>().begin()));
 }
+
+// For ML-KEM-512
+// Attempt to encapsulate using all-one public key. It must fail.
+TEST(ML_KEM, ML_KEM_512_EncapsFailureDueToAllOnePubKey)
+{
+  std::array<uint8_t, ml_kem_512::SEED_M_BYTE_LEN> seed_m{};
+  std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pubkey{};
+  std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret{};
+
+  make_all_one_pubkey<pubkey.size()>(pubkey);
+  const auto is_encapsulated = ml_kem_512::encapsulate(seed_m, pubkey, cipher, shared_secret);
+
+  EXPECT_FALSE(is_encapsulated);
+}
+
+// For ML-KEM-512
+// Attempt to encapsulate using random garbage public key. It must fail.
+TEST(ML_KEM, ML_KEM_512_EncapsFailureDueToRandomGarbagePubKey)
+{
+  std::array<uint8_t, ml_kem_512::SEED_M_BYTE_LEN> seed_m{};
+  std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pubkey{};
+  std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret{};
+
+  randomshake::randomshake_t csprng{};
+  make_random_garbage_pubkey<pubkey.size()>(pubkey, csprng);
+  const auto is_encapsulated = ml_kem_512::encapsulate(seed_m, pubkey, cipher, shared_secret);
+
+  EXPECT_FALSE(is_encapsulated);
+}

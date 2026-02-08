@@ -1,5 +1,9 @@
 #pragma once
 #include "ml_kem/internals/ml_kem.hpp"
+#include "ml_kem/internals/utility/utils.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 namespace ml_kem_512 {
 

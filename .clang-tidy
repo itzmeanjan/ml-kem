@@ -13,6 +13,9 @@ Checks: '
   -readability-named-parameter,
   -readability-container-size-empty
 '
+CheckOptions:
+  readability-identifier-length.IgnoredParameterNames: 'd|z|m'
+  readability-identifier-length.IgnoredVariableNames: 'k|du|dv'
 WarningsAsErrors: '*'
 HeaderFilterRegex: 'include/.*'
 ...

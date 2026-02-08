@@ -58,4 +58,4 @@ sync_acvp_kats: ## Downloads NIST ACVP KAT vectors and updates local KATs
 
 .PHONY: tidy
 tidy: ## Run clang-tidy on ML-KEM headers
-	clang-tidy include/ml_kem/*.hpp -- $(CXX_FLAGS) $(I_FLAGS) $(DEP_IFLAGS)
+	clang-tidy include/ml_kem/*.hpp --header-filter=^include/ml_kem/.* --quiet -- $(CXX_FLAGS) $(I_FLAGS) $(DEP_IFLAGS)

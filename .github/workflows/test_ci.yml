@@ -34,20 +34,11 @@ jobs:
         run: make tidy
 
       - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.os }})
-        run: |
-          CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
-          JOBS=$(( (CORES + 1) / 2 ))
-          make test -j$JOBS CXX=${{ matrix.compiler }}
+        run: make test -j
 
       - name: Fuzz (${{ matrix.compiler }}, ${{ matrix.os }})
         if: matrix.compiler == 'clang++' && runner.os == 'Linux'
-        run: |
-          CORES=$(nproc)
-          JOBS=$(( (CORES + 1) / 2 ))
-          make fuzz -j$JOBS CXX=clang++
+        run: make fuzz -j
 
       - name: Run Examples (${{ matrix.compiler }}, ${{ matrix.os }})
-        run: |
-          CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
-          JOBS=$(( (CORES + 1) / 2 ))
-          make example -j$JOBS CXX=${{ matrix.compiler }}
+        run: make example -j

@@ -28,21 +28,9 @@ include tests/test.mk
 include benchmarks/bench.mk
 include examples/example.mk
 
-$(SUBTLE_INC_DIR):
-	git submodule update --init subtle
-
-$(RANDOMSHAKE_INC_DIR): $(SUBTLE_INC_DIR)
-	git submodule update --init --recursive RandomShake
-
-$(SHA3_INC_DIR): $(RANDOMSHAKE_INC_DIR)
-	git submodule update --init sha3
-
-$(GTEST_PARALLEL): $(SHA3_INC_DIR)
-	git submodule update --init gtest-parallel
-
-.PHONY: submodules
-submodules: ## Update and initialize all git submodules
-	git submodule update --init --recursive
+.PHONY: tidy
+tidy: ## Run clang-tidy on ML-KEM headers
+	clang-tidy include/ml_kem/*.hpp --header-filter=^include/ml_kem/.* --quiet -- $(CXX_FLAGS) $(I_FLAGS) $(DEP_IFLAGS)
 
 .PHONY: clean
 clean: ## Remove build directory
@@ -52,10 +40,10 @@ clean: ## Remove build directory
 format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(FUZZ_SOURCES) $(BENCHMARK_SOURCES) $(BENCHMARK_HEADERS) $(EXAMPLE_SOURCES) $(EXAMPLE_HEADERS) ## Format source code
 	clang-format -i $^
 
+.PHONY: sync_submodules
+sync_submodules: ## Update and initialize all git submodules
+	git submodule update --init --recursive
+
 .PHONY: sync_acvp_kats
 sync_acvp_kats: ## Downloads NIST ACVP KAT vectors and updates local KATs
 	cd kats/scripts && ./sync_acvp_kats.sh && cd -
-
-.PHONY: tidy
-tidy: ## Run clang-tidy on ML-KEM headers
-	clang-tidy include/ml_kem/*.hpp --header-filter=^include/ml_kem/.* --quiet -- $(CXX_FLAGS) $(I_FLAGS) $(DEP_IFLAGS)

@@ -8,10 +8,8 @@ PERF_LINK_FLAGS := -lbenchmark -lbenchmark_main -lpfm -lpthread
 PERF_BINARY := $(BENCHMARK_BUILD_DIR)/perf.out
 BENCHMARK_OUT_FILE := bench_result_on_$(shell uname -s)_$(shell uname -r)_$(shell uname -m)_with_$(CXX)_$(shell $(CXX) -dumpversion).json
 
-$(BENCHMARK_BUILD_DIR):
-	mkdir -p $@
-
-$(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -c $< -o $@
 
 $(BENCHMARK_BINARY): $(BENCHMARK_OBJECTS)

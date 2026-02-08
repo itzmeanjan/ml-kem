@@ -19,67 +19,54 @@ RELEASE_UBSAN_BUILD_DIR := $(UBSAN_TEST_DIR)/release
 FUZZ_BUILD_DIR := $(TEST_ARTIFACT_DIR)/fuzz
 
 TEST_DIR := tests
-vpath %.cpp $(TEST_DIR)/kat $(TEST_DIR)/prop $(TEST_DIR)/fuzz
-
 TEST_SOURCES := $(shell find $(TEST_DIR)/kat $(TEST_DIR)/prop -name '*.cpp')
 FUZZ_SOURCES := $(wildcard $(TEST_DIR)/fuzz/*.cpp)
 TEST_HEADERS := $(wildcard $(TEST_DIR)/*.hpp)
-RELEASE_TEST_OBJECTS := $(addprefix $(RELEASE_TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
+
+RELEASE_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(RELEASE_TEST_BUILD_DIR)/%.o,$(TEST_SOURCES))
+DEBUG_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(DEBUG_TEST_BUILD_DIR)/%.o,$(TEST_SOURCES))
+DEBUG_ASAN_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(DEBUG_ASAN_BUILD_DIR)/%.o,$(TEST_SOURCES))
+RELEASE_ASAN_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(RELEASE_ASAN_BUILD_DIR)/%.o,$(TEST_SOURCES))
+DEBUG_UBSAN_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(DEBUG_UBSAN_BUILD_DIR)/%.o,$(TEST_SOURCES))
+RELEASE_UBSAN_TEST_OBJECTS := $(patsubst $(TEST_DIR)/%.cpp,$(RELEASE_UBSAN_BUILD_DIR)/%.o,$(TEST_SOURCES))
+
 RELEASE_TEST_BINARY := $(RELEASE_TEST_BUILD_DIR)/test.out
-DEBUG_TEST_OBJECTS := $(addprefix $(DEBUG_TEST_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 DEBUG_TEST_BINARY := $(DEBUG_TEST_BUILD_DIR)/test.out
-TEST_LINK_FLAGS := -lgtest -lgtest_main
-GTEST_PARALLEL := ./gtest-parallel/gtest-parallel
-DEBUG_ASAN_TEST_OBJECTS := $(addprefix $(DEBUG_ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
-RELEASE_ASAN_TEST_OBJECTS := $(addprefix $(RELEASE_ASAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 DEBUG_ASAN_TEST_BINARY := $(DEBUG_ASAN_BUILD_DIR)/test.out
 RELEASE_ASAN_TEST_BINARY := $(RELEASE_ASAN_BUILD_DIR)/test.out
-DEBUG_UBSAN_TEST_OBJECTS := $(addprefix $(DEBUG_UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
-RELEASE_UBSAN_TEST_OBJECTS := $(addprefix $(RELEASE_UBSAN_BUILD_DIR)/, $(notdir $(patsubst %.cpp,%.o,$(TEST_SOURCES))))
 DEBUG_UBSAN_TEST_BINARY := $(DEBUG_UBSAN_BUILD_DIR)/test.out
 RELEASE_UBSAN_TEST_BINARY := $(RELEASE_UBSAN_BUILD_DIR)/test.out
+
+TEST_LINK_FLAGS := -lgtest -lgtest_main
+GTEST_PARALLEL := ./gtest-parallel/gtest-parallel
 FUZZ_BINARY := $(FUZZ_BUILD_DIR)/ml_kem_decaps
 
-$(DEBUG_TEST_BUILD_DIR):
-	mkdir -p $@
-
-$(RELEASE_TEST_BUILD_DIR):
-	mkdir -p $@
-
-$(DEBUG_ASAN_BUILD_DIR):
-	mkdir -p $@
-
-$(RELEASE_ASAN_BUILD_DIR):
-	mkdir -p $@
-
-$(DEBUG_UBSAN_BUILD_DIR):
-	mkdir -p $@
-
-$(RELEASE_UBSAN_BUILD_DIR):
-	mkdir -p $@
-
-$(FUZZ_BUILD_DIR):
-	mkdir -p $@
-
-$(DEBUG_TEST_BUILD_DIR)/%.o: %.cpp $(DEBUG_TEST_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(DEBUG_TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(DEBUG_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(RELEASE_TEST_BUILD_DIR)/%.o: %.cpp $(RELEASE_TEST_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(RELEASE_TEST_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(DEBUG_ASAN_BUILD_DIR)/%.o: %.cpp $(DEBUG_ASAN_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(DEBUG_ASAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(DEBUG_ASAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(RELEASE_ASAN_BUILD_DIR)/%.o: %.cpp $(RELEASE_ASAN_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(RELEASE_ASAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_ASAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(DEBUG_UBSAN_BUILD_DIR)/%.o: %.cpp $(DEBUG_UBSAN_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(DEBUG_UBSAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(DEBUG_UBSAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(RELEASE_UBSAN_BUILD_DIR)/%.o: %.cpp $(RELEASE_UBSAN_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(RELEASE_UBSAN_BUILD_DIR)/%.o: $(TEST_DIR)/%.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_UBSAN_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) -c $< -o $@
 
-$(FUZZ_BINARY): ml_kem_decaps.cpp $(FUZZ_BUILD_DIR) $(SHA3_INC_DIR) $(ASCON_INC_DIR) $(SUBTLE_INC_DIR)
+$(FUZZ_BINARY): $(TEST_DIR)/fuzz/ml_kem_decaps.cpp
+	@mkdir -p $(dir $@)
 	$(CXX) $(CXX_FLAGS) $(WARN_FLAGS) $(FUZZ_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) -I $(TEST_DIR) $< -o $@
 
 $(DEBUG_TEST_BINARY): $(DEBUG_TEST_OBJECTS)
@@ -119,7 +106,13 @@ release_ubsan_test: $(RELEASE_UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
 
 .PHONY: test
-test: debug_test release_test debug_asan_test release_asan_test debug_ubsan_test release_ubsan_test ## Build and run full test matrix (Debug/Release x No-Sanitizer/ASan/UBSan)
+test: ## Build and run full test matrix (Debug/Release x No-Sanitizer/ASan/UBSan)
+	$(MAKE) debug_test
+	$(MAKE) release_test
+	$(MAKE) debug_asan_test
+	$(MAKE) release_asan_test
+	$(MAKE) debug_ubsan_test
+	$(MAKE) release_ubsan_test
 
 .PHONY: fuzz
 fuzz: $(FUZZ_BINARY) ## Build and run the unified decapsulation fuzzer (ML-KEM-512/768/1024)

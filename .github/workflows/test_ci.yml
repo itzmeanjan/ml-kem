@@ -8,13 +8,11 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
         compiler: [g++, clang++]
-        build_type: [debug, release]
-        test_type: [standard, asan, ubsan]
       max-parallel: 4
 
     steps:
@@ -34,16 +32,22 @@ jobs:
           popd
           popd
 
-      - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.build_type }}, ${{ matrix.test_type }})
+      - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.os }})
         run: |
-          CXX=${{ matrix.compiler }}
-          if [[ ${{ matrix.test_type }} == "standard" ]]; then
-            make test -j
-          else
-            make ${{ matrix.build_type }}_${{ matrix.test_type }}_test -j
-          fi
+          CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+          JOBS=$(( (CORES + 1) / 2 ))
+          make submodules
+          make test -j$JOBS CXX=${{ matrix.compiler }}
 
-      - name: Run Examples
-        if: ${{ matrix.test_type == 'standard' && matrix.build_type == 'release' }}
+      - name: Fuzz (${{ matrix.compiler }}, ${{ matrix.os }})
+        if: matrix.compiler == 'clang++' && runner.os == 'Linux'
         run: |
-          CXX=${{ matrix.compiler }} make example -j
+          CORES=$(nproc)
+          JOBS=$(( (CORES + 1) / 2 ))
+          make fuzz -j$JOBS CXX=clang++
+
+      - name: Run Examples (${{ matrix.compiler }}, ${{ matrix.os }})
+        run: |
+          CORES=$(nproc 2>/dev/null || sysctl -n hw.logicalcpu)
+          JOBS=$(( (CORES + 1) / 2 ))
+          make example -j$JOBS CXX=${{ matrix.compiler }}

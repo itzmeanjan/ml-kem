@@ -1,0 +1,18 @@
+---
+Checks: '
+  bugprone-*,
+  cert-*,
+  cppcoreguidelines-*,
+  misc-*,
+  performance-*,
+  readability-*,
+  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
+  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-avoid-magic-numbers,
+  -readability-magic-numbers,
+  -readability-named-parameter,
+  -readability-container-size-empty
+'
+WarningsAsErrors: '*'
+HeaderFilterRegex: 'include/.*'
+...

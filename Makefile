@@ -9,7 +9,7 @@ help:
 
 CXX ?= clang++
 CXX_FLAGS := -std=c++20
-WARN_FLAGS := -Wall -Wextra -Wpedantic
+WARN_FLAGS := -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wno-pass-failed -Werror
 DEBUG_FLAGS := -O1 -g
 RELEASE_FLAGS := -O3 -march=native
 LINK_OPT_FLAGS := -flto
@@ -51,3 +51,7 @@ format: $(ML_KEM_SOURCES) $(TEST_SOURCES) $(TEST_HEADERS) $(BENCHMARK_SOURCES) $
 .PHONY: sync_acvp_kats
 sync_acvp_kats: ## Downloads NIST ACVP KAT vectors and updates local KATs
 	cd kats/scripts && ./sync_acvp_kats.sh && cd -
+
+.PHONY: tidy
+tidy: ## Run clang-tidy on ML-KEM headers
+	clang-tidy include/ml_kem/*.hpp -- $(CXX_FLAGS) $(I_FLAGS) $(DEP_IFLAGS)

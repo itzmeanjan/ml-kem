@@ -17,6 +17,7 @@ $(BENCHMARK_BUILD_DIR)/%.o: $(BENCHMARK_DIR)/%.cpp $(BENCHMARK_BUILD_DIR) $(SHA3
 $(BENCHMARK_BINARY): $(BENCHMARK_OBJECTS)
 	$(CXX) $(RELEASE_FLAGS) $(LINK_OPT_FLAGS) $^ $(BENCHMARK_LINK_FLAGS) -o $@
 
+.PHONY: benchmark
 benchmark: $(BENCHMARK_BINARY) ## Build and run all benchmarks, without libPFM -based CPU CYCLE counter statistics
 	# Must *not* build google-benchmark with libPFM
 	./$< --benchmark_time_unit=us --benchmark_min_warmup_time=.5 --benchmark_enable_random_interleaving=true --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_report_aggregates_only=true --benchmark_counters_tabular=true --benchmark_out_format=json --benchmark_out=$(BENCHMARK_OUT_FILE)
@@ -24,6 +25,7 @@ benchmark: $(BENCHMARK_BINARY) ## Build and run all benchmarks, without libPFM -
 $(PERF_BINARY): $(BENCHMARK_OBJECTS)
 	$(CXX) $(RELEASE_FLAGS) $(LINK_OPT_FLAGS) $^ $(PERF_LINK_FLAGS) -o $@
 
+.PHONY: perf
 perf: $(PERF_BINARY) ## Build and run all benchmarks, while also collecting libPFM -based CPU CYCLE counter statistics
 	# Must build google-benchmark with libPFM, follow https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7
 	./$< --benchmark_time_unit=us --benchmark_min_warmup_time=.5 --benchmark_enable_random_interleaving=true --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_report_aggregates_only=true --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES --benchmark_out_format=json --benchmark_out=$(BENCHMARK_OUT_FILE)

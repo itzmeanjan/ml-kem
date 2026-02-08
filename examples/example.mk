@@ -11,5 +11,6 @@ $(EXAMPLE_BUILD_DIR):
 $(EXAMPLE_BUILD_DIR)/%.exe: $(EXAMPLE_DIR)/%.cpp $(EXAMPLE_BUILD_DIR)
 	$(CXX) $(CXX_DEFS) $(CXX_FLAGS) $(WARN_FLAGS) $(RELEASE_FLAGS) $(I_FLAGS) $(DEP_IFLAGS) $< -o $@
 
+.PHONY: example
 example: $(EXAMPLE_EXECS) ## Build and run example program, demonstrating usage of ML-KEM API
 	$(foreach exec,$^,./$(exec);)

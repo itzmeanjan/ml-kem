@@ -141,7 +141,7 @@ TEST(ML_KEM, ML_KEM_768_Encaps_ACVP_KnownAnswerTests)
       std::getline(file, ss_line);
 
       const auto pk = extract_and_parse_hex_string<ml_kem_768::PKEY_BYTE_LEN>(pk_line);
-      const auto _ = extract_and_parse_hex_string<ml_kem_768::SKEY_BYTE_LEN>(sk_line);
+      [[maybe_unused]] const auto _ = extract_and_parse_hex_string<ml_kem_768::SKEY_BYTE_LEN>(sk_line);
       const auto m = extract_and_parse_hex_string<ml_kem_768::SEED_M_BYTE_LEN>(m_line);
       const auto ct = extract_and_parse_hex_string<ml_kem_768::CIPHER_TEXT_BYTE_LEN>(ct_line);
       const auto ss = extract_and_parse_hex_string<ml_kem_768::SHARED_SECRET_BYTE_LEN>(ss_line);

@@ -9,7 +9,11 @@ help:
 
 CXX ?= clang++
 CXX_FLAGS := -std=c++20
-WARN_FLAGS := -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wno-pass-failed -Werror
+IS_CLANG := $(shell $(CXX) --version | grep -q clang && echo 1 || echo 0)
+WARN_FLAGS := -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Werror
+ifeq ($(IS_CLANG), 1)
+	WARN_FLAGS += -Wno-pass-failed
+endif
 DEBUG_FLAGS := -O1 -g
 RELEASE_FLAGS := -O3 -march=native
 LINK_OPT_FLAGS := -flto

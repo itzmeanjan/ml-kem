@@ -106,10 +106,10 @@ release_test: $(RELEASE_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times
 
 debug_asan_test: $(DEBUG_ASAN_TEST_BINARY) $(GTEST_PARALLEL)
-	ASAN_OPTIONS=detect_leaks=1 $(GTEST_PARALLEL) $< --print_test_times
+	$(GTEST_PARALLEL) $< --print_test_times
 
 release_asan_test: $(RELEASE_ASAN_TEST_BINARY) $(GTEST_PARALLEL)
-	ASAN_OPTIONS=detect_leaks=1 $(GTEST_PARALLEL) $< --print_test_times
+	$(GTEST_PARALLEL) $< --print_test_times
 
 debug_ubsan_test: $(DEBUG_UBSAN_TEST_BINARY) $(GTEST_PARALLEL)
 	$(GTEST_PARALLEL) $< --print_test_times

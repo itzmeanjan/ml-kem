@@ -4,7 +4,7 @@ RELEASE_ASAN_FLAGS := -g $(RELEASE_FLAGS) $(ASAN_FLAGS)
 UBSAN_FLAGS := -fsanitize=undefined -fno-omit-frame-pointer -fno-optimize-sibling-calls -fno-sanitize-recover=undefined # From https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
 DEBUG_UBSAN_FLAGS := $(DEBUG_FLAGS) $(UBSAN_FLAGS)
 RELEASE_UBSAN_FLAGS := -g $(RELEASE_FLAGS) $(UBSAN_FLAGS)
-FUZZ_FLAGS := $(RELEASE_FLAGS) -fsanitize=fuzzer,address,undefined -fno-sanitize-recover=undefined
+FUZZ_FLAGS := $(RELEASE_FLAGS) -fsanitize=fuzzer,address,undefined -fno-sanitize-recover=undefined # From https://llvm.org/docs/LibFuzzer.html
 
 TEST_ARTIFACT_DIR := $(BUILD_DIR)/test
 STANDARD_TEST_DIR := $(TEST_ARTIFACT_DIR)/standard
@@ -144,9 +144,9 @@ fuzz: $(FUZZ_BINARIES) ## Build and run all 9 fuzzers sequentially (60s each)
 		echo "Running $$binary (input size: $$len bytes)..."; \
 		echo "Logs and artifacts will be stored in: $$binary.artifacts/"; \
 		echo "--------------------------------------------------------------------------------"; \
-		mkdir -p $$binary.artifacts/; \
-		if [ ! -f $$binary.artifacts/seed ]; then \
-			head -c $$len /dev/urandom > $$binary.artifacts/seed; \
+		mkdir -p $$binary.artifacts/corpus; \
+		if [ ! -f $$binary.artifacts/corpus/seed ]; then \
+			head -c $$len /dev/urandom > $$binary.artifacts/corpus/seed; \
 		fi; \
-		(cd $$binary.artifacts/ && $(CURDIR)/$$binary . -max_total_time=60 -max_len=$$len); \
+		$$binary $$binary.artifacts/corpus -max_total_time=60 -max_len=$$len -print_final_stats=1; \
 	done

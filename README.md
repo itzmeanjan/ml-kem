@@ -74,7 +74,7 @@ For testing functional correctness of this implementation and conformance with M
 ```bash
 make sync_submodules       # Sync all git submodules. Must do.
 make test -j               # Run all tests (Release/Debug x No-Sanitizer/ASan/UBSan)
-make fuzz -j               # Build and run the fuzzer suite
+make fuzz -j CXX=clang++   # Build and run the fuzzer suite. Must use LLVM.
 make tidy                  # Run static analysis (clang-tidy) on headers
 make format                # Format all source files
 make clean                 # Clean build artifacts

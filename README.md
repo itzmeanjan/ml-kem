@@ -43,7 +43,7 @@ This implementation is built with a "Security-First" approach, incorporating mul
 - **Strict Build Guards**: Compiled with `-Werror` and comprehensive warning flags (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2`).
 - **Memory Safety**: Verified using AddressSanitizer (ASan) with leak detection enabled for every test case.
 - **Undefined Behavior**: Hardened with UndefinedBehaviorSanitizer (UBSan), configured to treat any undefined behavior as a fatal, non-recoverable error.
-- **Continuous Fuzzing**: Includes a unified multi-level fuzzer (`make fuzz`) targeting all ML-KEM variants with malformed input stress-testing.
+- **Continuous Fuzzing**: Includes a suite of **9 specialized fuzzer binaries** (3 variants $\times$ 3 algorithms).
 - **Static Analysis**: Integrated with `clang-tidy` using security-focused profiles (`bugprone-*`, `cert-*`, `cppcoreguidelines-*`).
 - **CI-Verified**: Automatically tested on every push across a matrix of Operating Systems (Linux, macOS) and Compilers (`clang++`, `g++`).
 
@@ -74,7 +74,7 @@ For testing functional correctness of this implementation and conformance with M
 ```bash
 make sync_submodules       # Sync all git submodules. Must do.
 make test -j               # Run all tests (Release/Debug x No-Sanitizer/ASan/UBSan)
-make fuzz                  # Build and run the unified fuzzer
+make fuzz                  # Build and run the fuzzer suite
 make tidy                  # Run static analysis (clang-tidy) on headers
 make format                # Format all source files
 make clean                 # Clean build artifacts

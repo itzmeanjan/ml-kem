@@ -19,20 +19,21 @@ namespace mk = ml_kem_1024;
 extern "C" int
 LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
-  constexpr size_t sk_len = mk::SKEY_BYTE_LEN;
-  constexpr size_t ct_len = mk::CIPHER_TEXT_BYTE_LEN;
+  constexpr size_t seed_m_len = mk::SEED_M_BYTE_LEN;
+  constexpr size_t pk_len = mk::PKEY_BYTE_LEN;
 
-  if (size != sk_len + ct_len) {
+  if (size != seed_m_len + pk_len) {
     return -1;
   }
 
-  std::array<uint8_t, sk_len> seckey;
-  std::array<uint8_t, ct_len> cipher;
+  std::array<uint8_t, seed_m_len> m;
+  std::array<uint8_t, pk_len> pk;
+  std::array<uint8_t, mk::CIPHER_TEXT_BYTE_LEN> ct;
   std::array<uint8_t, mk::SHARED_SECRET_BYTE_LEN> ss;
 
-  std::copy(data, data + sk_len, seckey.begin());
-  std::copy(data + sk_len, data + sk_len + ct_len, cipher.begin());
+  std::copy(data, data + seed_m_len, m.begin());
+  std::copy(data + seed_m_len, data + seed_m_len + pk_len, pk.begin());
 
-  mk::decapsulate(seckey, cipher, ss);
+  (void)mk::encapsulate(m, pk, ct, ss);
   return 0;
 }

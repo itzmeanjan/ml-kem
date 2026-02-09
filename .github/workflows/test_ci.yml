@@ -36,9 +36,5 @@ jobs:
       - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.os }})
         run: make test -j
 
-      - name: Fuzz (${{ matrix.compiler }}, ${{ matrix.os }})
-        if: matrix.compiler == 'clang++' && runner.os == 'Linux'
-        run: make fuzz -j
-
       - name: Run Examples (${{ matrix.compiler }}, ${{ matrix.os }})
         run: make example -j

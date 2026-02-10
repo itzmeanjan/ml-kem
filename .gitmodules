@@ -4,9 +4,6 @@
 [submodule "subtle"]
 	path = subtle
 	url = https://github.com/itzmeanjan/subtle.git
-[submodule "gtest-parallel"]
-	path = gtest-parallel
-	url = https://github.com/google/gtest-parallel.git
 [submodule "RandomShake"]
 	path = RandomShake
 	url = https://github.com/itzmeanjan/RandomShake.git

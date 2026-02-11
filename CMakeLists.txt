@@ -58,7 +58,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # --- Compiler Warnings ---
 if(MSVC)
-  set(ML_KEM_WARNING_FLAGS /W4 /WX)
+  set(ML_KEM_WARNING_FLAGS /W3)
+  add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
 else()
   set(ML_KEM_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Werror)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")

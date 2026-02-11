@@ -93,7 +93,7 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
   requires(ml_kem_params::check_eta(eta))
 {
   if constexpr (eta == 2) {
-    static_assert(eta == 2, "eta must be 2 !");
+    static_assert(eta == 2, "η must be 2 !");
 
     constexpr size_t till = 64 * eta;
     constexpr uint8_t mask8 = 0b01010101;
@@ -111,7 +111,7 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
       poly[poff + 1] = ml_kem_field::zq_t((t2 >> 4) & mask2) - ml_kem_field::zq_t((t2 >> 6) & mask2);
     }
   } else {
-    static_assert(eta == 3, "eta must be 3 !");
+    static_assert(eta == 3, "η must be 3 !");
 
     constexpr size_t till = 64;
     constexpr uint32_t mask24 = 0b001001001001001001001001U;

@@ -1,6 +1,7 @@
 #include "ml_kem/ml_kem_512.hpp"
 #include "randomshake/randomshake.hpp"
 #include "test_helper.hpp"
+#include <algorithm>
 #include <gtest/gtest.h>
 #include <span>
 

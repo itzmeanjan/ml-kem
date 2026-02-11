@@ -2,6 +2,9 @@
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/utility/params.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 namespace ml_kem_utils {
 
@@ -18,7 +21,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
 
   if constexpr (l == 1) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
-    constexpr uint32_t one = 0b1u;
+    constexpr uint32_t one = 0b1U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 3;
@@ -29,7 +32,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
     }
   } else if constexpr (l == 4) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
-    constexpr uint32_t msk = 0b1111u;
+    constexpr uint32_t msk = 0b1111U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t off = i << 1;
@@ -37,11 +40,11 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
     }
   } else if constexpr (l == 5) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
-    constexpr uint32_t mask5 = 0b11111u;
-    constexpr uint32_t mask4 = 0b1111u;
-    constexpr uint32_t mask3 = 0b111u;
-    constexpr uint32_t mask2 = 0b11u;
-    constexpr uint32_t mask1 = 0b1u;
+    constexpr uint32_t mask5 = 0b11111U;
+    constexpr uint32_t mask4 = 0b1111U;
+    constexpr uint32_t mask3 = 0b111U;
+    constexpr uint32_t mask2 = 0b11U;
+    constexpr uint32_t mask1 = 0b1U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t poff = i << 3;
@@ -64,9 +67,9 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
     }
   } else if constexpr (l == 10) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 2;
-    constexpr uint32_t mask6 = 0b111111u;
-    constexpr uint32_t mask4 = 0b1111u;
-    constexpr uint32_t mask2 = 0b11u;
+    constexpr uint32_t mask6 = 0b111111U;
+    constexpr uint32_t mask4 = 0b1111U;
+    constexpr uint32_t mask2 = 0b11U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t poff = i << 2;
@@ -85,14 +88,14 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
     }
   } else if constexpr (l == 11) {
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 3;
-    constexpr uint32_t mask8 = 0b11111111u;
-    constexpr uint32_t mask7 = 0b1111111u;
-    constexpr uint32_t mask6 = 0b111111u;
-    constexpr uint32_t mask5 = 0b11111u;
-    constexpr uint32_t mask4 = 0b1111u;
-    constexpr uint32_t mask3 = 0b111u;
-    constexpr uint32_t mask2 = 0b11u;
-    constexpr uint32_t mask1 = 0b1u;
+    constexpr uint32_t mask8 = 0b11111111U;
+    constexpr uint32_t mask7 = 0b1111111U;
+    constexpr uint32_t mask6 = 0b111111U;
+    constexpr uint32_t mask5 = 0b11111U;
+    constexpr uint32_t mask4 = 0b1111U;
+    constexpr uint32_t mask3 = 0b111U;
+    constexpr uint32_t mask2 = 0b11U;
+    constexpr uint32_t mask1 = 0b1U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t poff = i << 3;
@@ -123,7 +126,7 @@ encode(std::span<const ml_kem_field::zq_t, ml_kem_ntt::N> poly, std::span<uint8_
     static_assert(l == 12, "l must be equal to 12 !");
 
     constexpr size_t itr_cnt = ml_kem_ntt::N >> 1;
-    constexpr uint32_t mask4 = 0b1111u;
+    constexpr uint32_t mask4 = 0b1111U;
 
     for (size_t i = 0; i < itr_cnt; i++) {
       const size_t poff = i << 1;

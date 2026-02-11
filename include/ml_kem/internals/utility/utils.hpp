@@ -1,6 +1,8 @@
 #pragma once
 #include "ml_kem/internals/utility/force_inline.hpp"
 #include "subtle.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <span>
 
 namespace ml_kem_utils {
@@ -11,7 +13,7 @@ template<size_t n>
 forceinline constexpr uint32_t
 ct_memcmp(std::span<const uint8_t, n> bytes0, std::span<const uint8_t, n> bytes1)
 {
-  uint32_t flag = -1u;
+  uint32_t flag = -1U;
   for (size_t i = 0; i < n; i++) {
     flag &= subtle::ct_eq<uint8_t, uint32_t>(bytes0[i], bytes1[i]);
   }
@@ -37,7 +39,7 @@ ct_cond_memcpy(const uint32_t cond, std::span<uint8_t, n> sink, std::span<const 
 forceinline constexpr size_t
 get_pke_public_key_len(const size_t k)
 {
-  return k * 12 * 32 + 32;
+  return (k * 12 * 32) + 32;
 }
 
 // Returns compile-time computable K-PKE secret key byte length.

@@ -27,10 +27,10 @@ LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     return -1;
   }
 
-  std::array<uint8_t, mk::SEED_D_BYTE_LEN> d;
-  std::array<uint8_t, mk::SEED_Z_BYTE_LEN> z;
-  std::array<uint8_t, mk::PKEY_BYTE_LEN> pk;
-  std::array<uint8_t, mk::SKEY_BYTE_LEN> sk;
+  std::array<uint8_t, mk::SEED_D_BYTE_LEN> d{};
+  std::array<uint8_t, mk::SEED_Z_BYTE_LEN> z{};
+  std::array<uint8_t, mk::PKEY_BYTE_LEN> pk{};
+  std::array<uint8_t, mk::SKEY_BYTE_LEN> sk{};
 
   std::copy(data + OFF_SEED_D, data + OFF_SEED_Z, d.begin());
   std::copy(data + OFF_SEED_Z, data + TOTAL_REQUIRED_NUM_BYTES, z.begin());

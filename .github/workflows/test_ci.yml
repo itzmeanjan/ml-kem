@@ -11,30 +11,64 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [
-            ubuntu-latest, # x86_64
-            macos-latest, # aarch64
-          ]
-        compiler: [g++, clang++]
-      max-parallel: 4
+        include:
+          - { os: ubuntu-latest, compiler: g++ }
+          - { os: ubuntu-latest, compiler: clang++ }
+          - { os: macos-latest, compiler: g++ }
+          - { os: macos-latest, compiler: clang++ }
+          - { os: windows-latest }
+      max-parallel: 8
 
     steps:
       - uses: actions/checkout@v6
-
-      - name: Setup Google Test
-        uses: Bacondish2023/setup-googletest@v1
         with:
-          tag: v1.17.0
+          submodules: recursive
 
-      - name: Sync Submodules
-        run: make sync_submodules
+      - name: Configure (Tests + Examples)
+        run: >
+          cmake -B build
+          ${{ matrix.compiler && format('-DCMAKE_CXX_COMPILER={0}', matrix.compiler) || '' }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DML_KEM_BUILD_TESTS=ON
+          -DML_KEM_BUILD_EXAMPLES=ON
+          -DML_KEM_FETCH_DEPS=ON
+
+      - name: Build
+        run: cmake --build build --config Release -j
+
+      - name: Test
+        run: ctest --test-dir build --config Release --output-on-failure
 
       - name: Static Analysis (clang-tidy)
         if: runner.os == 'Linux' && matrix.compiler == 'clang++'
-        run: make tidy
+        run: cmake --build build --target tidy
 
-      - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.os }})
-        run: make test -j
+  sanitizers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        sanitizer: [asan, ubsan]
+        compiler: [g++, clang++]
+        build_type: [Debug, Release]
+      max-parallel: 8
 
-      - name: Run Examples (${{ matrix.compiler }}, ${{ matrix.os }})
-        run: make example -j
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Configure (${{ matrix.sanitizer }}, ${{ matrix.build_type }})
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DML_KEM_BUILD_TESTS=ON
+          -DML_KEM_FETCH_DEPS=ON
+          -DML_KEM_ASAN=${{ matrix.sanitizer == 'asan' && 'ON' || 'OFF' }}
+          -DML_KEM_UBSAN=${{ matrix.sanitizer == 'ubsan' && 'ON' || 'OFF' }}
+
+      - name: Build
+        run: cmake --build build -j
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

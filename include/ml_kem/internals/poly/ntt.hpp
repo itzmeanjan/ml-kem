@@ -1,6 +1,9 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
+#include <array>
+#include <cstddef>
+#include <span>
 
 namespace ml_kem_ntt {
 
@@ -23,14 +26,14 @@ inline constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
 //
 // See https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38 for source of inspiration.
 template<size_t mbw>
-forceinline constexpr size_t
+forceinline constexpr size_t // NOLINT(misc-include-cleaner)
 bit_rev(const size_t v)
 {
-  size_t v_rev = 0ul;
+  size_t v_rev = 0UL;
 
   for (size_t i = 0; i < mbw; i++) {
     const size_t bit = (v >> i) & 0b1;
-    v_rev ^= bit << (mbw - 1ul - i);
+    v_rev ^= bit << (mbw - 1UL - i);
   }
 
   return v_rev;
@@ -79,13 +82,13 @@ inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() ->
 forceinline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
-  for (size_t l = LOG2N - 1; l >= 1; l--) {
-    const size_t len = 1ul << l;
+  for (size_t lvl = LOG2N - 1; lvl >= 1; lvl--) {
+    const size_t len = 1UL << lvl;
     const size_t lenx2 = len << 1;
-    const size_t k_beg = N >> (l + 1);
+    const size_t k_beg = N >> (lvl + 1);
 
     for (size_t start = 0; start < poly.size(); start += lenx2) {
-      const size_t k_now = k_beg + (start >> (l + 1));
+      const size_t k_now = k_beg + (start >> (lvl + 1));
       // Looking up precomputed constant, though it can be computed using
       //
       // ζ ^ bit_rev<LOG2N - 1>(k_now)
@@ -115,13 +118,13 @@ ntt(std::span<ml_kem_field::zq_t, N> poly)
 forceinline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
-  for (size_t l = 1; l < LOG2N; l++) {
-    const size_t len = 1ul << l;
+  for (size_t lvl = 1; lvl < LOG2N; lvl++) {
+    const size_t len = 1UL << lvl;
     const size_t lenx2 = len << 1;
-    const size_t k_beg = (N >> l) - 1;
+    const size_t k_beg = (N >> lvl) - 1;
 
     for (size_t start = 0; start < poly.size(); start += lenx2) {
-      const size_t k_now = k_beg - (start >> (l + 1));
+      const size_t k_now = k_beg - (start >> (lvl + 1));
       // Looking up precomputed constant, though it can be computed using
       //
       // -(ζ ^ bit_rev<LOG2N - 1>(k_now))

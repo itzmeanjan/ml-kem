@@ -2,12 +2,20 @@
 #include "randomshake/randomshake.hpp"
 #include <algorithm>
 #include <cassert>
+#include <cstddef>
+#include <cstdint>
+#include <cstdlib>
 #include <iomanip>
 #include <iostream>
+#include <span>
 #include <sstream>
+#include <string>
+#include <vector>
+
+namespace {
 
 // Given a bytearray of length N, this function converts it to human readable hex formatted string of length 2*N | N >= 0.
-static inline std::string
+inline std::string
 to_hex(std::span<const uint8_t> bytes)
 {
   std::stringstream ss;
@@ -20,9 +28,12 @@ to_hex(std::span<const uint8_t> bytes)
   return ss.str();
 }
 
-// Compile it with
-//
-// g++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -march=native -I ./include -I ./sha3/include -I ./subtle/include/ examples/ml_kem_768.cpp
+}
+
+// Build with CMake, from this directory:
+//   cmake -B build -DCMAKE_BUILD_TYPE=Release && cmake --build build
+// Or from the repository root:
+//   cmake -B build -DML_KEM_BUILD_EXAMPLES=ON -DCMAKE_BUILD_TYPE=Release && cmake --build build -j
 int
 main()
 {

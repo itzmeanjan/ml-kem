@@ -1,7 +1,7 @@
 # ML-KEM (formerly known as Kyber)
 
 NIST FIPS 203 (ML-KEM) standard compliant, C++20, fully `constexpr`, header-only library implementation.
-FIPS 203 compliance is assured by testing this implementation against ACVP Known Answer Tests and tons of property based tests.
+FIPS 203 compliance is assured by testing this implementation against ACVP Known Answer Tests and tons of property based tests. We also fuzz the library and its internal components with LLVM libFuzzer to get an extra level of assurance.
 
 > [!NOTE]
 > `constexpr` ? Yes, you can compile-time execute keygen, encaps or decaps. But why? I don't know, some usecase might arise.
@@ -38,106 +38,155 @@ decaps | 30.1us | 43.7us
 
 ## Security & Robustness
 
-This implementation is built with a "Security-First" approach, incorporating multiple layers of verification:
+This implementation is built with a "Security-First" approach, incorporating programming language features and multiple tools for enforcement:
 
-- **Strict Build Guards**: Compiled with `-Werror` and comprehensive warning flags (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2`).
-- **Memory Safety**: Verified using AddressSanitizer (ASan) with leak detection enabled for every test case.
+- **No Raw Pointers**: Completely avoids dealing with raw pointers. Everything is wrapped in statically-sized `std::span`, which provides much better type safety and compile-time error reporting as the exact byte lengths for all buffers (seeds, keys, ciphertexts, shared secrets) are known for each parameter set.
+- **Strict Build Guards**: Compiled with `-Werror` and comprehensive warning flags (`-Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2`). Any warnings triggered during compilation are treated as fatal errors.
+- **Memory Safety**: Verified using AddressSanitizer (ASan) in both release and debug build configuration.
 - **Undefined Behavior**: Hardened with UndefinedBehaviorSanitizer (UBSan), configured to treat any undefined behavior as a fatal, non-recoverable error.
-- **Continuous Fuzzing**: Includes a suite of **9 specialized fuzzer binaries** (3 variants $\times$ 3 algorithms).
+- **Continuous Fuzzing**: Includes a suite of **14 specialized fuzzer binaries** (9 key encapsulation variants + 5 internal component units).
 - **Static Analysis**: Integrated with `clang-tidy` using security-focused profiles (`bugprone-*`, `cert-*`, `cppcoreguidelines-*`).
-- **CI-Verified**: Automatically tested on every push across a matrix of Operating Systems (Linux, macOS) and Compilers (`clang++`, `g++`).
+- **CI-Verified**: Automatically tested on every push across a matrix of operating systems (Linux, macOS, Windows) and compilers (`clang++`, `g++`, MSVC).
 
 ## Prerequisites
 
 - A C++ compiler such as `clang++`/ `g++`, with support for compiling C++20 programs.
-- Build tools such as `make`, `cmake`.
-- For testing ML-KEM implementation, you need to globally install `google-test` library and headers. Follow guide @ <https://github.com/google/googletest/tree/main/googletest#standalone-cmake-project>, if you don't have it installed.
-- For benchmarking ML-KEM implementation, you'll need to have `google-benchmark` header and library globally installed. I found guide @ <https://github.com/google/benchmark#installation> helpful.
+- CMake 3.30 or later.
+- For testing, `google-test` is required. It can be installed globally or fetched automatically by setting `-DML_KEM_FETCH_DEPS=ON`.
+- For benchmarking, `google-benchmark` is required. It can be installed globally or fetched automatically by setting `-DML_KEM_FETCH_DEPS=ON`.
 - For static analysis, you'll need `clang-tidy`.
+- For code formatting, you'll need `clang-format`.
 
 > [!NOTE]
-> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>, a step-by-step guide. Find more about libPFM @ <https://perfmon2.sourceforge.net>.
+> If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>, a step-by-step guide. Find more about libPFM @ <https://perfmon2.sourceforge.net>. When `libpfm` is installed, CMake will automatically detect and link it.
 
 > [!TIP]
-> This library includes a make recipe to synchronize all dependencies: `$ make sync_submodules`. You **must** run it before using this library.
+> Git submodule based dependencies are automatically synchronized during CMake configuration.
 
-> [!TIP]
-> There is a help menu, which introduces you to all available commands; just run `$ make` from the root directory of this project.
-
-## Testing
+## Building
 
 For testing functional correctness of this implementation and conformance with ML-KEM standard, you have to run following command(s).
 
 > [!NOTE]
-> All Known Answer Test (KAT) files live inside [kats](./kats/) directory. KAT files from official reference implementation, are generated by following (reproducible) steps, described in <https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710>. ACVP KATs are generated by running `$ make sync_acvp_kats` command.
+> All Known Answer Test (KAT) files live inside [kats](./kats/) directory. KAT files from official reference implementation, are generated by following (reproducible) steps, described in <https://gist.github.com/itzmeanjan/c8f5bc9640d0f0bdd2437dfe364d7710>. ACVP KATs can be synced by building `sync_acvp_kats` target.
+
+### CMake Options
+
+| Option | Description | Default |
+| :--- | :--- | :--- |
+| `ML_KEM_BUILD_TESTS` | Build test suite | `OFF` |
+| `ML_KEM_BUILD_BENCHMARKS` | Build benchmarks | `OFF` |
+| `ML_KEM_BUILD_EXAMPLES` | Build examples | `OFF` |
+| `ML_KEM_BUILD_FUZZERS` | Build fuzzers (requires Clang) | `OFF` |
+| `ML_KEM_FETCH_DEPS` | Fetch missing dependencies (Google Test, Google Benchmark) | `OFF` |
+| `ML_KEM_ASAN` | Enable AddressSanitizer | `OFF` |
+| `ML_KEM_UBSAN` | Enable UndefinedBehaviorSanitizer | `OFF` |
+| `ML_KEM_NATIVE_OPT` | Enable `-march=native` (not safe for cross-compilation) | `OFF` |
+| `ML_KEM_ENABLE_LTO` | Enable Interprocedural Optimization (LTO) | `ON` |
+ 
+> [!TIP]
+> If you are building for the same machine that will run the code (i.e., cross-compilation is not the goal), you should enable `-DML_KEM_NATIVE_OPT=ON` to allow the compiler to auto-vectorize, using processor-specific optimizations (like AVX2, NEON, etc.) for maximum performance.
+
+### Build & Test
+
+To build and run the tests, use the following CMake commands:
 
 ```bash
-make sync_submodules       # Sync all git submodules. Must do.
-make test -j               # Run all tests (Release/Debug x No-Sanitizer/ASan/UBSan)
-make fuzz -j CXX=clang++   # Build and run the fuzzer suite. Must use LLVM.
-make tidy                  # Run static analysis (clang-tidy) on headers
-make format                # Format all source files
-make clean                 # Clean build artifacts
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON
+cmake --build build -j
+
+ctest --test-dir build --output-on-failure
 ```
 
-> [!IMPORTANT]
-> The test suite uses a comprehensive matrix build system. Artifacts are organized in `build/test/{standard,asan,ubsan}/{debug,release}/`.
-> - **ASan**: Enabled with leak detection (`ASAN_OPTIONS=detect_leaks=1`).
-> - **UBSan**: Configured with fatal errors for undefined behavior (`-fno-sanitize-recover=undefined`).
+To run tests with sanitizers, reconfigure the build with the desired sanitizer option:
 
 ```bash
-PASSED TESTS (30/30):
-       2 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToAllOnePubKey
-       2 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_EncapsFailureDueToRandomGarbagePubKey
-       3 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToNonReducedPubKey
-       3 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToAllOnePubKey
-       3 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_DecapsFailureDueToBitFlippedCipherText
-       3 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_EncapsFailureDueToAllOnePubKey
-       4 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_DecapsFailureDueToBitFlippedCipherText
-       4 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_KeygenEncapsDecaps
-       4 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_KeygenEncapsDecaps
-       5 ms: build/test/standard/release/test.out ML_KEM.PolynomialSerialization
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToNonReducedPubKey
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_KeygenEncapsDecaps
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_EncapsFailureDueToRandomGarbagePubKey
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_EncapsFailureDueToRandomGarbagePubKey
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_EncapsFailureDueToNonReducedPubKey
-       5 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText
-      10 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_SeckeyCheck_ACVP_KnownAnswerTests
-      13 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_Keygen_ACVP_KnownAnswerTests
-      13 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_Keygen_ACVP_KnownAnswerTests
-      14 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_Encaps_ACVP_KnownAnswerTests
-      14 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_SeckeyCheck_ACVP_KnownAnswerTests
-      15 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_SeckeyCheck_ACVP_KnownAnswerTests
-      16 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_Encaps_ACVP_KnownAnswerTests
-      16 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_Encaps_ACVP_KnownAnswerTests
-      17 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_Keygen_ACVP_KnownAnswerTests
-      35 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_512_KnownAnswerTests
-      50 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_768_KnownAnswerTests
-      65 ms: build/test/standard/release/test.out ML_KEM.ML_KEM_1024_KnownAnswerTests
-     172 ms: build/test/standard/release/test.out ML_KEM.ArithmeticOverZq
-     177 ms: build/test/standard/release/test.out ML_KEM.CompressDecompressZq
+# With AddressSanitizer, in Release mode
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON -DML_KEM_ASAN=ON
+cmake --build build -j && ctest --test-dir build --output-on-failure
+
+# With UndefinedBehaviorSanitizer, in Release mode
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON -DML_KEM_UBSAN=ON
+cmake --build build -j && ctest --test-dir build --output-on-failure
 ```
 
-## Benchmarking
+### Benchmarking
 
-For benchmarking ML-KEM public functions such as keygen, encaps and decaps, for various suggested parameter sets, you have to run following command(s).
+To run the benchmarks (using Google Benchmark):
 
 ```bash
-make benchmark -j  # If you haven't built google-benchmark library with libPFM support.
-make perf -j       # If you have built google-benchmark library with libPFM support.
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_BENCHMARKS=ON -DML_KEM_FETCH_DEPS=ON -DML_KEM_NATIVE_OPT=ON
+cmake --build build -j
 ```
 
 > [!CAUTION]
 > When benchmarking, ensure that you've disabled CPU frequency scaling, by following guide @ <https://github.com/google/benchmark/blob/main/docs/reducing_variance.md>.
 
-### On 12th Gen Intel(R) Core(TM) i7-1260P
+```bash
+# In case it linked with libPFM, you can get CPU cycle count
+./build/ml_kem_benchmarks --benchmark_time_unit=us --benchmark_min_warmup_time=.5 --benchmark_enable_random_interleaving=true --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_report_aggregates_only=true --benchmark_counters_tabular=true --benchmark_perf_counters=CYCLES
 
-Benchmark results are in JSON format @ [bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14](./bench_result_on_Linux_6.11.0-19-generic_x86_64_with_g++_14.json).
+# Otherwise, you can get time taken in micro-seconds
+./build/ml_kem_benchmarks --benchmark_time_unit=us --benchmark_min_warmup_time=.5 --benchmark_enable_random_interleaving=true --benchmark_repetitions=10 --benchmark_min_time=0.1s --benchmark_display_aggregates_only=true --benchmark_report_aggregates_only=true --benchmark_counters_tabular=true
+```
 
-### On AWS EC2 Instance `c8g.large` i.e. AWS Graviton4
+### Fuzzing
 
-Benchmark results are in JSON format @ [bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13](./bench_result_on_Linux_6.8.0-1021-aws_aarch64_with_g++_13.json).
+To run the fuzzers (requires `clang++`):
+
+```bash
+cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_FUZZERS=ON
+cmake --build build -j
+
+./build/ml_kem_768_encaps_fuzzer -max_total_time=60
+```
+
+### Integration
+
+You can easily integrate `ml-kem` into your project using CMake.
+
+```bash
+# Install system-wide (default prefix: /usr/local)
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+sudo cmake --install build
+
+# Install to custom directory (e.g., ./dist)
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=./dist
+cmake --build build
+cmake --install build
+```
+
+Or using `FetchContent` in your `CMakeLists.txt`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  ml-kem
+  GIT_REPOSITORY https://github.com/itzmeanjan/ml-kem.git
+  GIT_TAG master
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(ml-kem)
+
+add_executable(my_app main.cpp)
+target_link_libraries(my_app PRIVATE ml-kem)
+```
+
+### Development Tools
+
+```bash
+cmake -B build
+
+# Static analysis (requires clang-tidy)
+cmake --build build --target tidy
+
+# Format source code (requires clang-format)
+cmake --build build --target format
+
+# Sync ACVP Known Answer Test vectors
+cmake --build build --target sync_acvp_kats
+```
 
 ## Usage
 
@@ -146,12 +195,13 @@ Benchmark results are in JSON format @ [bench_result_on_Linux_6.8.0-1021-aws_aar
 - Clone `ml-kem` repository.
 
 ```bash
-cd
-
 # Single step cloning and importing of submodules
 git clone https://github.com/itzmeanjan/ml-kem.git --recurse-submodules
-# Or clone and then run tests, which will automatically bring in dependencies
-git clone https://github.com/itzmeanjan/ml-kem.git && cd ml-kem && make sync_submodules && make test -j
+
+# Or clone and then run tests (submodules are fetched automatically)
+git clone https://github.com/itzmeanjan/ml-kem.git && cd ml-kem
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON
+cmake --build build -j && ctest --test-dir build --output-on-failure
 ```
 
 - Write your program; include proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
@@ -195,18 +245,17 @@ main()
 }
 ```
 
-- When compiling your program, let your compiler know where it can find `ml-kem`, `sha3`, `RandomShake` and `subtle` headers, which includes their definitions ( all of them are header-only libraries ) too.
+- If your project uses CMake, the recommended approach is to use `find_package` or `FetchContent` (see [Integration](#integration) section above). If you prefer manual compilation:
 
 ```bash
 # Assuming `ml-kem` was cloned just under $HOME
+ML_KEM=~/ml-kem
 
-ML_KEM_HEADERS=~/ml-kem/include
-SHA3_HEADERS=~/ml-kem/sha3/include
-RANDOMSHAKE_HEADERS=~/ml-kem/RandomShake/include
-SUBTLE_HEADERS=~/ml-kem/subtle/include
-
-g++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -march=native -I $ML_KEM_HEADERS -I $SHA3_HEADERS -I $RANDOMSHAKE_HEADERS -I $SUBTLE_HEADERS main.cpp
+g++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -I $ML_KEM/include -I $ML_KEM/sha3/include -I $ML_KEM/RandomShake/include -I $ML_KEM/subtle/include main.cpp
 ```
+
+> [!TIP]
+> Add `-march=native` to optimize for your specific CPU. Omit it if building for distribution or cross-compilation.
 
 ML-KEM Variant | Namespace | Header
 :-- | :-: | --:
@@ -270,14 +319,20 @@ main()
 }
 ```
 
-See example [ml_kem_768.cpp](./examples/ml_kem_768.cpp), where I show how to use ML-KEM-768 API. Execute following command to build and execute example.
+See [examples/README.md](./examples/README.md) for a **standalone CMake project** and detailed documentation on how to integrate and use `ml-kem` in your own project. It's the quickest way to get started:
 
 ```bash
-make example -j
-```
+# Build the example as a standalone project
+cd examples
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+./build/ml_kem_768
 
-<details>
-<summary>Click to view detailed example run output 👇</summary>
+# Or build from the repository root
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_EXAMPLES=ON
+cmake --build build -j
+./build/ml_kem_768
+```
 
 ```bash
 ML-KEM-768
@@ -287,10 +342,3 @@ Encapsulated ? : true
 Cipher         : 618d4938da6a966795627c52fea714ae433de7faefdbbe3339cfd3fcce66c8c02b0fcdb3e73b2e579abc9d971d343e683d63c7c2c77941ec68774175f86ce9fbb35a80d0b417feabee12a359fec9b24af585560b8075f88e60050b30db3306948727dc104e66c5814355d96eb9204130b8463fdb9d8b41fe7d27a1a23ad06191443a3e8011dd4cb7368c10ddc0b0fb02547f5f0599a9cf3f4f3d805a77dba717a1c10b9350ff495bc0041f76e7369c58d9be90e79ea6ed7609988a1550557a691f80e8b06258ac703ba90c6f3d090d1195ec78dd536529fa0c7406845c885af50857eca3c0a2a4a90aa0c22dd121756c10f986f1614f3db3fcabead02df5567cdcc2851bb685bd3137cfc2dcc0ac5c1558ff144dd800602435790e7c0d478dae0563b50cefdee7790da47319ff245b13971d0523398cc685b3de2a4c3d1a2f60f5018234397d1c4c46c10b81118ea8e8b123c74cadae42c516ac3c5e7c39daabff369444c851ee299880bff64d6781487c4c3022fa559a5ad3919d1c5b644f36de02a8e1073ad29a6e516f71d7ced0d605bf2c5b16d1821fe4568cccb86896b04973daa3ba196e889382636678f2a39ea0ae09bf3ff44f3b9dc4e84d9666f40c206e0b180f3054e6a4ab34979030bfc82a045a457c37f6d103962f59080e1a86b68b568d8065e9258e7c9ae3afd059ab3c8686485796c020639387e404771749aac794f9d1cd9b1b6d9de137fe7b290199f13ff6a37538816924ca28f50310c8d490a25b86985e0677c2b8f5781c9897f499a764f1c5399840f8bd6c4b86c480b21492efa0e996569edad7873501415361621c402d97c77984d76dd5553278e8e9ebe7cac85803022803d48508b98715405977350c949657f46d042834f7b26dd734d25bab7f38e702491518141416841221b217b62f4dc1edbd2ed9974fc5b64ea8221ca7afc2bf58c277c5bbc0f5a17c61e6c33a9a163c35832641d8d825665b59931ab5d69fa672b5572ca134b6782df841045ce7f7fc47707e6083fa95967eecd243550b890d5c7c3560ecf5149f22884ce9dfdd4529b891def5fbeba8ba5b42e545e8f1a6b76ac8b50ea0a168035cfb5381bbe2defdf1b7182ecdd26fc19b4bdec5914fccc6cca5b925bf69e0d59702d85b67ed625ca27333174ce324ba454ba0d5116c88dd23fc4233dceb2aefb345652408b7e45905e0ab1fbbda1c6622e0210ffe6a0571f94535f84a427ad73d7f4b772b94f3d2e9307dd8ec5054f4956c54181c8cc3bf0cd6ce7f02375453450181c6c433884fe399a5943d4953f408497fba4d9901f5149577a955aa45b9eb5c97253314409990d069946fbf5ad8468823ae9befb27e5d31c6f489b98141488b98f894876f316e21856f07fc0156ac04ee1a6b2853ce6a90e97e948879eefa96fed1154a140487b00467106888c8c1df98737976814302a2d62030dfa4a5f70d83e5e4d819b39e5a155599930c4ddf357a6a57bfc92b77e39c5cc665ab354b4cde2b13dd03ff7d8b375887956470
 Shared secret  : e6a9fc79df8a91733c7f385bc66602a526b54bbf78ed2ac11029a42a2a56f515
 ```
-
-</details>
-
----
-
-> [!NOTE]
-> Looking at API documentation, in header files, can give you good idea of how to use ML-KEM API. Note, this library doesn't expose any raw pointer based interface, rather everything is wrapped under statically defined `std::span` - which one can easily create from `std::{array, vector}`. I opt for using statically defined `std::span` based function interfaces because we always know, at compile-time, how many bytes the seeds/ keys/ cipher-texts/ shared-secrets are, for various different ML-KEM parameters. This gives much better type safety and compile-time error reporting.

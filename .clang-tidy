@@ -8,14 +8,18 @@ Checks: '
   readability-*,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-avoid-magic-numbers,
   -readability-magic-numbers,
   -readability-named-parameter,
-  -readability-container-size-empty
+  -readability-container-size-empty,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-deadcode.DeadStores
 '
 CheckOptions:
-  readability-identifier-length.IgnoredParameterNames: 'd|z|m'
-  readability-identifier-length.IgnoredVariableNames: 'k|du|dv'
+  readability-identifier-length.IgnoredParameterNames: 'd|z|m|k|l|n|v|i|j|h|f|g|t|a|b|c|x|y|ss|s|e|r|u|η|ζ|η1|η2|du|dv|R|N|Q'
+  readability-identifier-length.IgnoredVariableNames: 'd|z|m|k|l|n|v|i|j|h|f|g|t|a|b|c|x|y|ss|s|e|r|u|η|ζ|η1|η2|du|dv|t0|t1|t2|t3|t4|t5|t6|t7|f0|f1|g0|g1|h0|h1|R|N|Q'
+  readability-identifier-length.MinimumLoopCounterLength: 1
 WarningsAsErrors: '*'
-HeaderFilterRegex: 'include/.*'
+HeaderFilterRegex: 'include/ml_kem/.*'
 ...

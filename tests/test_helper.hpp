@@ -16,10 +16,8 @@ template<size_t L>
 static forceinline std::array<uint8_t, L>
 from_hex(std::string_view chars)
 {
-  const size_t clen = chars.length();
-
-  assert(clen % 2 == 0);
-  assert(clen / 2 == L);
+  assert(chars.length() % 2 == 0);
+  assert(chars.length() / 2 == L);
 
   std::array<uint8_t, L> res{};
 
@@ -79,7 +77,7 @@ static forceinline constexpr void
 random_bitflip_in_cipher_text(std::span<uint8_t, cipher_byte_len> cipher, randomshake::randomshake_t<>& csprng)
 {
   size_t random_u64 = 0;
-  csprng.generate(std::span<uint8_t, sizeof(random_u64)>(reinterpret_cast<uint8_t*>(&random_u64), sizeof(random_u64)));
+  csprng.generate(std::span<uint8_t, sizeof(random_u64)>(reinterpret_cast<uint8_t*>(&random_u64), sizeof(random_u64))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
   const size_t random_byte_idx = random_u64 % cipher_byte_len;
   const size_t random_bit_idx = random_u64 % 8;

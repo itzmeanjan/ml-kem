@@ -1,8 +1,10 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
 #include "ml_kem/internals/utility/params.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <span>
 
 namespace ml_kem_utils {
@@ -12,15 +14,15 @@ namespace ml_kem_utils {
 // See formula 4.7 on page 21 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 // Following implementation collects inspiration from https://github.com/FiloSottile/mlkem768/blob/cffbfb96/mlkem768.go#L395-L425.
 template<size_t d>
-forceinline constexpr ml_kem_field::zq_t
+forceinline constexpr ml_kem_field::zq_t // NOLINT(misc-include-cleaner)
 compress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
-  constexpr uint16_t mask = (1u << d) - 1;
+  constexpr uint16_t mask = (1U << d) - 1;
 
   const auto dividend = x.raw() << d;
   const auto quotient0 = static_cast<uint32_t>((static_cast<uint64_t>(dividend) * ml_kem_field::R) >> (ml_kem_field::Q_BIT_WIDTH * 2));
-  const auto remainder = dividend - quotient0 * ml_kem_field::Q;
+  const auto remainder = dividend - (quotient0 * ml_kem_field::Q);
 
   const auto quotient1 = quotient0 + ((((ml_kem_field::Q / 2) - remainder) >> 31) & 1);
   const auto quotient2 = quotient1 + (((ml_kem_field::Q + (ml_kem_field::Q / 2) - remainder) >> 31) & 1);
@@ -36,7 +38,7 @@ forceinline constexpr ml_kem_field::zq_t
 decompress(const ml_kem_field::zq_t x)
   requires(ml_kem_params::check_d(d))
 {
-  constexpr uint32_t t0 = 1u << d;
+  constexpr uint32_t t0 = 1U << d;
   constexpr uint32_t t1 = t0 >> 1;
 
   const uint32_t t2 = ml_kem_field::Q * x.raw();

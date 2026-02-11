@@ -37,9 +37,9 @@ LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     return -1;
   }
 
-  std::array<uint8_t, mk::SKEY_BYTE_LEN> seckey;
-  std::array<uint8_t, mk::CIPHER_TEXT_BYTE_LEN> cipher;
-  std::array<uint8_t, mk::SHARED_SECRET_BYTE_LEN> ss;
+  std::array<uint8_t, mk::SKEY_BYTE_LEN> seckey{};
+  std::array<uint8_t, mk::CIPHER_TEXT_BYTE_LEN> cipher{};
+  std::array<uint8_t, mk::SHARED_SECRET_BYTE_LEN> ss{};
 
   if (data[OFF_DISCRIMINATOR] % 2 == 1) {
     // Mode A: Possibly malformed input mode
@@ -47,10 +47,10 @@ LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
     std::copy(data + OFF_MALFORM_CIPHER, data + OFF_MALFORM_END, cipher.begin());
   } else {
     // Mode B: Valid input mode
-    std::array<uint8_t, mk::SEED_D_BYTE_LEN> d;
-    std::array<uint8_t, mk::SEED_Z_BYTE_LEN> z;
-    std::array<uint8_t, mk::SEED_M_BYTE_LEN> m;
-    std::array<uint8_t, mk::PKEY_BYTE_LEN> pk;
+    std::array<uint8_t, mk::SEED_D_BYTE_LEN> d{};
+    std::array<uint8_t, mk::SEED_Z_BYTE_LEN> z{};
+    std::array<uint8_t, mk::SEED_M_BYTE_LEN> m{};
+    std::array<uint8_t, mk::PKEY_BYTE_LEN> pk{};
 
     std::copy(data + OFF_LOGIC_SEED_D, data + OFF_LOGIC_SEED_Z, d.begin());
     std::copy(data + OFF_LOGIC_SEED_Z, data + OFF_LOGIC_SEED_M, z.begin());

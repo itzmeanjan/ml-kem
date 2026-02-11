@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: recursive
+          submodules: true
 
       - name: Configure (Tests + Examples)
         run: >
@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          submodules: recursive
+          submodules: true
 
       - name: Configure (${{ matrix.sanitizer }}, ${{ matrix.build_type }})
         run: >

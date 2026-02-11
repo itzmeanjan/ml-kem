@@ -83,7 +83,7 @@ forceinline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
   for (size_t lvl = LOG2N - 1; lvl >= 1; lvl--) {
-    const size_t len = 1UL << lvl;
+    const size_t len = static_cast<size_t>(1) << lvl;
     const size_t lenx2 = len << 1;
     const size_t k_beg = N >> (lvl + 1);
 
@@ -119,7 +119,7 @@ forceinline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
   for (size_t lvl = 1; lvl < LOG2N; lvl++) {
-    const size_t len = 1UL << lvl;
+    const size_t len = static_cast<size_t>(1) << lvl;
     const size_t lenx2 = len << 1;
     const size_t k_beg = (N >> lvl) - 1;
 

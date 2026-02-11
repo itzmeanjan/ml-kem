@@ -1,6 +1,6 @@
 #pragma once
 #include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
-#include "randomshake/randomshake.hpp"
+#include "randomshake/randomshake.hpp"               // IWYU pragma: keep
 #include <array>
 #include <bit>
 #include <cstddef>
@@ -41,7 +41,7 @@ private:
   static forceinline constexpr uint32_t reduce_once(const uint32_t v) // NOLINT(misc-include-cleaner)
   {
     const uint32_t t0 = v - Q;
-    const uint32_t t1 = -(t0 >> 31);
+    const uint32_t t1 = 0U - (t0 >> 31);
     const uint32_t t2 = Q & t1;
     const uint32_t t3 = t0 + t2;
 

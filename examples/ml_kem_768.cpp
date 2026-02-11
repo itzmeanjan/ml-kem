@@ -1,5 +1,5 @@
 #include "ml_kem/ml_kem_768.hpp"
-#include "randomshake/randomshake.hpp"
+#include "randomshake/randomshake.hpp" // IWYU pragma: keep
 #include <algorithm>
 #include <cassert>
 #include <cstddef>

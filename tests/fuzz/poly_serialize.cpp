@@ -3,7 +3,8 @@
 #include <array>
 #include <cstddef>
 #include <cstdint>
-#include <span>
+
+namespace {
 
 // Fuzzer for polynomial serialization (encode/decode) round-trip consistency.
 // Ensures that decode(encode(poly)) == poly for all bit-widths l in {1, 4, 5, 10, 11, 12}.
@@ -41,6 +42,8 @@ fuzz_serialize_round_trip(const uint8_t* data, size_t size)
       __builtin_trap();
     }
   }
+}
+
 }
 
 extern "C" int

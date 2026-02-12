@@ -1,10 +1,9 @@
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/compression.hpp"
-#include <array>
-#include <cmath>
 #include <cstddef>
 #include <cstdint>
-#include <span>
+
+namespace {
 
 // Fuzzer for polynomial compression/decompression property.
 // Ensures that decompress(compress(x)) is "close enough" to x.
@@ -43,6 +42,8 @@ fuzz_compression_property(const uint8_t* data, size_t size)
   if (diff > max_err) {
     __builtin_trap();
   }
+}
+
 }
 
 extern "C" int

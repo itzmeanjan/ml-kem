@@ -83,7 +83,7 @@ For testing functional correctness of this implementation and conformance with M
 | `ML_KEM_UBSAN` | Enable UndefinedBehaviorSanitizer | `OFF` |
 | `ML_KEM_NATIVE_OPT` | Enable `-march=native` (not safe for cross-compilation) | `OFF` |
 | `ML_KEM_ENABLE_LTO` | Enable Interprocedural Optimization (LTO) | `ON` |
- 
+
 > [!TIP]
 > If you are building for the same machine that will run the code (i.e., cross-compilation is not the goal), you should enable `-DML_KEM_NATIVE_OPT=ON` to allow the compiler to auto-vectorize, using processor-specific optimizations (like AVX2, NEON, etc.) for maximum performance.
 
@@ -132,14 +132,86 @@ cmake --build build -j
 
 ### Fuzzing
 
-To run the fuzzers (requires `clang++`):
+This project includes **14 specialized fuzzer binaries** built with LLVM libFuzzer. Each fuzzer has its own isolated corpus directory and tuned input sizes for maximum coverage.
+
+#### Recommended: Run All Fuzzers
+
+The easiest way to fuzz is with the full-lifecycle script. It configures, builds, generates per-fuzzer seed corpus with correctly-sized seed files, runs all 14 fuzzers in parallel, and produces a summary report:
+
+```bash
+# Default: 1 hour per fuzzer, using all CPU cores
+./scripts/fuzz_all.sh
+
+# Quick smoke test (2 minutes)
+FUZZ_TIME=120 ./scripts/fuzz_all.sh
+
+# Customize parallelism
+FUZZ_JOBS=4 FUZZ_FORK=2 ./scripts/fuzz_all.sh
+```
+
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `FUZZ_TIME` | Seconds to run each fuzzer | `3600` (1 hour) |
+| `FUZZ_JOBS` | Max concurrent fuzzer processes | `$(nproc)` |
+| `FUZZ_FORK` | Fork workers per fuzzer | `$(nproc)` |
+| `CXX` | C++ compiler (must be Clang) | `clang++` |
+| `BUILD_DIR` | Build output directory | `build` |
+| `CORPUS_DIR` | Persistent corpus directory | `fuzz_corpus` |
+
+After completion, the script prints a report showing corpus size, total executions, and status per fuzzer. Log files are saved to `fuzz_report/`.
+
+#### Manual Single-Fuzzer Run
+
+To run a specific fuzzer manually (requires `clang++`):
 
 ```bash
 cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_FUZZERS=ON
 cmake --build build -j
 
-./build/ml_kem_768_encaps_fuzzer -max_total_time=60
+# Create corpus with correctly-sized seed
+mkdir -p fuzz_corpus/ml_kem_768_encaps
+head -c 1216 /dev/urandom > fuzz_corpus/ml_kem_768_encaps/seed
+
+./build/ml_kem_768_encaps_fuzzer fuzz_corpus/ml_kem_768_encaps \
+  -max_total_time=3600 \
+  -max_len=1216 \
+  -fork=$(nproc) \
+  -print_final_stats=1 \
+  -print_corpus_stats=1
 ```
+
+> [!IMPORTANT]
+> Each fuzzer requires a **specific minimum input size**. Using incorrect sizes wastes mutation cycles. Use `-max_len` matching the Mode A size from the table below.
+
+#### Input Size Reference
+
+Each fuzzer has a minimum input size determined by its Mode A (malformed input) requirements. Use these as `-max_len` values:
+
+| Fuzzer | `-max_len` | Composition |
+| :--- | ---: | :--- |
+| `ml_kem_512_keygen` | 64 | seed_d(32) + seed_z(32) |
+| `ml_kem_768_keygen` | 64 | seed_d(32) + seed_z(32) |
+| `ml_kem_1024_keygen` | 64 | seed_d(32) + seed_z(32) |
+| `ml_kem_512_encaps` | 832 | seed_m(32) + pubkey(800) |
+| `ml_kem_768_encaps` | 1216 | seed_m(32) + pubkey(1184) |
+| `ml_kem_1024_encaps` | 1600 | seed_m(32) + pubkey(1568) |
+| `ml_kem_512_decaps` | 2400 | seckey(1632) + ciphertext(768) |
+| `ml_kem_768_decaps` | 3488 | seckey(2400) + ciphertext(1088) |
+| `ml_kem_1024_decaps` | 4736 | seckey(3168) + ciphertext(1568) |
+| `field_arithmetic` | 4 | 2 × uint16 |
+| `poly_ntt` | 512 | 256 × uint16 |
+| `poly_serialize` | 513 | 1B selector + 256 × uint16 |
+| `poly_compression` | 3 | 1B selector + uint16 |
+| `poly_sampling` | 193 | 1B selector + 192B CBD input |
+
+#### Best Practices for Effective Fuzzing
+
+- Prefer `-fork=N` over `-jobs=N` — fork mode shares coverage between workers for faster corpus growth.
+- Use per-fuzzer corpus directories to prevent cross-contamination between fuzzers with different input formats.
+- Set `-max_len` to the Mode A size from the table above; larger wastes mutation budget, smaller blocks Mode A.
+- Seed both modes: odd first byte for Mode A (malformed), even for Mode B (valid logic). `fuzz_all.sh` does this automatically.
+- Persist `fuzz_corpus/` across runs — each run resumes from previous coverage.
+- Run for at least 1 hour — cryptographic code has deep paths that short runs won't reach.
 
 ### Integration
 

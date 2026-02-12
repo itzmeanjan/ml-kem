@@ -1,8 +1,16 @@
 #include "ml_kem/internals/math/field.hpp"
-#include <array>
 #include <cstddef>
 #include <cstdint>
-#include <span>
+
+namespace {
+
+uint16_t
+bytes_to_u16(const uint8_t* data)
+{
+  return static_cast<uint16_t>(static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8));
+}
+
+}
 
 // Fuzzer for Zq field arithmetic
 extern "C" int
@@ -17,16 +25,10 @@ LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   }
 
   // Consume 4 bytes
-  uint16_t a_raw = 0;
-  uint16_t b_raw = 0;
+  const uint16_t a_raw = bytes_to_u16(data);
+  const uint16_t b_raw = bytes_to_u16(data + 2);
 
-  // Use first 2 bytes for 'a'
-  a_raw = static_cast<uint16_t>(static_cast<uint16_t>(data[0]) | (static_cast<uint16_t>(data[1]) << 8));
-  // Use next 2 bytes for 'b'
-  b_raw = static_cast<uint16_t>(static_cast<uint16_t>(data[2]) | (static_cast<uint16_t>(data[3]) << 8));
-
-  // Construct field elements.
-  // from_non_reduced handles any uint32_t, so we can pass anything.
+  // Construct field elements
   auto a = ml_kem_field::zq_t::from_non_reduced(a_raw);
   auto b = ml_kem_field::zq_t::from_non_reduced(b_raw);
 
@@ -53,6 +55,7 @@ LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
   if (b.raw() != 0) {
     auto b_inv = b.inv();
     auto check = b * b_inv;
+
     // Property: b * b^-1 == 1 (mod Q)
     if (check.raw() != 1) {
       __builtin_trap();

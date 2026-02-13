@@ -1,10 +1,15 @@
 #pragma once
 #include "k_pke.hpp"
+#include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
 #include "sha3/sha3_256.hpp"
 #include "sha3/sha3_512.hpp"
 #include "sha3/shake256.hpp"
 #include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 // Key Encapsulation Mechanism
 namespace ml_kem {
@@ -104,12 +109,12 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
             std::span<uint8_t, 32> shared_secret)
   requires(ml_kem_params::check_decap_params(k, eta1, eta2, du, dv))
 {
-  constexpr size_t sklen = k * 12 * 32;
-  constexpr size_t pklen = k * 12 * 32 + 32;
-  constexpr size_t ctlen = cipher.size();
+  constexpr size_t pke_sk_len = (k * 12 * 32);
+  constexpr size_t pke_pk_len = (k * 12 * 32) + 32;
+  constexpr size_t ctlen = 32 * (k * du + dv);
 
-  constexpr size_t skoff0 = sklen;
-  constexpr size_t skoff1 = skoff0 + pklen;
+  constexpr size_t skoff0 = pke_sk_len;
+  constexpr size_t skoff1 = skoff0 + pke_pk_len;
   constexpr size_t skoff2 = skoff1 + 32;
 
   auto pke_sk = seckey.template subspan<0, skoff0>();

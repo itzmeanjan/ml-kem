@@ -1,6 +1,14 @@
+#include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/poly/serialize.hpp"
 #include "randomshake/randomshake.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <gtest/gtest.h>
+#include <span>
+#include <vector>
+
+namespace {
 
 // Ensure that degree-255 polynomial serialization to byte array ( of length 32*l -bytes ) and deserialization of
 // that byte array to degree-255 polynomial works as expected for parameterizable values of l | l ∈ [1, 12].
@@ -11,7 +19,7 @@ void
 test_serialize_deserialize()
 {
   constexpr size_t blen = (ml_kem_ntt::N * l) / 8;
-  constexpr uint32_t mask = (1u << l) - 1u;
+  constexpr uint32_t mask = (1U << l) - 1U;
 
   std::vector<ml_kem_field::zq_t> src(ml_kem_ntt::N);
   std::vector<ml_kem_field::zq_t> dst(ml_kem_ntt::N);
@@ -33,6 +41,8 @@ test_serialize_deserialize()
     EXPECT_EQ((src[i].raw() & mask), (dst[i].raw() & mask));
   }
 }
+
+} // namespace
 
 TEST(ML_KEM, PolynomialSerialization)
 {

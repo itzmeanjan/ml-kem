@@ -4,6 +4,10 @@
 #include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/poly/serialize.hpp"
 #include "ml_kem/internals/utility/params.hpp"
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 namespace ml_kem_utils {
 
@@ -31,8 +35,8 @@ matrix_multiply(std::span<const ml_kem_field::zq_t, a_rows * a_cols * ml_kem_ntt
 
         ml_kem_ntt::polymul(poly_t(a.subspan(aoff, ml_kem_ntt::N)), poly_t(b.subspan(boff, ml_kem_ntt::N)), tmp_span);
 
-        for (size_t l = 0; l < ml_kem_ntt::N; l++) {
-          c[coff + l] += tmp[l];
+        for (size_t idx = 0; idx < ml_kem_ntt::N; idx++) {
+          c[coff + idx] += tmp[idx];
         }
       }
     }

@@ -6,7 +6,7 @@
 // of execution of field operations on randomly sampled field elements.
 TEST(ML_KEM, ArithmeticOverZq)
 {
-  constexpr size_t ITERATION_COUNT = 1ul << 20;
+  constexpr size_t ITERATION_COUNT = 1UL << 20;
 
   randomshake::randomshake_t csprng{};
 

@@ -1,6 +1,9 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
+#include <array>
+#include <cstddef>
+#include <span>
 
 namespace ml_kem_ntt {
 
@@ -10,8 +13,8 @@ inline constexpr size_t N = 1 << LOG2N;
 // First primitive 256 -th root of unity modulo q | q = 3329
 //
 // Meaning, 17 ** 256 == 1 mod q
-inline constexpr auto ζ = ml_kem_field::zq_t(17);
-static_assert((ζ ^ N) == ml_kem_field::zq_t::one(), "ζ must be 256th root of unity modulo Q");
+inline constexpr auto ZETA = ml_kem_field::zq_t(17);
+static_assert((ZETA ^ N) == ml_kem_field::zq_t::one(), "ZETA must be 256th root of unity modulo Q");
 
 // Multiplicative inverse of N/ 2 over Z_q | q = 3329 and N = 256
 //
@@ -23,47 +26,47 @@ inline constexpr auto INV_N = ml_kem_field::zq_t(N / 2).inv();
 //
 // See https://github.com/itzmeanjan/falcon/blob/45b0593/include/ntt.hpp#L30-L38 for source of inspiration.
 template<size_t mbw>
-forceinline constexpr size_t
+forceinline constexpr size_t // NOLINT(misc-include-cleaner)
 bit_rev(const size_t v)
 {
-  size_t v_rev = 0ul;
+  size_t v_rev = 0UL;
 
   for (size_t i = 0; i < mbw; i++) {
     const size_t bit = (v >> i) & 0b1;
-    v_rev ^= bit << (mbw - 1ul - i);
+    v_rev ^= bit << (mbw - 1UL - i);
   }
 
   return v_rev;
 }
 
 // Compile-time computed constants ( powers of ζ ), used for polynomial evaluation i.e. computation of NTT form.
-inline constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> NTT_ZETA_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
-    res[i] = ζ ^ bit_rev<LOG2N - 1>(i);
+    res[i] = ZETA ^ bit_rev<LOG2N - 1>(i);
   }
 
   return res;
 }();
 
 // Compile-time computed constants ( negated powers of ζ ), used for polynomial interpolation i.e. computation of iNTT form.
-inline constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> INTT_ZETA_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
-    res[i] = -NTT_ζ_EXP[i];
+    res[i] = -NTT_ZETA_EXP[i];
   }
 
   return res;
 }();
 
 // Compile-time computed constants ( powers of ζ ), used when multiplying two degree-255 polynomials in NTT domain.
-inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() -> auto {
+inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ZETA_EXP = []() -> auto {
   std::array<ml_kem_field::zq_t, N / 2> res{};
 
   for (size_t i = 0; i < res.size(); i++) {
-    res[i] = ζ ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
+    res[i] = ZETA ^ ((bit_rev<LOG2N - 1>(i) << 1) ^ 1);
   }
 
   return res;
@@ -79,22 +82,22 @@ inline constexpr std::array<ml_kem_field::zq_t, N / 2> POLY_MUL_ζ_EXP = []() ->
 forceinline constexpr void
 ntt(std::span<ml_kem_field::zq_t, N> poly)
 {
-  for (size_t l = LOG2N - 1; l >= 1; l--) {
-    const size_t len = 1ul << l;
+  for (size_t lvl = LOG2N - 1; lvl >= 1; lvl--) {
+    const size_t len = static_cast<size_t>(1) << lvl;
     const size_t lenx2 = len << 1;
-    const size_t k_beg = N >> (l + 1);
+    const size_t k_beg = N >> (lvl + 1);
 
     for (size_t start = 0; start < poly.size(); start += lenx2) {
-      const size_t k_now = k_beg + (start >> (l + 1));
+      const size_t k_now = k_beg + (start >> (lvl + 1));
       // Looking up precomputed constant, though it can be computed using
       //
       // ζ ^ bit_rev<LOG2N - 1>(k_now)
       //
       // This is how these constants are generated !
-      const ml_kem_field::zq_t ζ_exp = NTT_ζ_EXP[k_now];
+      const ml_kem_field::zq_t zeta_exp = NTT_ZETA_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
-        auto tmp = ζ_exp;
+        auto tmp = zeta_exp;
         tmp *= poly[i + len];
 
         poly[i + len] = poly[i] - tmp;
@@ -115,28 +118,28 @@ ntt(std::span<ml_kem_field::zq_t, N> poly)
 forceinline constexpr void
 intt(std::span<ml_kem_field::zq_t, N> poly)
 {
-  for (size_t l = 1; l < LOG2N; l++) {
-    const size_t len = 1ul << l;
+  for (size_t lvl = 1; lvl < LOG2N; lvl++) {
+    const size_t len = static_cast<size_t>(1) << lvl;
     const size_t lenx2 = len << 1;
-    const size_t k_beg = (N >> l) - 1;
+    const size_t k_beg = (N >> lvl) - 1;
 
     for (size_t start = 0; start < poly.size(); start += lenx2) {
-      const size_t k_now = k_beg - (start >> (l + 1));
+      const size_t k_now = k_beg - (start >> (lvl + 1));
       // Looking up precomputed constant, though it can be computed using
       //
       // -(ζ ^ bit_rev<LOG2N - 1>(k_now))
       //
       // Or simpler
       //
-      // -NTT_ζ_EXP[k_now]
-      const ml_kem_field::zq_t neg_ζ_exp = INTT_ζ_EXP[k_now];
+      // -NTT_ZETA_EXP[k_now]
+      const ml_kem_field::zq_t neg_zeta_exp = INTT_ZETA_EXP[k_now];
 
       for (size_t i = start; i < start + len; i++) {
         const auto tmp = poly[i];
 
         poly[i] += poly[i + len];
         poly[i + len] = tmp - poly[i + len];
-        poly[i + len] *= neg_ζ_exp;
+        poly[i + len] *= neg_zeta_exp;
       }
     }
   }
@@ -149,14 +152,14 @@ intt(std::span<ml_kem_field::zq_t, N> poly)
 // Given two degree-1 polynomials, this routine computes resulting degree-1 polynomial h.
 // See algorithm 12 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
 forceinline constexpr void
-basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::zq_t, 2> g, std::span<ml_kem_field::zq_t, 2> h, const ml_kem_field::zq_t ζ)
+basemul(std::span<const ml_kem_field::zq_t, 2> f, std::span<const ml_kem_field::zq_t, 2> g, std::span<ml_kem_field::zq_t, 2> h, const ml_kem_field::zq_t zeta)
 {
   ml_kem_field::zq_t f0 = f[0];
   ml_kem_field::zq_t f1 = f[1];
 
   f0 *= g[0];
   f1 *= g[1];
-  f1 *= ζ;
+  f1 *= zeta;
   f1 += f0;
 
   h[0] = f1;
@@ -188,7 +191,7 @@ polymul(std::span<const ml_kem_field::zq_t, N> f, std::span<const ml_kem_field::
 
   for (size_t i = 0; i < f.size() / 2; i++) {
     const size_t off = i * 2;
-    basemul(poly_t(f.subspan(off, 2)), poly_t(g.subspan(off, 2)), mut_poly_t(h.subspan(off, 2)), POLY_MUL_ζ_EXP[i]);
+    basemul(poly_t(f.subspan(off, 2)), poly_t(g.subspan(off, 2)), mut_poly_t(h.subspan(off, 2)), POLY_MUL_ZETA_EXP[i]);
   }
 }
 

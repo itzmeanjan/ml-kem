@@ -7,43 +7,43 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
-    runs-on: ${{matrix.os}}
+  test:
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
+      max-parallel: 2
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [
+          ubuntu-latest # x86_64
+        ]
         compiler: [g++, clang++]
-        build_type: [debug, release]
-        test_type: [standard, asan, ubsan]
-      max-parallel: 4
+        sanitizer: [none, asan, ubsan]
+        build_type: [Debug, Release]
+        include:
+          - os: macos-latest # aarch64
+            compiler: clang++
+            sanitizer: none
+            build_type: Release
+        exclude:
+          - sanitizer: none
+            build_type: Debug
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup Google-Test
-        run: |
-          pushd ~
-          git clone https://github.com/google/googletest.git -b v1.17.0
-          pushd googletest
-          mkdir build
-          pushd build
-          cmake .. -DBUILD_GMOCK=OFF
-          make
-          sudo make install
-          popd
-          popd
-          popd
+      - name: Configure
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DML_KEM_BUILD_TESTS=ON
+          -DML_KEM_BUILD_EXAMPLES=ON
+          -DML_KEM_FETCH_DEPS=ON
+          -DML_KEM_ASAN=${{ matrix.sanitizer == 'asan' && 'ON' || 'OFF' }}
+          -DML_KEM_UBSAN=${{ matrix.sanitizer == 'ubsan' && 'ON' || 'OFF' }}
 
-      - name: Build and Test (${{ matrix.compiler }}, ${{ matrix.build_type }}, ${{ matrix.test_type }})
-        run: |
-          CXX=${{ matrix.compiler }}
-          if [[ ${{ matrix.test_type }} == "standard" ]]; then
-            make test -j
-          else
-            make ${{ matrix.build_type }}_${{ matrix.test_type }}_test -j
-          fi
+      - name: Build
+        run: cmake --build build -j
 
-      - name: Run Examples
-        if: ${{ matrix.test_type == 'standard' && matrix.build_type == 'release' }}
-        run: |
-          CXX=${{ matrix.compiler }} make example -j
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

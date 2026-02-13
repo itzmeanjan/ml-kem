@@ -1,6 +1,8 @@
 #include "ml_kem/internals/poly/compression.hpp"
 #include "ml_kem/internals/utility/force_inline.hpp"
 #include "randomshake/randomshake.hpp"
+#include <array>
+#include <cmath>
 #include <gtest/gtest.h>
 
 // Decompression error that can happen for some given `d` s.t.
@@ -15,7 +17,7 @@ forceinline constexpr size_t
 compute_error()
 {
   constexpr double t0 = static_cast<double>(ml_kem_field::Q);
-  constexpr double t1 = static_cast<double>(1ul << (d + 1));
+  constexpr double t1 = static_cast<double>(1UL << (d + 1));
 
   const size_t t2 = static_cast<size_t>(std::round(t0 / t1));
   return t2;
@@ -48,13 +50,13 @@ test_zq_compression()
     const auto a_canon = a.raw();
     const auto c_canon = c.raw();
 
-    const uint32_t br0[]{ static_cast<uint16_t>(ml_kem_field::Q - c_canon), c_canon };
+    const std::array<uint32_t, 2> br0{ static_cast<uint16_t>(ml_kem_field::Q - c_canon), c_canon };
     const bool flg0 = c_canon <= (ml_kem_field::Q >> 1);
-    const auto c_prime = static_cast<int32_t>(br0[flg0]);
+    const auto c_prime = static_cast<int32_t>(br0[static_cast<size_t>(flg0)]);
 
-    const uint32_t br1[]{ static_cast<uint16_t>(ml_kem_field::Q - a_canon), a_canon };
+    const std::array<uint32_t, 2> br1{ static_cast<uint16_t>(ml_kem_field::Q - a_canon), a_canon };
     const bool flg1 = a_canon <= (ml_kem_field::Q >> 1);
-    const auto a_prime = static_cast<int32_t>(br1[flg1]);
+    const auto a_prime = static_cast<int32_t>(br1[static_cast<size_t>(flg1)]);
 
     const size_t err = static_cast<size_t>(std::abs(c_prime - a_prime));
     const size_t terr = compute_error<d>();
@@ -67,9 +69,9 @@ test_zq_compression()
 
 TEST(ML_KEM, CompressDecompressZq)
 {
-  EXPECT_TRUE((test_zq_compression<11, 1ul << 20>()));
-  EXPECT_TRUE((test_zq_compression<10, 1ul << 20>()));
-  EXPECT_TRUE((test_zq_compression<5, 1ul << 20>()));
-  EXPECT_TRUE((test_zq_compression<4, 1ul << 20>()));
-  EXPECT_TRUE((test_zq_compression<1, 1ul << 20>()));
+  EXPECT_TRUE((test_zq_compression<11, 1UL << 20>()));
+  EXPECT_TRUE((test_zq_compression<10, 1UL << 20>()));
+  EXPECT_TRUE((test_zq_compression<5, 1UL << 20>()));
+  EXPECT_TRUE((test_zq_compression<4, 1UL << 20>()));
+  EXPECT_TRUE((test_zq_compression<1, 1UL << 20>()));
 }

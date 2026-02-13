@@ -1,5 +1,9 @@
 #pragma once
 #include "ml_kem/internals/ml_kem.hpp"
+#include "ml_kem/internals/utility/utils.hpp"
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 namespace ml_kem_512 {
 
@@ -7,8 +11,8 @@ namespace ml_kem_512 {
 // See row 1 of table 2 of ML-KEM specification @ https://doi.org/10.6028/NIST.FIPS.203.
 
 inline constexpr size_t k = 2;
-inline constexpr size_t η1 = 3;
-inline constexpr size_t η2 = 2;
+inline constexpr size_t eta1 = 3;
+inline constexpr size_t eta2 = 2;
 inline constexpr size_t du = 10;
 inline constexpr size_t dv = 4;
 
@@ -40,7 +44,7 @@ keygen(std::span<const uint8_t, SEED_D_BYTE_LEN> d,
        std::span<uint8_t, PKEY_BYTE_LEN> pubkey,
        std::span<uint8_t, SKEY_BYTE_LEN> seckey)
 {
-  ml_kem::keygen<k, η1>(d, z, pubkey, seckey);
+  ml_kem::keygen<k, eta1>(d, z, pubkey, seckey);
 }
 
 // Given seed `m` and a ML-KEM-512 public key, this routine computes a ML-KEM-512 cipher text and a fixed size shared secret.
@@ -51,14 +55,14 @@ encapsulate(std::span<const uint8_t, SEED_M_BYTE_LEN> m,
             std::span<uint8_t, CIPHER_TEXT_BYTE_LEN> cipher,
             std::span<uint8_t, SHARED_SECRET_BYTE_LEN> shared_secret)
 {
-  return ml_kem::encapsulate<k, η1, η2, du, dv>(m, pubkey, cipher, shared_secret);
+  return ml_kem::encapsulate<k, eta1, eta2, du, dv>(m, pubkey, cipher, shared_secret);
 }
 
 // Given a ML-KEM-512 secret key and a cipher text, this routine computes a fixed size shared secret.
 constexpr void
 decapsulate(std::span<const uint8_t, SKEY_BYTE_LEN> seckey, std::span<const uint8_t, CIPHER_TEXT_BYTE_LEN> cipher, std::span<uint8_t, SHARED_SECRET_BYTE_LEN> shared_secret)
 {
-  ml_kem::decapsulate<k, η1, η2, du, dv>(seckey, cipher, shared_secret);
+  ml_kem::decapsulate<k, eta1, eta2, du, dv>(seckey, cipher, shared_secret);
 }
 
 }

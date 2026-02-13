@@ -1,11 +1,16 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "ml_kem/internals/poly/ntt.hpp"
-#include "ml_kem/internals/utility/force_inline.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
 #include "ml_kem/internals/utility/params.hpp"
 #include "sha3/shake128.hpp"
 #include "sha3/shake256.hpp"
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
 #include <limits>
+#include <span>
 
 namespace ml_kem_utils {
 
@@ -16,7 +21,7 @@ namespace ml_kem_utils {
 // statiscally close to randomly sampled elements of R_q.
 //
 // See algorithm 7 of ML-KEM specification https://doi.org/10.6028/NIST.FIPS.203.
-forceinline constexpr void
+forceinline constexpr void // NOLINT(misc-include-cleaner)
 sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
 {
   constexpr size_t n = poly.size();
@@ -28,8 +33,8 @@ sample_ntt(shake128::shake128_t& hasher, std::span<ml_kem_field::zq_t, ml_kem_nt
     hasher.squeeze(buf);
 
     for (size_t off = 0; (off < buf.size()) && (coeff_idx < n); off += 3) {
-      const uint16_t d1 = (static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) | static_cast<uint16_t>(buf[off + 0]);
-      const uint16_t d2 = (static_cast<uint16_t>(buf[off + 2]) << 4) | (static_cast<uint16_t>(buf[off + 1] >> 4));
+      const uint16_t d1 = static_cast<uint16_t>((static_cast<uint16_t>(buf[off + 1] & 0x0f) << 8) | static_cast<uint16_t>(buf[off + 0]));
+      const uint16_t d2 = static_cast<uint16_t>((static_cast<uint16_t>(buf[off + 2]) << 4) | (static_cast<uint16_t>(buf[off + 1] >> 4)));
 
       if (d1 < ml_kem_field::Q) {
         poly[coeff_idx] = ml_kem_field::zq_t(d1);
@@ -109,8 +114,8 @@ sample_poly_cbd(std::span<const uint8_t, 64 * eta> prf, std::span<ml_kem_field::
     static_assert(eta == 3, "η must be 3 !");
 
     constexpr size_t till = 64;
-    constexpr uint32_t mask24 = 0b001001001001001001001001u;
-    constexpr uint32_t mask3 = 0b111u;
+    constexpr uint32_t mask24 = 0b001001001001001001001001U;
+    constexpr uint32_t mask3 = 0b111U;
 
     for (size_t i = 0; i < till; i++) {
       const size_t boff = i * 3;

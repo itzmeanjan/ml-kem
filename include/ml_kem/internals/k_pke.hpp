@@ -1,10 +1,18 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
+#include "ml_kem/internals/poly/compression.hpp"
+#include "ml_kem/internals/poly/ntt.hpp"
 #include "ml_kem/internals/poly/poly_vec.hpp"
 #include "ml_kem/internals/poly/sampling.hpp"
+#include "ml_kem/internals/poly/serialize.hpp"
 #include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
 #include "sha3/sha3_512.hpp"
+#include <algorithm>
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <span>
 
 // Public Key Encryption Scheme
 namespace k_pke {
@@ -91,7 +99,7 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
 
   using encoded_pkey_t = std::span<const uint8_t, encoded_t_prime_in_pubkey.size()>;
   const auto are_equal = ml_kem_utils::ct_memcmp(encoded_pkey_t(encoded_t_prime_in_pubkey), encoded_pkey_t(encoded_tprime));
-  if (are_equal == 0u) {
+  if (are_equal == 0U) {
     // Got an invalid public key
     return false;
   }

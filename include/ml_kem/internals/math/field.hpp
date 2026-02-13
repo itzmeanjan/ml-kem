@@ -1,13 +1,17 @@
 #pragma once
-#include "randomshake/randomshake.hpp"
+#include "ml_kem/internals/utility/force_inline.hpp" // IWYU pragma: keep
+#include "randomshake/randomshake.hpp"               // IWYU pragma: keep
+#include <array>
 #include <bit>
-#include <limits>
+#include <cstddef>
 #include <cstdint>
+#include <limits>
+#include <span>
 
 namespace ml_kem_field {
 
 // Ml_kem Prime Field Modulus ( = 3329 )
-inline constexpr uint32_t Q = (1u << 8) * 13 + 1;
+inline constexpr uint32_t Q = ((1U << 8) * 13) + 1;
 
 // Bit width of Ml_kem Prime Field Modulus ( = 12 )
 inline constexpr size_t Q_BIT_WIDTH = std::bit_width(Q);
@@ -20,7 +24,7 @@ inline constexpr size_t Q_BIT_WIDTH = std::bit_width(Q);
 // r = floor((1 << 2k) / Q) = 5039
 //
 // See https://www.nayuki.io/page/barrett-reduction-algorithm.
-inline constexpr uint32_t R = (1u << (2 * Q_BIT_WIDTH)) / Q;
+inline constexpr uint32_t R = (1U << (2 * Q_BIT_WIDTH)) / Q;
 
 // Prime field Zq | q = 3329, with arithmetic operations defined over it.
 //
@@ -31,13 +35,13 @@ private:
   // Underlying value held in this type.
   //
   // Note, v is always kept in its canonical form i.e. v ∈ [0, Q).
-  uint32_t v = 0u;
+  uint32_t v = 0U;
 
   // Given a 32 -bit unsigned integer `v` such that `v` ∈ [0, 2*Q), this routine can be invoked for reducing `v` modulo prime Q.
-  static forceinline constexpr uint32_t reduce_once(const uint32_t v)
+  static forceinline constexpr uint32_t reduce_once(const uint32_t v) // NOLINT(misc-include-cleaner)
   {
     const uint32_t t0 = v - Q;
-    const uint32_t t1 = -(t0 >> 31);
+    const uint32_t t1 = 0U - (t0 >> 31);
     const uint32_t t2 = Q & t1;
     const uint32_t t3 = t0 + t2;
 
@@ -59,14 +63,17 @@ private:
 public:
   // Constructor(s)
   forceinline constexpr zq_t() = default;
-  forceinline constexpr zq_t(const uint16_t a /* Expects a ∈ [0, Q) */) { this->v = a; }
-  static forceinline constexpr zq_t from_non_reduced(const uint16_t a /* Doesn't expect that a ∈ [0, Q) */) { return barrett_reduce(a); }
+  forceinline constexpr zq_t(const uint32_t a /* Expects a ∈ [0, Q) */)
+    : v(a)
+  {
+  }
+  static forceinline constexpr zq_t from_non_reduced(const uint32_t a /* Doesn't expect that a ∈ [0, Q) */) { return zq_t(barrett_reduce(a)); }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
   forceinline constexpr uint32_t raw() const { return this->v; }
 
-  static forceinline constexpr zq_t zero() { return zq_t(0u); }
-  static forceinline constexpr zq_t one() { return zq_t(1u); }
+  static forceinline constexpr zq_t zero() { return zq_t(0U); }
+  static forceinline constexpr zq_t one() { return zq_t(1U); }
 
   // Modulo addition of two Zq elements.
   forceinline constexpr zq_t operator+(const zq_t& rhs) const { return reduce_once(this->v + rhs.v); }
@@ -90,17 +97,17 @@ public:
   {
     zq_t base = *this;
 
-    const zq_t br[]{ zq_t(1), base };
-    zq_t res = br[n & 0b1ul];
+    const std::array<zq_t, 2> br{ zq_t(1), base };
+    zq_t res = br[n & 0b1UL];
 
-    const size_t zeros = std::countl_zero(n);
+    const size_t zeros = static_cast<size_t>(std::countl_zero(n));
     const size_t till = std::numeric_limits<size_t>::digits - zeros;
 
     for (size_t i = 1; i < till; i++) {
       base = base * base;
 
-      const zq_t br[]{ zq_t(1), base };
-      res = res * br[(n >> i) & 0b1ul];
+      const std::array<zq_t, 2> br_next{ zq_t(1), base };
+      res = res * br_next[(n >> i) & 0b1UL];
     }
 
     return res;
@@ -119,7 +126,7 @@ public:
   static forceinline zq_t random(randomshake::randomshake_t<>& csprng)
   {
     uint16_t res = 0;
-    csprng.generate(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res)));
+    csprng.generate(std::span(reinterpret_cast<uint8_t*>(&res), sizeof(res))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 
     return zq_t::from_non_reduced(static_cast<uint32_t>(res));
   }

@@ -27,11 +27,11 @@ Here I'm maintaining `ml-kem` - a C++20 header-only fully `constexpr` library, i
 
 ML-KEM-768 shows following performance characteristics on desktop and server grade CPUs.
 
-ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" (`x86_64`) | Time taken on "AWS EC2 Instance c8g.large" (`aarch64`)
+ML-KEM-768 Algorithm | Time taken on "12th Gen Intel(R) Core(TM) i7-1260P" (`x86_64`) | Time taken on "AWS EC2 Instance c8g.large, featuring ARM Neoverse-V2" (`aarch64`)
 --- | --: | --:
-keygen | 22.3us | 31.5us
-encaps | 25.6us | 35.9us
-decaps | 30.1us | 43.7us
+keygen | 19.3us | 28.8us
+encaps | 21.9us | 32.8us
+decaps | 25.8us | 39.3us
 
 > [!NOTE]
 > Find ML-KEM standard @ <https://doi.org/10.6028/NIST.FIPS.203> - this is the document that I followed when implementing ML-KEM. I suggest you go through the specification to get an in-depth understanding of the scheme.
@@ -87,7 +87,7 @@ For testing functional correctness of this implementation and conformance with M
 > [!TIP]
 > If you are building for the same machine that will run the code (i.e., cross-compilation is not the goal), you should enable `-DML_KEM_NATIVE_OPT=ON` to allow the compiler to auto-vectorize, using processor-specific optimizations (like AVX2, NEON, etc.) for maximum performance.
 
-### Build & Test
+### Testing
 
 To build and run the tests, use the following CMake commands:
 
@@ -203,15 +203,6 @@ Each fuzzer has a minimum input size determined by its Mode A (malformed input) 
 | `poly_serialize` | 513 | 1B selector + 256 × uint16 |
 | `poly_compression` | 3 | 1B selector + uint16 |
 | `poly_sampling` | 193 | 1B selector + 192B CBD input |
-
-#### Best Practices for Effective Fuzzing
-
-- Prefer `-fork=N` over `-jobs=N` — fork mode shares coverage between workers for faster corpus growth.
-- Use per-fuzzer corpus directories to prevent cross-contamination between fuzzers with different input formats.
-- Set `-max_len` to the Mode A size from the table above; larger wastes mutation budget, smaller blocks Mode A.
-- Seed both modes: odd first byte for Mode A (malformed), even for Mode B (valid logic). `fuzz_all.sh` does this automatically.
-- Persist `fuzz_corpus/` across runs — each run resumes from previous coverage.
-- Run for at least 1 hour — cryptographic code has deep paths that short runs won't reach.
 
 ### Integration
 

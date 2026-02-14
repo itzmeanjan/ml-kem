@@ -4,15 +4,19 @@
 #include "test_helper.hpp"
 #include <gtest/gtest.h>
 
+// If this file compiles, the static_assert has already proven correctness at compile-time.
 namespace {
 
-// Seeds from NIST official KAT vector no. 1.
+// NIST official KAT vector no. 1: seeds and expected shared secrets.
 constexpr auto SEED_D = from_hex<32>("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d");
 constexpr auto SEED_Z = from_hex<32>("b505d7cfad1b497499323c8686325e4792f267aafa3f87ca60d01cb54f29202a");
 constexpr auto SEED_M = from_hex<32>("eb4a7c66ef4eba2ddb38c88d8bc706b1d639002198172a7b1942eca8f6c001ba");
 
+constexpr auto EXPECTED_SS_512 = from_hex<32>("b4c8e3c4115f9511f2fddb288c4b78c5cd7c89d2d4d321f46b4edc54ddf0eb36");
+constexpr auto EXPECTED_SS_768 = from_hex<32>("ac865f839fef1bf3d528dd7504bed2f64b5502b0fa81d1c32763658e4aac5037");
+constexpr auto EXPECTED_SS_1024 = from_hex<32>("ea636ce31b73f40229572146b97e590f1605fdadd1c3781861530effcf2b1e18");
+
 // Compile-time evaluation of ML-KEM-512 keygen, encapsulation, and decapsulation.
-// If this file compiles, the static_assert has already proven correctness at compile-time.
 constexpr bool
 eval_ml_kem_512()
 {
@@ -26,7 +30,7 @@ eval_ml_kem_512()
   const auto encaps_ok = ml_kem_512::encapsulate(SEED_M, pubkey, cipher, sender_key);
   ml_kem_512::decapsulate(seckey, cipher, receiver_key);
 
-  return encaps_ok && (sender_key == receiver_key);
+  return encaps_ok && (sender_key == receiver_key) && (sender_key == EXPECTED_SS_512);
 }
 
 // Compile-time evaluation of ML-KEM-768 keygen, encapsulation, and decapsulation.
@@ -43,7 +47,7 @@ eval_ml_kem_768()
   const auto encaps_ok = ml_kem_768::encapsulate(SEED_M, pubkey, cipher, sender_key);
   ml_kem_768::decapsulate(seckey, cipher, receiver_key);
 
-  return encaps_ok && (sender_key == receiver_key);
+  return encaps_ok && (sender_key == receiver_key) && (sender_key == EXPECTED_SS_768);
 }
 
 // Compile-time evaluation of ML-KEM-1024 keygen, encapsulation, and decapsulation.
@@ -60,7 +64,7 @@ eval_ml_kem_1024()
   const auto encaps_ok = ml_kem_1024::encapsulate(SEED_M, pubkey, cipher, sender_key);
   ml_kem_1024::decapsulate(seckey, cipher, receiver_key);
 
-  return encaps_ok && (sender_key == receiver_key);
+  return encaps_ok && (sender_key == receiver_key) && (sender_key == EXPECTED_SS_1024);
 }
 
 } // anonymous namespace

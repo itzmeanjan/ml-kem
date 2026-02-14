@@ -7,6 +7,33 @@ on:
     branches: [ "master" ]
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    env:
+      LLVM_VERSION: 20
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install LLVM ${{ env.LLVM_VERSION }}
+        run: |
+          wget -qO- https://apt.llvm.org/llvm-snapshot.gpg.key | sudo tee /etc/apt/trusted.gpg.d/apt.llvm.org.asc
+          echo "deb http://apt.llvm.org/$(lsb_release -cs)/ llvm-toolchain-$(lsb_release -cs)-${{ env.LLVM_VERSION }} main" | sudo tee /etc/apt/sources.list.d/llvm.list
+          sudo apt-get update
+          sudo apt-get install -y clang-${{ env.LLVM_VERSION }} clang-tidy-${{ env.LLVM_VERSION }}
+
+      - name: Configure
+        run: >
+          cmake -B build
+          -DCMAKE_CXX_COMPILER=clang++-${{ env.LLVM_VERSION }}
+          -DCMAKE_BUILD_TYPE=Release
+          -DML_KEM_BUILD_TESTS=ON
+          -DML_KEM_BUILD_EXAMPLES=ON
+          -DML_KEM_FETCH_DEPS=ON
+          -DCLANG_TIDY_EXE=clang-tidy-${{ env.LLVM_VERSION }}
+
+      - name: clang-tidy
+        run: cmake --build build --target tidy
+
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -46,4 +73,4 @@ jobs:
         run: cmake --build build -j
 
       - name: Test
-        run: ctest --test-dir build --output-on-failure
+        run: ctest --test-dir build --output-on-failure -j

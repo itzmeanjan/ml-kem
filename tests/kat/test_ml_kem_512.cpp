@@ -72,8 +72,7 @@ TEST(ML_KEM, ML_KEM_512_KnownAnswerTests)
 // - Is ML-KEM-512 Keygen implemented correctly ?
 // - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
 //
-// using ACVP Known Answer Tests, from
-// https://github.com/usnistgov/ACVP-Server/blob/d98cad66639bf9d0822129c4bcae7a169fcf9ca6/gen-val/json-files/ML-KEM-keyGen-FIPS203/internalProjection.json.
+// using ACVP Known Answer Tests.
 TEST(ML_KEM, ML_KEM_512_Keygen_ACVP_KnownAnswerTests)
 {
   const std::string kat_file = "./kats/ml_kem_512_keygen.acvp.kat";
@@ -119,8 +118,7 @@ TEST(ML_KEM, ML_KEM_512_Keygen_ACVP_KnownAnswerTests)
 // - Is ML-KEM-512 Encapsulation implemented correctly ?
 // - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
 //
-// using ACVP Known Answer Tests, from
-// https://github.com/usnistgov/ACVP-Server/blob/d98cad66639bf9d0822129c4bcae7a169fcf9ca6/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json.
+// using ACVP Known Answer Tests.
 TEST(ML_KEM, ML_KEM_512_Encaps_ACVP_KnownAnswerTests)
 {
   const std::string kat_file = "./kats/ml_kem_512_encaps.acvp.kat";
@@ -166,16 +164,116 @@ TEST(ML_KEM, ML_KEM_512_Encaps_ACVP_KnownAnswerTests)
 
 // Test
 //
-// - Given bad ML-KEM-512 secret key, derived shared secret should not match.
+// - Is ML-KEM-512 Decapsulation implemented correctly, including the implicit rejection path ?
 // - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
 //
-// using ACVP Known Answer Tests, from
-// https://github.com/usnistgov/ACVP-Server/blob/d98cad66639bf9d0822129c4bcae7a169fcf9ca6/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json.
-TEST(ML_KEM, ML_KEM_512_SeckeyCheck_ACVP_KnownAnswerTests)
+// using ACVP Known Answer Tests (decapsulation VAL).
+//
+// Vectors include both valid decapsulations and modified ciphertexts. For modified ciphertexts,
+// the expected shared secret is the FIPS 203 implicit rejection value J = SHAKE-256(z || c).
+TEST(ML_KEM, ML_KEM_512_Decaps_ACVP_KnownAnswerTests)
+{
+  const std::string kat_file = "./kats/ml_kem_512_decaps.acvp.kat";
+  std::fstream file(kat_file);
+
+  while (true) {
+    std::string sk_line;
+
+    if (!std::getline(file, sk_line).eof()) {
+      std::string ct_line;
+      std::string ss_line;
+      std::string reason_line;
+
+      std::getline(file, ct_line);
+      std::getline(file, ss_line);
+      std::getline(file, reason_line);
+
+      const auto sk = extract_and_parse_hex_string<ml_kem_512::SKEY_BYTE_LEN>(sk_line);
+      const auto ct = extract_and_parse_hex_string<ml_kem_512::CIPHER_TEXT_BYTE_LEN>(ct_line);
+      const auto ss = extract_and_parse_hex_string<ml_kem_512::SHARED_SECRET_BYTE_LEN>(ss_line);
+
+      std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> computed_shared_secret{};
+      ml_kem_512::decapsulate(sk, ct, computed_shared_secret);
+
+      EXPECT_EQ(ss, computed_shared_secret);
+
+      std::string empty_line;
+      std::getline(file, empty_line);
+    } else {
+      break;
+    }
+  }
+
+  file.close();
+}
+
+// Test
+//
+// - Does ML-KEM-512 correctly validate encapsulation keys (modulus check) ?
+// - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
+//
+// using ACVP Known Answer Tests (encapsulationKeyCheck VAL).
+TEST(ML_KEM, ML_KEM_512_EncapsKeyCheck_ACVP_KnownAnswerTests)
 {
   using namespace std::literals;
 
-  const std::string kat_file = "./kats/ml_kem_512_seckeyCheck.acvp.kat";
+  const std::string kat_file = "./kats/ml_kem_512_encaps_key_check.acvp.kat";
+  std::fstream file(kat_file);
+
+  while (true) {
+    std::string pk_line;
+
+    if (!std::getline(file, pk_line).eof()) {
+      std::string tp_line;
+      std::string reason_line;
+
+      std::getline(file, tp_line);
+      std::getline(file, reason_line);
+
+      const auto test_passed = tp_line.substr(tp_line.find("="sv) + 2, tp_line.size()) == "True";
+      const auto pk_hex = pk_line.substr(pk_line.find("="sv) + 2);
+      const size_t pk_byte_len = pk_hex.size() / 2;
+
+      if (pk_byte_len == ml_kem_512::PKEY_BYTE_LEN) {
+        // Key is the correct size -- test the modulus check
+        const auto pk = extract_and_parse_hex_string<ml_kem_512::PKEY_BYTE_LEN>(pk_line);
+
+        std::array<uint8_t, ml_kem_512::SEED_M_BYTE_LEN> random_m{};
+        std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> computed_ctxt{};
+        std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> computed_shared_secret{};
+
+        randomshake::randomshake_t csprng;
+        csprng.generate(random_m);
+
+        const bool is_valid = ml_kem_512::encapsulate(random_m, pk, computed_ctxt, computed_shared_secret);
+        EXPECT_EQ(test_passed, is_valid);
+      } else {
+        // Key is the wrong size -- our API enforces correct size at compile time via std::span,
+        // so we just verify the vector agrees this should be invalid
+        EXPECT_FALSE(test_passed);
+      }
+
+      std::string empty_line;
+      std::getline(file, empty_line);
+    } else {
+      break;
+    }
+  }
+
+  file.close();
+}
+
+// Test
+//
+// - Given bad ML-KEM-512 secret key, derived shared secret should not match.
+// - Is it conformant with the specification https://doi.org/10.6028/NIST.FIPS.203 ?
+//
+// using ACVP Known Answer Tests.
+TEST(ML_KEM, ML_KEM_512_DecapsKeyCheck_ACVP_KnownAnswerTests)
+{
+  using namespace std::literals;
+
+  const std::string kat_file = "./kats/ml_kem_512_decaps_key_check.acvp.kat";
   std::fstream file(kat_file);
 
   while (true) {

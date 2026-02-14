@@ -88,10 +88,15 @@ encapsulate(std::span<const uint8_t, 32> m,
   const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, g_out_span1, cipher);
   if (!has_mod_check_passed) {
     // Got an invalid public key
+    ml_kem_utils::secure_zeroize(g_in);
+    ml_kem_utils::secure_zeroize(g_out);
     return has_mod_check_passed;
   }
 
   std::copy(g_out_span0.begin(), g_out_span0.end(), shared_secret.begin());
+
+  ml_kem_utils::secure_zeroize(g_in);
+  ml_kem_utils::secure_zeroize(g_out);
   return true;
 }
 
@@ -155,7 +160,12 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   // line 9-12 of algorithm 17, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;
   const uint32_t cond = ml_kem_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
-  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(z));
+  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(j_out));
+
+  ml_kem_utils::secure_zeroize(g_in);
+  ml_kem_utils::secure_zeroize(g_out);
+  ml_kem_utils::secure_zeroize(j_out);
+  ml_kem_utils::secure_zeroize(c_prime);
 }
 
 }

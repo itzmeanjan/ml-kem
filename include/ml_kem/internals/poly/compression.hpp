@@ -54,8 +54,8 @@ constexpr void
 poly_compress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
-  for (size_t i = 0; i < poly.size(); i++) {
-    poly[i] = compress<d>(poly[i]);
+  for (auto& coeff : poly) {
+    coeff = compress<d>(coeff);
   }
 }
 
@@ -65,8 +65,8 @@ constexpr void
 poly_decompress(std::span<ml_kem_field::zq_t, ml_kem_ntt::N> poly)
   requires(ml_kem_params::check_d(d))
 {
-  for (size_t i = 0; i < poly.size(); i++) {
-    poly[i] = decompress<d>(poly[i]);
+  for (auto& coeff : poly) {
+    coeff = decompress<d>(coeff);
   }
 }
 

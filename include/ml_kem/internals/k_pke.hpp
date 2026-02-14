@@ -70,6 +70,10 @@ keygen(std::span<const uint8_t, 32> d,
   ml_kem_utils::poly_vec_encode<k, 12>(t_prime, encoded_t_prime_in_pubkey);
   std::copy(rho.begin(), rho.end(), rho_in_pubkey.begin());
   ml_kem_utils::poly_vec_encode<k, 12>(s, seckey);
+
+  ml_kem_utils::secure_zeroize(g_out);
+  ml_kem_utils::secure_zeroize(s);
+  ml_kem_utils::secure_zeroize(e);
 }
 
 // Given a *valid* K-PKE public key, 32 -bytes message ( to be encrypted ) and 32 -bytes random coin
@@ -149,6 +153,11 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
   ml_kem_utils::poly_compress<dv>(v);
   ml_kem_utils::encode<dv>(v, poly_v_in_ctxt);
 
+  ml_kem_utils::secure_zeroize(r);
+  ml_kem_utils::secure_zeroize(e1);
+  ml_kem_utils::secure_zeroize(e2);
+  ml_kem_utils::secure_zeroize(m);
+
   return true;
 }
 
@@ -189,6 +198,8 @@ decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey
 
   ml_kem_utils::poly_compress<1>(v);
   ml_kem_utils::encode<1>(v, ptxt);
+
+  ml_kem_utils::secure_zeroize(s_prime);
 }
 
 }

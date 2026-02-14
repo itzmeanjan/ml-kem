@@ -1,7 +1,6 @@
 #include "ml_kem/ml_kem_1024.hpp"
 #include "randomshake/randomshake.hpp"
 #include "test_helper.hpp"
-#include <algorithm>
 #include <gtest/gtest.h>
 
 // For ML-KEM-1024
@@ -77,7 +76,7 @@ TEST(ML_KEM, ML_KEM_1024_EncapsFailureDueToNonReducedPubKey)
 // - Cause a random bitflip in cipher text, at receiver's side.
 // - Attempt to decapsulate bit-flipped cipher text, using valid secret key. Must fail *implicitly*.
 // - Shared secret of sender and receiver must not match.
-// - Shared secret at receiver's end must match `seed_z`, which is last 32 -bytes of secret key.
+// - Shared secret at receiver's end must match J = SHAKE-256(z || cipher), per FIPS 203 algorithm 18.
 TEST(ML_KEM, ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText)
 {
   std::array<uint8_t, ml_kem_1024::SEED_D_BYTE_LEN> seed_d{};
@@ -102,10 +101,11 @@ TEST(ML_KEM, ML_KEM_1024_DecapsFailureDueToBitFlippedCipherText)
   random_bitflip_in_cipher_text<cipher.size()>(cipher, csprng);
   ml_kem_1024::decapsulate(seckey, cipher, shared_secret_receiver);
 
+  const auto expected_j = compute_implicit_rejection(std::span(seckey).template last<32>(), std::span<const uint8_t, cipher.size()>(cipher));
+
   EXPECT_TRUE(is_encapsulated);
   EXPECT_NE(shared_secret_sender, shared_secret_receiver);
-  EXPECT_EQ(shared_secret_receiver, seed_z);
-  EXPECT_TRUE(std::equal(shared_secret_receiver.begin(), shared_secret_receiver.end(), std::span(seckey).last<32>().begin()));
+  EXPECT_EQ(shared_secret_receiver, expected_j);
 }
 
 // For ML-KEM-1024

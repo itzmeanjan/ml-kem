@@ -2,19 +2,31 @@
 Checks: '
   bugprone-*,
   cert-*,
+  clang-analyzer-*,
+  concurrency-*,
   cppcoreguidelines-*,
+  hicpp-*,
   misc-*,
+  modernize-*,
   performance-*,
+  portability-*,
   readability-*,
-  -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
+  -bugprone-easily-swappable-parameters,
+  -clang-analyzer-fuchsia.*,
+  -clang-analyzer-osx.*,
+  -clang-analyzer-optin.mpi.*,
+  -clang-analyzer-optin.osx.*,
+  -clang-analyzer-optin.performance.GCDAntipattern,
+  -clang-analyzer-webkit.*,
   -cppcoreguidelines-pro-bounds-constant-array-index,
   -cppcoreguidelines-avoid-magic-numbers,
-  -readability-magic-numbers,
-  -readability-named-parameter,
-  -readability-container-size-empty,
-  -bugprone-easily-swappable-parameters,
-  -clang-analyzer-deadcode.DeadStores
+  -hicpp-use-auto,
+  -hicpp-signed-bitwise,
+  -misc-include-cleaner,
+  -modernize-use-trailing-return-type,
+  -modernize-use-auto,
+  -modernize-use-ranges,
+  -readability-magic-numbers
 '
 CheckOptions:
   readability-identifier-length.IgnoredParameterNames: 'd|z|m|k|l|n|v|i|j|h|f|g|t|a|b|c|x|y|ss|s|e|r|u|eta|zeta|eta1|eta2|du|dv|R|N|Q'

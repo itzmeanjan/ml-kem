@@ -19,12 +19,10 @@ find_program(CLANG_TIDY_EXE clang-tidy)
 find_program(CLANG_FORMAT_EXE clang-format)
 
 if(CLANG_TIDY_EXE)
-  file(GLOB_RECURSE TIDY_SOURCES 
-       "include/**/*.hpp" 
-       "examples/*.cpp")
-  
+  file(GLOB_RECURSE TIDY_SOURCES "examples/*.cpp")
+
   add_custom_target(tidy
-    COMMAND ${CLANG_TIDY_EXE} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/ml_kem/.* ${TIDY_SOURCES}
+    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/ml_kem/.* ${TIDY_SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Running clang-tidy"
   )
@@ -34,7 +32,9 @@ if(CLANG_FORMAT_EXE)
   file(GLOB_RECURSE FORMAT_SOURCES 
        "include/**/*.hpp" 
        "examples/*.cpp" 
+       "benchmarks/*.hpp"
        "benchmarks/*.cpp" 
+       "tests/*.hpp"
        "tests/*.cpp")
 
   add_custom_target(format
@@ -61,7 +61,7 @@ if(MSVC)
   set(ML_KEM_WARNING_FLAGS /W3)
   add_compile_definitions(_CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS)
 else()
-  set(ML_KEM_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Werror)
+  set(ML_KEM_WARNING_FLAGS -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Wformat=2 -Wcast-qual -Wold-style-cast -Wundef -Werror)
   if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     list(APPEND ML_KEM_WARNING_FLAGS -Wno-pass-failed)
   endif()
@@ -149,7 +149,14 @@ if(ML_KEM_BUILD_TESTS)
   target_link_libraries(ml_kem_tests PRIVATE ml-kem GTest::gtest_main)
   target_include_directories(ml_kem_tests PRIVATE tests)
   target_compile_options(ml_kem_tests PRIVATE ${ML_KEM_WARNING_FLAGS})
-  
+
+  # Compile-time (constexpr) tests require higher evaluation limits for ML-KEM-768/1024.
+  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    set_source_files_properties(tests/prop/test_constexpr.cpp PROPERTIES COMPILE_OPTIONS "-fconstexpr-steps=268435456")
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set_source_files_properties(tests/prop/test_constexpr.cpp PROPERTIES COMPILE_OPTIONS "-fconstexpr-ops-limit=536870912")
+  endif()
+
   include(GoogleTest)
   gtest_discover_tests(ml_kem_tests)
 

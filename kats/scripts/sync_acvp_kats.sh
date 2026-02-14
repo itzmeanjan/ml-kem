@@ -16,7 +16,9 @@ fi
 
 cat ./ACVP-Server/gen-val/json-files/ML-KEM-keyGen-FIPS203/internalProjection.json | python parse_ml_kem_keygen_acvp_kat.py
 cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_encaps_acvp_kat.py
-cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_seckeyCheck_acvp_kat.py
+cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_decaps_acvp_kat.py
+cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_decaps_key_check_acvp_kat.py
+cat ./ACVP-Server/gen-val/json-files/ML-KEM-encapDecap-FIPS203/internalProjection.json | python parse_ml_kem_encaps_key_check_acvp_kat.py
 
 mv *.acvp.kat ..
 

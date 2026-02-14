@@ -2,7 +2,6 @@
 #include "randomshake/randomshake.hpp" // IWYU pragma: keep
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <iomanip>
@@ -21,8 +20,8 @@ to_hex(std::span<const uint8_t> bytes)
   std::stringstream ss;
   ss << std::hex;
 
-  for (size_t i = 0; i < bytes.size(); i++) {
-    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(bytes[i]);
+  for (const auto byte : bytes) {
+    ss << std::setw(2) << std::setfill('0') << static_cast<uint32_t>(byte);
   }
 
   return ss.str();

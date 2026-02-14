@@ -144,8 +144,8 @@ intt(std::span<ml_kem_field::zq_t, N> poly)
     }
   }
 
-  for (size_t i = 0; i < poly.size(); i++) {
-    poly[i] *= INV_N;
+  for (auto& coeff : poly) {
+    coeff *= INV_N;
   }
 }
 

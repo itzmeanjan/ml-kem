@@ -95,7 +95,7 @@ To build and run the tests, use the following CMake commands:
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON
 cmake --build build -j
 
-ctest --test-dir build --output-on-failure
+ctest --test-dir build -j --output-on-failure
 ```
 
 To run tests with sanitizers, reconfigure the build with the desired sanitizer option:
@@ -103,11 +103,11 @@ To run tests with sanitizers, reconfigure the build with the desired sanitizer o
 ```bash
 # With AddressSanitizer, in Release mode
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON -DML_KEM_ASAN=ON
-cmake --build build -j && ctest --test-dir build --output-on-failure
+cmake --build build -j && ctest --test-dir build -j --output-on-failure
 
 # With UndefinedBehaviorSanitizer, in Release mode
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON -DML_KEM_UBSAN=ON
-cmake --build build -j && ctest --test-dir build --output-on-failure
+cmake --build build -j && ctest --test-dir build -j --output-on-failure
 ```
 
 ### Benchmarking
@@ -264,7 +264,7 @@ git clone https://github.com/itzmeanjan/ml-kem.git --recurse-submodules
 # Or clone and then run tests (submodules are fetched automatically)
 git clone https://github.com/itzmeanjan/ml-kem.git && cd ml-kem
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON
-cmake --build build -j && ctest --test-dir build --output-on-failure
+cmake --build build -j && ctest --test-dir build -j --output-on-failure
 ```
 
 - Write your program; include proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).

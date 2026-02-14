@@ -10,6 +10,7 @@ ML_KEM_1024_ACVP_KAT_FILE_NAME="ml_kem_1024_encaps.acvp.kat"
 
 def extract_and_write_ml_kem_encaps_kats(test_group: dict[str, typing.Any], write_to_file: str):
     assert test_group["testType"] == "AFT"
+    assert test_group["function"] == "encapsulation"
 
     with open(write_to_file, "wt") as fd:
         for test in test_group["tests"]:

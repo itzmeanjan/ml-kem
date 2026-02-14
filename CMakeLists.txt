@@ -19,10 +19,8 @@ find_program(CLANG_TIDY_EXE clang-tidy)
 find_program(CLANG_FORMAT_EXE clang-format)
 
 if(CLANG_TIDY_EXE)
-  file(GLOB_RECURSE TIDY_SOURCES 
-       "include/**/*.hpp" 
-       "examples/*.cpp")
-  
+  file(GLOB_RECURSE TIDY_SOURCES "examples/*.cpp")
+
   add_custom_target(tidy
     COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/ml_kem/.* ${TIDY_SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}

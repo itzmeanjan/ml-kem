@@ -1,11 +1,28 @@
 #pragma once
 #include "ml_kem/internals/utility/force_inline.hpp"
 #include "subtle.hpp"
+#include <array>
 #include <cstddef>
 #include <cstdint>
 #include <span>
+#include <type_traits>
 
 namespace ml_kem_utils {
+
+// Securely zeroizes a std::array, preventing the compiler from optimizing away the operation.
+// At compile-time: a plain fill suffices -- there is no real memory to protect.
+// At runtime: the fill is followed by a compiler barrier (empty asm with "memory" clobber)
+// that forces the compiler to treat the array's memory as externally observable, preventing
+// dead store elimination. The barrier generates zero instructions.
+template<typename T, size_t N>
+forceinline constexpr void
+secure_zeroize(std::array<T, N>& arr)
+{
+  arr.fill(T{});
+  if (!std::is_constant_evaluated()) {
+    asm volatile("" : : "r"(arr.data()) : "memory"); // NOLINT(hicpp-no-assembler)
+  }
+}
 
 // Given two byte arrays of equal length, this routine can be used for comparing them in constant-time,
 // producing truth value (0xffffffff) in case of equality, otherwise it returns false value (0x00000000).

@@ -24,7 +24,7 @@ if(CLANG_TIDY_EXE)
        "examples/*.cpp")
   
   add_custom_target(tidy
-    COMMAND ${CLANG_TIDY_EXE} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/ml_kem/.* ${TIDY_SOURCES}
+    COMMAND ${CLANG_TIDY_EXE} -p ${CMAKE_BINARY_DIR} --config-file=${CMAKE_CURRENT_SOURCE_DIR}/.clang-tidy --header-filter=${CMAKE_CURRENT_SOURCE_DIR}/include/ml_kem/.* ${TIDY_SOURCES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     COMMENT "Running clang-tidy"
   )

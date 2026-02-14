@@ -98,6 +98,10 @@ ALL_FUZZERS=(
 # ---------------------------------------------------------------------------
 phase_configure() {
   header "Phase 1/5: Configure"
+  if [[ -d "$BUILD_DIR" ]]; then
+    warn "Removing existing build directory: $BUILD_DIR"
+    rm -rf "$BUILD_DIR"
+  fi
   info "Configuring CMake with clang++ and fuzzer sanitizers..."
   cmake -B "$BUILD_DIR" \
     -DCMAKE_CXX_COMPILER="$CXX" \

@@ -1,6 +1,7 @@
 #pragma once
 #include "ml_kem/internals/math/field.hpp"
 #include "randomshake/randomshake.hpp"
+#include "sha3/shake256.hpp"
 #include <array>
 #include <cassert>
 #include <cstddef>
@@ -128,4 +129,21 @@ static forceinline constexpr void
 make_random_garbage_pubkey(std::span<uint8_t, pubkey_byte_len> pubkey, randomshake::randomshake_t<>& csprng)
 {
   csprng.generate(pubkey);
+}
+
+// Computes the expected implicit rejection value J = SHAKE-256(z || cipher), per FIPS 203 algorithm 18.
+// z is the last 32 bytes of the ML-KEM secret key.
+template<size_t cipher_byte_len>
+static forceinline std::array<uint8_t, 32>
+compute_implicit_rejection(std::span<const uint8_t, 32> z, std::span<const uint8_t, cipher_byte_len> cipher)
+{
+  std::array<uint8_t, 32> j{};
+  shake256::shake256_t xof{};
+
+  xof.absorb(z);
+  xof.absorb(cipher);
+  xof.finalize();
+  xof.squeeze(j);
+
+  return j;
 }

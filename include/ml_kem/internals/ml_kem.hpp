@@ -160,7 +160,7 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   // line 9-12 of algorithm 17, in constant-time
   using kdf_t = std::span<const uint8_t, shared_secret.size()>;
   const uint32_t cond = ml_kem_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
-  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(z));
+  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(j_out));
 
   ml_kem_utils::secure_zeroize(g_in);
   ml_kem_utils::secure_zeroize(g_out);

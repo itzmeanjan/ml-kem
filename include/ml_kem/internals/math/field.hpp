@@ -63,20 +63,20 @@ private:
 public:
   // Constructor(s)
   forceinline constexpr zq_t() = default;
-  forceinline constexpr zq_t(const uint32_t a /* Expects a ∈ [0, Q) */)
+  explicit forceinline constexpr zq_t(const uint32_t a /* Expects a ∈ [0, Q) */)
     : v(a)
   {
   }
   static forceinline constexpr zq_t from_non_reduced(const uint32_t a /* Doesn't expect that a ∈ [0, Q) */) { return zq_t(barrett_reduce(a)); }
 
   // Returns canonical value held under Zq type. Returned value must ∈ [0, Q).
-  forceinline constexpr uint32_t raw() const { return this->v; }
+  [[nodiscard]] forceinline constexpr uint32_t raw() const { return this->v; }
 
   static forceinline constexpr zq_t zero() { return zq_t(0U); }
   static forceinline constexpr zq_t one() { return zq_t(1U); }
 
   // Modulo addition of two Zq elements.
-  forceinline constexpr zq_t operator+(const zq_t& rhs) const { return reduce_once(this->v + rhs.v); }
+  forceinline constexpr zq_t operator+(const zq_t& rhs) const { return zq_t(reduce_once(this->v + rhs.v)); }
   forceinline constexpr void operator+=(const zq_t& rhs) { *this = *this + rhs; }
 
   // Modulo negation of a Zq element.
@@ -87,7 +87,7 @@ public:
   forceinline constexpr void operator-=(const zq_t& rhs) { *this = *this - rhs; }
 
   // Modulo multiplication of two Zq elements.
-  forceinline constexpr zq_t operator*(const zq_t& rhs) const { return barrett_reduce(this->v * rhs.v); }
+  forceinline constexpr zq_t operator*(const zq_t& rhs) const { return zq_t(barrett_reduce(this->v * rhs.v)); }
   forceinline constexpr void operator*=(const zq_t& rhs) { *this = *this * rhs; }
 
   // Modulo exponentiation of Zq element.
@@ -116,7 +116,7 @@ public:
   // Multiplicative inverse of Zq element. Also division of one Zq element by another one.
   //
   // Note, if Zq element is 0, we can't compute multiplicative inverse and 0 is returned.
-  forceinline constexpr zq_t inv() const { return *this ^ static_cast<size_t>((Q - 2)); }
+  [[nodiscard]] forceinline constexpr zq_t inv() const { return *this ^ static_cast<size_t>((Q - 2)); }
   forceinline constexpr zq_t operator/(const zq_t& rhs) const { return *this * rhs.inv(); }
 
   // Comparison operators, see https://en.cppreference.com/w/cpp/language/default_comparisons

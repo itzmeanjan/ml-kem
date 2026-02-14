@@ -329,55 +329,69 @@ ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 > [!NOTE]
 > ML-KEM parameter sets are taken from table 2 of ML-KEM standard @ <https://doi.org/10.6028/NIST.FIPS.203>.
 
-All the functions, in this ML-KEM header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation or decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with the following demonstration program, which generates a ML-KEM-512 keypair and encapsulates a message, producing a ML-KEM-512 cipher text and a fixed size shared secret, given `seed_{d, z, m}` as input - all at program compile-time. Notice, the *static assertion*.
+All the functions, in this ML-KEM header-only library, are implemented as `constexpr` functions. Hence you should be able to evaluate ML-KEM key generation, encapsulation and decapsulation at compile-time itself, given that all inputs are known at compile-time. I present you with the following demonstration program, which performs a complete ML-KEM-512 round-trip - key generation, encapsulation and decapsulation - proving that the sender and receiver derive the same shared secret, all at program compile-time. Notice, the *static assertion*.
 
 ```cpp
 /**
  * Filename: compile-time-ml-kem-512.cpp
  *
  * Compile and run this program with
- * $ g++ -std=c++20 -Wall -Wextra -Wpedantic -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
+ * $ g++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-ops-limit=67108864 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
  * or
- * $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=4000000 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
+ * $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=33554432 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
  */
 
 #include "ml_kem/ml_kem_512.hpp"
+#include <string_view>
 
-// Compile-time evaluation of ML-KEM-512 key generation and encapsulation, using NIST official KAT no. (1).
-constexpr auto
-eval_ml_kem_768_encaps() -> auto
+// Compile-time hex character to nibble conversion.
+constexpr uint8_t
+hex_digit(char c)
 {
-  using seed_t = std::array<uint8_t, ml_kem_512::SEED_D_BYTE_LEN>;
+  if (c >= '0' && c <= '9') return static_cast<uint8_t>(c - '0');
+  if (c >= 'a' && c <= 'f') return static_cast<uint8_t>(c - 'a' + 10);
+  if (c >= 'A' && c <= 'F') return static_cast<uint8_t>(c - 'A' + 10);
+  return 0;
+}
 
-  // 7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d
-  constexpr seed_t seed_d = { 124, 153, 53, 160, 176, 118, 148, 170, 12, 109, 16,  228, 219, 107, 26,  221, 47,  216, 26, 37,  204, 177, 72,  3,   45, 205, 115, 153, 54,  115, 127, 45 };
-  // b505d7cfad1b497499323c8686325e4792f267aafa3f87ca60d01cb54f29202a
-  constexpr seed_t seed_z = {181, 5, 215, 207, 173, 27, 73, 116, 153, 50, 60, 134, 134, 50, 94, 71, 146, 242, 103, 170, 250, 63, 135, 202, 96, 208, 28, 181, 79, 41, 32, 42};
-  // eb4a7c66ef4eba2ddb38c88d8bc706b1d639002198172a7b1942eca8f6c001ba
-  constexpr seed_t seed_m = {235, 74, 124, 102, 239, 78, 186, 45, 219, 56, 200, 141, 139, 199, 6, 177, 214, 57, 0, 33, 152, 23, 42, 123, 25, 66, 236, 168, 246, 192, 1, 186};
+// Compile-time hex string to byte array conversion.
+template<size_t L>
+constexpr std::array<uint8_t, L>
+from_hex(std::string_view str)
+{
+  std::array<uint8_t, L> res{};
+  for (size_t i = 0; i < L; i++) {
+    res[i] = static_cast<uint8_t>((hex_digit(str[2 * i]) << 4) | hex_digit(str[(2 * i) + 1]));
+  }
+  return res;
+}
+
+// Compile-time evaluation of ML-KEM-512 keygen, encapsulation and decapsulation, using seeds from NIST official KAT no. (1).
+constexpr bool
+eval_ml_kem_512()
+{
+  constexpr auto seed_d = from_hex<32>("7c9935a0b07694aa0c6d10e4db6b1add2fd81a25ccb148032dcd739936737f2d");
+  constexpr auto seed_z = from_hex<32>("b505d7cfad1b497499323c8686325e4792f267aafa3f87ca60d01cb54f29202a");
+  constexpr auto seed_m = from_hex<32>("eb4a7c66ef4eba2ddb38c88d8bc706b1d639002198172a7b1942eca8f6c001ba");
 
   std::array<uint8_t, ml_kem_512::PKEY_BYTE_LEN> pubkey{};
   std::array<uint8_t, ml_kem_512::SKEY_BYTE_LEN> seckey{};
   std::array<uint8_t, ml_kem_512::CIPHER_TEXT_BYTE_LEN> cipher{};
-
-  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> shared_secret{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> sender_key{};
+  std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> receiver_key{};
 
   ml_kem_512::keygen(seed_d, seed_z, pubkey, seckey);
-  (void)ml_kem_512::encapsulate(seed_m, pubkey, cipher, shared_secret);
+  const auto encaps_ok = ml_kem_512::encapsulate(seed_m, pubkey, cipher, sender_key);
+  ml_kem_512::decapsulate(seckey, cipher, receiver_key);
 
-  return shared_secret;
+  return encaps_ok && (sender_key == receiver_key);
 }
 
 int
 main()
 {
-  // This step is being evaluated at compile-time, thanks to the fact that my ML-KEM implementation is `constexpr`.
-  static constexpr auto computed_shared_secret = eval_ml_kem_768_encaps();
-  // b4c8e3c4115f9511f2fddb288c4b78c5cd7c89d2d4d321f46b4edc54ddf0eb36
-  constexpr std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> expected_shared_secret = { 180, 200, 227, 196, 17, 95, 149, 17, 242, 253, 219, 40, 140, 75, 120, 197, 205, 124, 137, 210, 212, 211, 33, 244, 107, 78, 220, 84, 221, 240, 235, 54 };
-
-  // Notice static_assert, yay !
-  static_assert(computed_shared_secret == expected_shared_secret, "Must be able to compute shared secret at compile-time !");
+  // Entire ML-KEM-512 keygen + encaps + decaps round-trip, evaluated at compile-time.
+  static_assert(eval_ml_kem_512(), "ML-KEM-512 keygen/encaps/decaps must be correct at compile-time");
   return 0;
 }
 ```

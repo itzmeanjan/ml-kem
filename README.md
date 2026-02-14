@@ -160,6 +160,8 @@ FUZZ_JOBS=4 FUZZ_FORK=2 ./scripts/fuzz_all.sh
 
 After completion, the script prints a report showing corpus size, total executions, and status per fuzzer. Log files are saved to `fuzz_report/`.
 
+![fuzzer-1h-run-report](./fuzzer-1h-run-report.png)
+
 #### Manual Single-Fuzzer Run
 
 To run a specific fuzzer manually (requires `clang++`):
@@ -239,7 +241,8 @@ target_link_libraries(my_app PRIVATE ml-kem)
 ### Development Tools
 
 ```bash
-cmake -B build
+# Configure
+cmake -B build -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_BUILD_EXAMPLES=ON -DML_KEM_FETCH_DEPS=ON
 
 # Static analysis (requires clang-tidy)
 cmake --build build --target tidy

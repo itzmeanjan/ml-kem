@@ -74,3 +74,8 @@ jobs:
 
       - name: Test
         run: ctest --test-dir build --output-on-failure -j
+
+      - name: Run Examples
+        if: ${{ matrix.sanitizer == 'none' && matrix.build_type == 'Release' }}
+        run: |
+          ./build/ml_kem_768_example

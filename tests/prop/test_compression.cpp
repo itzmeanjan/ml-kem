@@ -5,6 +5,8 @@
 #include <cmath>
 #include <gtest/gtest.h>
 
+namespace {
+
 // Decompression error that can happen for some given `d` s.t.
 //
 // x' = decompress(compress(x, d), d)
@@ -65,6 +67,8 @@ test_zq_compression()
   }
 
   return res;
+}
+
 }
 
 TEST(ML_KEM, CompressDecompressZq)

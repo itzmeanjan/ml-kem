@@ -23,6 +23,6 @@ if(NOT ml-kem_FOUND)
 endif()
 
 # --- Example Executable ---
-add_executable(ml_kem_768 ml_kem_768.cpp)
-target_link_libraries(ml_kem_768 PRIVATE ml-kem)
-target_compile_features(ml_kem_768 PRIVATE cxx_std_20)
+add_executable(ml_kem_768_example ml_kem_768.cpp)
+target_link_libraries(ml_kem_768_example PRIVATE ml-kem)
+target_compile_features(ml_kem_768_example PRIVATE cxx_std_20)

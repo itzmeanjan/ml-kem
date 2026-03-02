@@ -12,7 +12,7 @@ cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 
 # Run
-./build/ml_kem_768
+./build/ml_kem_768_example
 ```
 
 ## Using `ml-kem` in Your Own Project

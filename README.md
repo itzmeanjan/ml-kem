@@ -4,10 +4,63 @@ NIST FIPS 203 (ML-KEM) standard compliant, C++20, fully `constexpr`, header-only
 FIPS 203 compliance is assured by testing this implementation against ACVP Known Answer Tests and tons of property based tests. We also fuzz the library and its internal components with LLVM libFuzzer to get an extra level of assurance.
 
 > [!NOTE]
-> `constexpr` ? Yes, you can compile-time execute keygen, encaps or decaps. But why? I don't know, some usecase might arise.
+> `constexpr` ? Yes, you can compile-time execute keygen, encapsulation and decapsulation.
+
+<!-- -->
 
 > [!CAUTION]
 > This ML-KEM implementation is conformant with ML-KEM standard <https://doi.org/10.6028/NIST.FIPS.203> and I also *try* to make it timing leakage free, but be informed that this implementation is not *yet* audited. **If you consider using it in production, please be careful !**
+
+## Quick Start
+
+Add `ml-kem` to your CMake project via `FetchContent`:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(
+  ml-kem
+  GIT_REPOSITORY https://github.com/itzmeanjan/ml-kem.git
+  GIT_TAG master
+  GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(ml-kem)
+
+target_link_libraries(my_app PRIVATE ml-kem)
+```
+
+Generate a keypair, encapsulate a shared secret, and decapsulate it:
+
+```cpp
+#include "ml_kem/ml_kem_768.hpp"
+#include "randomshake/randomshake.hpp"
+
+// Generate a keypair
+std::array<uint8_t, ml_kem_768::SEED_D_BYTE_LEN> d{};
+std::array<uint8_t, ml_kem_768::SEED_Z_BYTE_LEN> z{};
+std::array<uint8_t, ml_kem_768::PKEY_BYTE_LEN> pubkey{};
+std::array<uint8_t, ml_kem_768::SKEY_BYTE_LEN> seckey{};
+
+randomshake::randomshake_t csprng{};
+csprng.generate(d);
+csprng.generate(z);
+ml_kem_768::keygen(d, z, pubkey, seckey);
+
+// Encapsulate a shared secret
+std::array<uint8_t, ml_kem_768::SEED_M_BYTE_LEN> m{};
+std::array<uint8_t, ml_kem_768::CIPHER_TEXT_BYTE_LEN> cipher{};
+std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> sender_key{};
+csprng.generate(m);
+
+const bool encaps_ok = ml_kem_768::encapsulate(m, pubkey, cipher, sender_key);
+
+// Decapsulate the shared secret
+std::array<uint8_t, ml_kem_768::SHARED_SECRET_BYTE_LEN> receiver_key{};
+ml_kem_768::decapsulate(seckey, cipher, receiver_key);
+
+assert(encaps_ok && sender_key == receiver_key);
+```
+
+See [examples/](./examples/) for a complete standalone CMake project.
 
 ## Motivation
 
@@ -45,23 +98,28 @@ This implementation is built with a "Security-First" approach, incorporating pro
 - **Memory Safety**: Verified using AddressSanitizer (ASan) in both release and debug build configuration.
 - **Undefined Behavior**: Hardened with UndefinedBehaviorSanitizer (UBSan), configured to treat any undefined behavior as a fatal, non-recoverable error.
 - **Continuous Fuzzing**: Includes a suite of **14 specialized fuzzer binaries** (9 key encapsulation variants + 5 internal component units).
-- **Static Analysis**: Integrated with `clang-tidy` using security-focused profiles (`bugprone-*`, `cert-*`, `cppcoreguidelines-*`).
-- **CI-Verified**: Automatically tested on every push across a matrix of operating systems (Linux, macOS, Windows) and compilers (`clang++`, `g++`, MSVC).
+- **Static Analysis**: Integrated with `clang-tidy` using an extensive check suite (`bugprone-*`, `cert-*`, `clang-analyzer-*`, `concurrency-*`, `cppcoreguidelines-*`, `hicpp-*`, `misc-*`, `modernize-*`, `performance-*`, `portability-*`, `readability-*`) with all warnings treated as errors.
+- **CI-Verified**: Automatically tested on every push across a matrix of operating systems (Linux, macOS) and compilers (`clang++`, `g++`).
 
 ## Prerequisites
 
 - A C++ compiler such as `clang++`/ `g++`, with support for compiling C++20 programs.
-- CMake 3.30 or later.
+- CMake 3.28 or later.
 - For testing, `google-test` is required. It can be installed globally or fetched automatically by setting `-DML_KEM_FETCH_DEPS=ON`.
 - For benchmarking, `google-benchmark` is required. It can be installed globally or fetched automatically by setting `-DML_KEM_FETCH_DEPS=ON`.
 - For static analysis, you'll need `clang-tidy`.
 - For code formatting, you'll need `clang-format`.
 
+### Automatically Fetched Dependencies
+
+The following libraries are **automatically fetched** by CMake at configure time -- no manual installation needed:
+
+- [`sha3`](https://github.com/itzmeanjan/sha3): SHA3 suite of hash functions, from FIPS 202, used internally by ML-KEM.
+- [`randomshake`](https://github.com/itzmeanjan/RandomShake): A CSPRNG built on (Turbo)SHAKE256 XOF, seeded from OS entropy. Used in tests, benchmarks and examples for generating keygen seeds and encapsulation randomness. You may use any cryptographically secure pseudo-random source to fill the seed arrays; the library does not mandate a specific RNG.
+- [`subtle`](https://github.com/itzmeanjan/subtle): A header-only library providing constant-time comparison utilities.
+
 > [!NOTE]
 > If you are on a machine running GNU/Linux kernel and you want to obtain *CPU cycle* count for ML-KEM routines, you should consider building `google-benchmark` library with `libPFM` support, following <https://gist.github.com/itzmeanjan/05dc3e946f635d00c5e0b21aae6203a7>, a step-by-step guide. Find more about libPFM @ <https://perfmon2.sourceforge.net>. When `libpfm` is installed, CMake will automatically detect and link it.
-
-> [!TIP]
-> Git submodule based dependencies are automatically synchronized during CMake configuration.
 
 ## Building
 
@@ -261,13 +319,12 @@ cmake --build build --target sync_acvp_kats
 - Clone `ml-kem` repository.
 
 ```bash
-# Single step cloning and importing of submodules
-git clone https://github.com/itzmeanjan/ml-kem.git --recurse-submodules
+git clone https://github.com/itzmeanjan/ml-kem.git
+cd ml-kem
 
-# Or clone and then run tests (submodules are fetched automatically)
-git clone https://github.com/itzmeanjan/ml-kem.git && cd ml-kem
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_TESTS=ON -DML_KEM_FETCH_DEPS=ON
-cmake --build build -j && ctest --test-dir build -j --output-on-failure
+cmake --build build -j
+ctest --test-dir build -j --output-on-failure
 ```
 
 - Write your program; include proper header files ( based on which variant of ML-KEM you want to use, see [include](./include/ml_kem/) directory ), which includes declarations ( and definitions ) of all required ML-KEM routines and constants ( such as byte length of public/ private key, cipher text etc. ).
@@ -296,7 +353,7 @@ main()
   std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> sender_key{};
   std::array<uint8_t, ml_kem_512::SHARED_SECRET_BYTE_LEN> receiver_key{};
 
-  randomshake::randomshake_t<128> csprng;
+  randomshake::randomshake_t csprng{};
 
   csprng.generate(d);
   csprng.generate(z);
@@ -311,23 +368,20 @@ main()
 }
 ```
 
-- If your project uses CMake, the recommended approach is to use `find_package` or `FetchContent` (see [Integration](#integration) section above). If you prefer manual compilation:
+- If your project uses CMake, the recommended approach is to use `find_package` or `FetchContent` (see [Integration](#integration) section above).
 
-```bash
-# Assuming `ml-kem` was cloned just under $HOME
-ML_KEM=~/ml-kem
+> [!NOTE]
+> **Randomness:** The examples use `randomshake::randomshake_t`, a CSPRNG seeded from OS entropy, to generate keygen seeds and encapsulation randomness. You may use any cryptographically secure pseudo-random source to fill the seed arrays -- the library does not mandate a specific RNG.
 
-g++ -std=c++20 -Wall -Wextra -Wpedantic -O3 -I $ML_KEM/include -I $ML_KEM/sha3/include -I $ML_KEM/RandomShake/include -I $ML_KEM/subtle/include main.cpp
-```
+### Choosing a Parameter Set
 
-> [!TIP]
-> Add `-march=native` to optimize for your specific CPU. Omit it if building for distribution or cross-compilation.
+Variant | NIST Security Level | Public Key | Secret Key | Cipher Text | Namespace | Header
+:--- | :--- | ---: | ---: | ---: | :---: | :---
+ML-KEM-512 | 1 (comparable to AES-128) | 800 B | 1,632 B | 768 B | `ml_kem_512::` | `include/ml_kem/ml_kem_512.hpp`
+**ML-KEM-768** | **3 (comparable to AES-192)** | **1,184 B** | **2,400 B** | **1,088 B** | **`ml_kem_768::`** | **`include/ml_kem/ml_kem_768.hpp`**
+ML-KEM-1024 | 5 (comparable to AES-256) | 1,568 B | 3,168 B | 1,568 B | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
 
-ML-KEM Variant | Namespace | Header
-:-- | :-: | --:
-ML-KEM-512 Routines | `ml_kem_512::` | `include/ml_kem/ml_kem_512.hpp`
-ML-KEM-768 Routines | `ml_kem_768::` | `include/ml_kem/ml_kem_768.hpp`
-ML-KEM-1024 Routines | `ml_kem_1024::` | `include/ml_kem/ml_kem_1024.hpp`
+**ML-KEM-768 is recommended for general use.** Choose ML-KEM-512 when key/ciphertext size is critical, or ML-KEM-1024 when you need the highest security margin.
 
 > [!NOTE]
 > ML-KEM parameter sets are taken from table 2 of ML-KEM standard @ <https://doi.org/10.6028/NIST.FIPS.203>.
@@ -338,10 +392,10 @@ All the functions, in this ML-KEM header-only library, are implemented as `const
 /**
  * Filename: compile-time-ml-kem-512.cpp
  *
- * Compile and run this program with
- * $ g++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-ops-limit=67108864 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
- * or
- * $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=33554432 -I include -I sha3/include -I subtle/include -I RandomShake/include compile-time-ml-kem-512.cpp && ./a.out
+ * Build and run using the CMake example project in examples/ directory, or
+ * use `cmake --install` to install ml-kem system-wide and compile with:
+ * $ g++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-ops-limit=67108864 compile-time-ml-kem-512.cpp && ./a.out
+ * $ clang++ -std=c++20 -Wall -Wextra -Wpedantic -fconstexpr-steps=33554432 compile-time-ml-kem-512.cpp && ./a.out
  */
 
 #include "ml_kem/ml_kem_512.hpp"
@@ -406,12 +460,12 @@ See [examples/README.md](./examples/README.md) for a **standalone CMake project*
 cd examples
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build
-./build/ml_kem_768
+./build/ml_kem_768_example
 
 # Or build from the repository root
 cmake -B build -DCMAKE_BUILD_TYPE=Release -DML_KEM_BUILD_EXAMPLES=ON
 cmake --build build -j
-./build/ml_kem_768
+./build/ml_kem_768_example
 ```
 
 ```bash

@@ -103,7 +103,6 @@ endif()
 # --- Dependencies ---
 include(FetchContent)
 
-# sha3 (cmake dependency)
 FetchContent_Declare(
   sha3
   GIT_REPOSITORY https://github.com/itzmeanjan/sha3.git
@@ -112,7 +111,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(sha3)
 
-# randomshake (cmake dependency)
 FetchContent_Declare(
   randomshake
   GIT_REPOSITORY https://github.com/itzmeanjan/RandomShake.git
@@ -121,25 +119,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(randomshake)
 
-# subtle (header-only, no CMakeLists.txt in upstream repo)
 FetchContent_Declare(
   subtle
   GIT_REPOSITORY https://github.com/itzmeanjan/subtle.git
   GIT_TAG master
   GIT_SHALLOW TRUE
 )
-FetchContent_GetProperties(subtle)
-if(NOT subtle_POPULATED)
-  cmake_policy(PUSH)
-  cmake_policy(SET CMP0169 OLD)
-  FetchContent_Populate(subtle)
-  cmake_policy(POP)
-endif()
-add_library(subtle INTERFACE)
-target_include_directories(subtle INTERFACE
-  $<BUILD_INTERFACE:${subtle_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
+FetchContent_MakeAvailable(subtle)
 
 # --- Library ---
 add_library(ml-kem INTERFACE)
@@ -162,6 +148,7 @@ if(ML_KEM_BUILD_TESTS)
       DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
     set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+    set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
   else()
     find_package(GTest REQUIRED)
@@ -269,7 +256,6 @@ endif()
 
 # --- Install ---
 include(GNUInstallDirs)
-install(TARGETS ml-kem subtle EXPORT ml-kem-config INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS ml-kem EXPORT ml-kem-config INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${subtle_SOURCE_DIR}/include/subtle.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(EXPORT ml-kem-config NAMESPACE ml-kem:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/ml-kem)

@@ -11,7 +11,7 @@ if [ -d "$ACVP_SERVER_REPO_PATH" ]; then
     popd
 else
     echo "> $ACVP_SERVER_REPO_PATH repository doesn't exist, let's clone it."
-    git clone https://github.com/usnistgov/ACVP-Server.git
+    git clone --depth 1 https://github.com/usnistgov/ACVP-Server.git
 fi
 
 cat ./ACVP-Server/gen-val/json-files/ML-KEM-keyGen-FIPS203/internalProjection.json | python parse_ml_kem_keygen_acvp_kat.py

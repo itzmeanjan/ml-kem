@@ -8,6 +8,7 @@
 #include "ml_kem/internals/utility/params.hpp"
 #include "ml_kem/internals/utility/utils.hpp"
 #include "sha3/sha3_512.hpp"
+#include "subtle.hpp"
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -71,9 +72,9 @@ keygen(std::span<const uint8_t, 32> d,
   std::copy(rho.begin(), rho.end(), rho_in_pubkey.begin());
   ml_kem_utils::poly_vec_encode<k, 12>(s, seckey);
 
-  ml_kem_utils::secure_zeroize(g_out);
-  ml_kem_utils::secure_zeroize(s);
-  ml_kem_utils::secure_zeroize(e);
+  subtle::ct_zeroize(g_out_span);
+  subtle::ct_zeroize(std::span(s));
+  subtle::ct_zeroize(std::span(e));
 }
 
 // Given a *valid* K-PKE public key, 32 -bytes message ( to be encrypted ) and 32 -bytes random coin
@@ -102,7 +103,7 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
   ml_kem_utils::poly_vec_encode<k, 12>(t_prime, encoded_tprime);
 
   using encoded_pkey_t = std::span<const uint8_t, encoded_t_prime_in_pubkey.size()>;
-  const auto are_equal = ml_kem_utils::ct_memcmp(encoded_pkey_t(encoded_t_prime_in_pubkey), encoded_pkey_t(encoded_tprime));
+  const auto are_equal = subtle::ct_memcmp<uint8_t, uint32_t>(encoded_pkey_t(encoded_t_prime_in_pubkey), encoded_pkey_t(encoded_tprime));
   if (are_equal == 0U) {
     // Got an invalid public key
     return false;
@@ -153,10 +154,10 @@ encrypt(std::span<const uint8_t, ml_kem_utils::get_pke_public_key_len(k)> pubkey
   ml_kem_utils::poly_compress<dv>(v);
   ml_kem_utils::encode<dv>(v, poly_v_in_ctxt);
 
-  ml_kem_utils::secure_zeroize(r);
-  ml_kem_utils::secure_zeroize(e1);
-  ml_kem_utils::secure_zeroize(e2);
-  ml_kem_utils::secure_zeroize(m);
+  subtle::ct_zeroize(std::span(r));
+  subtle::ct_zeroize(std::span(e1));
+  subtle::ct_zeroize(std::span(e2));
+  subtle::ct_zeroize(std::span(m));
 
   return true;
 }
@@ -199,7 +200,7 @@ decrypt(std::span<const uint8_t, ml_kem_utils::get_pke_secret_key_len(k)> seckey
   ml_kem_utils::poly_compress<1>(v);
   ml_kem_utils::encode<1>(v, ptxt);
 
-  ml_kem_utils::secure_zeroize(s_prime);
+  subtle::ct_zeroize(std::span(s_prime));
 }
 
 }

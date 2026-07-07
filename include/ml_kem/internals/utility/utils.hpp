@@ -1,56 +1,8 @@
 #pragma once
 #include "ml_kem/internals/utility/force_inline.hpp"
-#include "subtle.hpp"
-#include <array>
 #include <cstddef>
-#include <cstdint>
-#include <span>
-#include <type_traits>
 
 namespace ml_kem_utils {
-
-// Securely zeroizes a std::array, preventing the compiler from optimizing away the operation.
-// At compile-time: a plain fill suffices -- there is no real memory to protect.
-// At runtime: the fill is followed by a compiler barrier (empty asm with "memory" clobber)
-// that forces the compiler to treat the array's memory as externally observable, preventing
-// dead store elimination. The barrier generates zero instructions.
-template<typename T, size_t N>
-forceinline constexpr void
-secure_zeroize(std::array<T, N>& arr)
-{
-  arr.fill(T{});
-  if (!std::is_constant_evaluated()) {
-    asm volatile("" : : "r"(arr.data()) : "memory"); // NOLINT(hicpp-no-assembler)
-  }
-}
-
-// Given two byte arrays of equal length, this routine can be used for comparing them in constant-time,
-// producing truth value (0xffffffff) in case of equality, otherwise it returns false value (0x00000000).
-template<size_t n>
-forceinline constexpr uint32_t
-ct_memcmp(std::span<const uint8_t, n> bytes0, std::span<const uint8_t, n> bytes1)
-{
-  uint32_t flag = -1U;
-  for (size_t i = 0; i < n; i++) {
-    flag &= subtle::ct_eq<uint8_t, uint32_t>(bytes0[i], bytes1[i]);
-  }
-
-  return flag;
-}
-
-// Given a branch value, taking either 0x00000000 (false value) or 0xffffffff (truth value), this routine can be used for conditionally
-// copying bytes from either `source0` byte array (in case branch holds truth value) or `source1` byte array (if branch holds false value)
-// to `sink` byte array, all in constant-time.
-//
-// In simple words, `sink = cond ? source0 ? source1`
-template<size_t n>
-forceinline constexpr void
-ct_cond_memcpy(const uint32_t cond, std::span<uint8_t, n> sink, std::span<const uint8_t, n> source0, std::span<const uint8_t, n> source1)
-{
-  for (size_t i = 0; i < n; i++) {
-    sink[i] = subtle::ct_select(cond, source0[i], source1[i]);
-  }
-}
 
 // Returns compile-time computable K-PKE public key byte length.
 forceinline constexpr size_t

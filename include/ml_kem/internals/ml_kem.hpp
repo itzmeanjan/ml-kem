@@ -5,6 +5,7 @@
 #include "sha3/sha3_256.hpp"
 #include "sha3/sha3_512.hpp"
 #include "sha3/shake256.hpp"
+#include "subtle.hpp"
 #include <algorithm>
 #include <array>
 #include <cstddef>
@@ -88,15 +89,15 @@ encapsulate(std::span<const uint8_t, 32> m,
   const auto has_mod_check_passed = k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, m, g_out_span1, cipher);
   if (!has_mod_check_passed) {
     // Got an invalid public key
-    ml_kem_utils::secure_zeroize(g_in);
-    ml_kem_utils::secure_zeroize(g_out);
+    subtle::ct_zeroize(g_in_span);
+    subtle::ct_zeroize(g_out_span);
     return has_mod_check_passed;
   }
 
   std::copy(g_out_span0.begin(), g_out_span0.end(), shared_secret.begin());
 
-  ml_kem_utils::secure_zeroize(g_in);
-  ml_kem_utils::secure_zeroize(g_out);
+  subtle::ct_zeroize(g_in_span);
+  subtle::ct_zeroize(g_out_span);
   return true;
 }
 
@@ -158,14 +159,14 @@ decapsulate(std::span<const uint8_t, ml_kem_utils::get_kem_secret_key_len(k)> se
   (void)k_pke::encrypt<k, eta1, eta2, du, dv>(pubkey, g_in_span0, g_out_span1, c_prime);
 
   // line 9-12 of algorithm 17, in constant-time
-  using kdf_t = std::span<const uint8_t, shared_secret.size()>;
-  const uint32_t cond = ml_kem_utils::ct_memcmp(cipher, std::span<const uint8_t, ctlen>(c_prime));
-  ml_kem_utils::ct_cond_memcpy(cond, shared_secret, kdf_t(g_out_span0), kdf_t(j_out));
+  std::copy(j_out.begin(), j_out.end(), shared_secret.begin());
+  const uint32_t cond = subtle::ct_memcmp<uint8_t, uint32_t>(cipher, std::span<const uint8_t, ctlen>(c_prime));
+  subtle::ct_conditional_memcpy<uint32_t, uint8_t, 32>(cond, shared_secret, g_out_span0);
 
-  ml_kem_utils::secure_zeroize(g_in);
-  ml_kem_utils::secure_zeroize(g_out);
-  ml_kem_utils::secure_zeroize(j_out);
-  ml_kem_utils::secure_zeroize(c_prime);
+  subtle::ct_zeroize(g_in_span);
+  subtle::ct_zeroize(g_out_span);
+  subtle::ct_zeroize(std::span(j_out));
+  subtle::ct_zeroize(std::span(c_prime));
 }
 
 }

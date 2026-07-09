@@ -26,6 +26,7 @@ Checks: '
   -modernize-use-trailing-return-type,
   -modernize-use-auto,
   -modernize-use-ranges,
+  -portability-avoid-pragma-once,
   -readability-magic-numbers
 '
 CheckOptions:

@@ -106,7 +106,7 @@ include(FetchContent)
 FetchContent_Declare(
   sha3
   GIT_REPOSITORY https://github.com/itzmeanjan/sha3.git
-  GIT_TAG master
+  GIT_TAG avx2-backend-simd-keccak
   GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(sha3)

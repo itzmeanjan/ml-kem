@@ -46,11 +46,13 @@ jobs:
         compiler: [g++, clang++]
         sanitizer: [none, asan, ubsan]
         build_type: [Debug, Release]
+        native_opt: [ON, OFF]
         include:
           - os: macos-latest # aarch64
             compiler: clang++
             sanitizer: none
             build_type: Release
+            native_opt: OFF
         exclude:
           - sanitizer: none
             build_type: Debug
@@ -68,6 +70,7 @@ jobs:
           -DML_KEM_FETCH_DEPS=ON
           -DML_KEM_ASAN=${{ matrix.sanitizer == 'asan' && 'ON' || 'OFF' }}
           -DML_KEM_UBSAN=${{ matrix.sanitizer == 'ubsan' && 'ON' || 'OFF' }}
+          -DML_KEM_NATIVE_OPT=${{ matrix.native_opt }}
 
       - name: Build
         run: cmake --build build -j
